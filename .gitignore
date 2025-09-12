@@ -1,4 +1,4 @@
-# File di configurazione locale
+# File di configurazione locale (contiene token sensibili)
 config.js
 
 # File temporanei
@@ -12,3 +12,7 @@ Thumbs.db
 # File di backup
 *.bak
 *.backup
+
+# File di test
+test-*.html
+debug-*.html

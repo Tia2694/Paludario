@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test GitHub API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔑 Test GitHub API</h1>
+    
+    <div class="test">
+        <h3>Test 1: Verifica Token</h3>
+        <button onclick="testToken()">Testa Token</button>
+        <div id="token-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: Verifica Repository</h3>
+        <button onclick="testRepo()">Testa Repository</button>
+        <div id="repo-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 3: Crea Cartella Data</h3>
+        <button onclick="createDataFolder()">Crea Cartella Data</button>
+        <div id="folder-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 4: Salva File di Test</h3>
+        <button onclick="saveTestFile()">Salva File Test</button>
+        <div id="save-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Log</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const GITHUB_CONFIG = {
+            username: 'Tia2694',
+            repository: 'Paludario',
+            branch: 'main',
+            token: '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'
+        };
+        
+        const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
+        
+        function addLog(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function testToken() {
+            const resultEl = document.getElementById('token-result');
+            resultEl.innerHTML = 'Testando token...';
+            addLog('Testando token GitHub...');
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    resultEl.innerHTML = `<span class="success">✅ Token valido! Utente: ${userData.login}</span>`;
+                    addLog(`Token valido per utente: ${userData.login}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Token non valido: ${errorData.message}</span>`;
+                    addLog(`Token non valido: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore test token: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testRepo() {
+            const resultEl = document.getElementById('repo-result');
+            resultEl.innerHTML = 'Testando repository...';
+            addLog('Testando accesso al repository...');
+            
+            try {
+                const response = await fetch(API_BASE, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const repoData = await response.json();
+                    resultEl.innerHTML = `<span class="success">✅ Repository accessibile: ${repoData.full_name}</span>`;
+                    addLog(`Repository accessibile: ${repoData.full_name}`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Errore repository: ${errorData.message}</span>`;
+                    addLog(`Errore repository: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore test repository: ${error.message}`, 'error');
+            }
+        }
+        
+        async function createDataFolder() {
+            const resultEl = document.getElementById('folder-result');
+            resultEl.innerHTML = 'Creando cartella data...';
+            addLog('Creando cartella data...');
+            
+            try {
+                // Crea un file README nella cartella data per creare la cartella
+                const readmeContent = btoa(unescape(encodeURIComponent('# Data Folder\n\nThis folder contains the Paludario app data files.')));
+                
+                const response = await fetch(`${API_BASE}/contents/data/README.md`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Create data folder',
+                        content: readmeContent,
+                        branch: GITHUB_CONFIG.branch
+                    })
+                });
+                
+                if (response.ok) {
+                    resultEl.innerHTML = '<span class="success">✅ Cartella data creata</span>';
+                    addLog('Cartella data creata con successo', 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Errore creazione cartella: ${errorData.message}</span>`;
+                    addLog(`Errore creazione cartella: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore creazione cartella: ${error.message}`, 'error');
+            }
+        }
+        
+        async function saveTestFile() {
+            const resultEl = document.getElementById('save-result');
+            resultEl.innerHTML = 'Salvando file di test...';
+            addLog('Salvando file di test...');
+            
+            try {
+                const testData = { 
+                    test: 'connessione', 
+                    timestamp: new Date().toISOString(),
+                    message: 'Test di salvataggio GitHub'
+                };
+                
+                const jsonString = JSON.stringify(testData, null, 2);
+                const content = btoa(unescape(encodeURIComponent(jsonString)));
+                
+                // Prepara il body della richiesta
+                const requestBody = {
+                    message: 'Test salvataggio - ' + new Date().toISOString(),
+                    content: content,
+                    branch: GITHUB_CONFIG.branch
+                };
+                
+                const response = await fetch(`${API_BASE}/contents/data/test.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (response.ok) {
+                    resultEl.innerHTML = '<span class="success">✅ File di test salvato!</span>';
+                    addLog('File di test salvato con successo', 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Errore salvataggio: ${errorData.message}</span>`;
+                    addLog(`Errore salvataggio: ${errorData.message}`, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore salvataggio: ${error.message}`, 'error');
+            }
+        }
+        
+        // Avvia test automatici
+        setTimeout(() => {
+            testToken();
+        }, 1000);
+    </script>
+</body>
+</html>

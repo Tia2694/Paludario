@@ -4,7 +4,7 @@ const GITHUB_CONFIG = {
     username: 'Tia2694',
     repository: 'Paludario',
     branch: 'main',
-    token: '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' // Sostituisci con il nuovo token
+    token: 'INSERISCI_QUI_IL_TUO_TOKEN' // Sostituisci con il tuo token
 };
 
 const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
@@ -30,19 +30,36 @@ class DataManager {
         try {
             this.updateStatus('🔄 Caricamento dati...', 'syncing');
             
-            // Carica dati da GitHub
-            const [waterData, dayData, settingsData] = await Promise.all([
-                this.fetchFromGitHub(DATA_FILES.water, []),
-                this.fetchFromGitHub(DATA_FILES.dayTemplate, { spray: [], fan: [], lights: [] }),
-                this.fetchFromGitHub(DATA_FILES.settings, { title: '🌱 Paludario', liters: '', darkMode: false })
-            ]);
-
-            this.data.water = waterData;
-            this.data.dayTemplate = dayData;
-            this.data.settings = settingsData;
+            // Prima carica dai dati locali (più veloce e affidabile)
+            this.loadFromLocalStorage();
             
-            this.lastSync = new Date();
-            this.updateStatus('✅ Dati caricati', 'success');
+            // Poi prova a sincronizzare con GitHub in background
+            try {
+                const [waterData, dayData, settingsData] = await Promise.all([
+                    this.fetchFromGitHub(DATA_FILES.water, this.data.water),
+                    this.fetchFromGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
+                    this.fetchFromGitHub(DATA_FILES.settings, this.data.settings)
+                ]);
+
+                // Usa i dati di GitHub solo se sono più recenti o se i dati locali sono vuoti
+                if (waterData.length > 0 || this.data.water.length === 0) {
+                    this.data.water = waterData;
+                }
+                if (Object.keys(dayData).length > 0 || Object.keys(this.data.dayTemplate).length === 0) {
+                    this.data.dayTemplate = dayData;
+                }
+                if (settingsData.title || !this.data.settings.title) {
+                    this.data.settings = settingsData;
+                }
+                
+                this.lastSync = new Date();
+                this.updateStatus('✅ Dati sincronizzati', 'success');
+                console.log('Dati caricati da locale e sincronizzati con GitHub');
+                
+            } catch (githubError) {
+                console.warn('Sincronizzazione GitHub fallita, uso dati locali:', githubError);
+                this.updateStatus('✅ Dati caricati (Locale)', 'success');
+            }
             
             // Inizializza UI
             this.initializeUI();
@@ -52,6 +69,7 @@ class DataManager {
             this.updateStatus('❌ Errore caricamento', 'error');
             // Fallback ai dati locali
             this.loadFromLocalStorage();
+            this.initializeUI();
         }
     }
 
@@ -60,9 +78,9 @@ class DataManager {
         
         try {
             this.syncInProgress = true;
-            this.updateStatus('🔄 Salvataggio...', 'syncing');
+            this.updateStatus('🔄 Salvataggio su GitHub...', 'syncing');
             
-            // Salva su GitHub
+            // Salva SOLO su GitHub
             await Promise.all([
                 this.saveToGitHub(DATA_FILES.water, this.data.water),
                 this.saveToGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
@@ -70,14 +88,13 @@ class DataManager {
             ]);
             
             this.lastSync = new Date();
-            this.updateStatus('✅ Dati salvati', 'success');
-            
-            // Salva anche localmente come backup
-            this.saveToLocalStorage();
+            this.updateStatus('✅ Dati salvati su GitHub', 'success');
+            console.log('Dati salvati su GitHub');
             
         } catch (error) {
-            console.error('Errore nel salvataggio:', error);
-            this.updateStatus('❌ Errore salvataggio', 'error');
+            console.error('Errore nel salvataggio GitHub:', error);
+            this.updateStatus('❌ Errore salvataggio GitHub', 'error');
+            throw error; // Rilancia l'errore per gestirlo nell'UI
         } finally {
             this.syncInProgress = false;
         }
@@ -119,15 +136,29 @@ class DataManager {
                 if (getResponse.ok) {
                     const fileData = await getResponse.json();
                     sha = fileData.sha;
+                    console.log(`File ${filePath} esiste, aggiornamento`);
+                } else {
+                    console.log(`File ${filePath} non esiste, creazione nuovo file`);
                 }
             } catch (e) {
-                // File non esiste, SHA rimane null
                 console.log(`File ${filePath} non esiste, creazione nuovo file`);
             }
 
             // Codifica sicura per caratteri Unicode
             const jsonString = JSON.stringify(data, null, 2);
             const content = btoa(unescape(encodeURIComponent(jsonString)));
+            
+            // Prepara il body della richiesta
+            const requestBody = {
+                message: `Aggiorna ${filePath} - ${new Date().toISOString()}`,
+                content: content,
+                branch: GITHUB_CONFIG.branch
+            };
+            
+            // Aggiungi SHA solo se il file esiste
+            if (sha) {
+                requestBody.sha = sha;
+            }
             
             const response = await fetch(`${API_BASE}/contents/${filePath}`, {
                 method: 'PUT',
@@ -136,12 +167,7 @@ class DataManager {
                     'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    message: `Aggiorna ${filePath} - ${new Date().toISOString()}`,
-                    content: content,
-                    sha: sha,
-                    branch: GITHUB_CONFIG.branch
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
