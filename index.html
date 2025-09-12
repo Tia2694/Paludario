@@ -191,17 +191,14 @@
 	
 	/* Status indicator */
 	.status-indicator {
-		position: fixed;
-		top: 10px;
-		left: 10px;
-		z-index: 1000;
-		padding: 8px 12px;
-		border-radius: 8px;
-		font-size: 12px;
-		font-weight: bold;
 		background: #4caf50;
 		color: white;
-		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+		padding: 6px 12px;
+		border-radius: 6px;
+		font-size: 12px;
+		font-weight: bold;
+		box-shadow: none;
+		margin: 0;
 	}
 	.status-indicator.syncing {
 		background: #ff9800;
@@ -275,6 +272,19 @@
 		background: #444 !important;
 		border-color: #666 !important;
 	}
+	.dark-mode #last-sync {
+		color: #cccccc !important;
+	}
+	.dark-mode .status-indicator {
+		background: #4caf50 !important;
+		color: white !important;
+	}
+	.dark-mode .status-indicator.syncing {
+		background: #ff9800 !important;
+	}
+	.dark-mode .status-indicator.error {
+		background: #f44336 !important;
+	}
 	
 	/* Stili per il titolo editabile */
 	#main-title:hover {
@@ -314,11 +324,13 @@
 </head>
 <body>
 
-<div id="status-indicator" class="status-indicator">🔄 Sincronizzazione...</div>
-
-<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; gap: 8px; align-items: center;">
-	<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🔄 GitHub</button>
-	<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🌙 Dark Mode</button>
+<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+	<div id="status-indicator" class="status-indicator" style="position: static; background: #4caf50; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; box-shadow: none; margin: 0;">🔄 Sincronizzazione...</div>
+	<div style="display: flex; gap: 8px; align-items: center;">
+		<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🔄 GitHub</button>
+		<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🌙 Dark Mode</button>
+	</div>
+	<div id="last-sync" style="font-size: 11px; color: #666; text-align: right; max-width: 200px; line-height: 1.3;"></div>
 </div>
 
 <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
@@ -494,7 +506,6 @@
 	<button id="refresh-day-chart">🔄 Aggiorna grafico</button>
 	<button id="toggle-backgrounds">🎨 Mostra Sfondi</button>
 	<button id="toggle-fill">📊 Grafico Pieno</button>
-	<div id="last-sync" style="font-size: 12px; color: #666; margin-top: 8px;"></div>
 </div>
 <canvas id="dayChart"></canvas>
 <div class="legend" id="dayLegend"></div>
