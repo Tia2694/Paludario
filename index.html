@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#1976d2" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Paludario" />
+<meta name="description" content="Gestione completa del paludario - Valori acqua, programmazione luci e sistemi" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="msapplication-TileColor" content="#1976d2" />
+<meta name="msapplication-tap-highlight" content="no" />
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Paludario&quot;,&quot;short_name&quot;:&quot;Paludario&quot;,&quot;description&quot;:&quot;Gestione completa del paludario&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#ffffff&quot;,&quot;theme_color&quot;:&quot;#1976d2&quot;,&quot;orientation&quot;:&quot;portrait&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxOTc2ZDIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;},{&quot;src&quot;:&quot;data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMxOTc2ZDIiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAyTDEzLjA5IDguMjZMMjAgOUwxMy4wOSAxNS43NEwxMiAyMkwxMC45MSAxNS43NEw0IDlMMTAuOTEgOC4yNkwxMiAyWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cjwvc3ZnPg==&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}" />
+
+<!-- Apple Touch Icons -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMxOTc2ZDIiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+" />
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMjIiIGZpbGw9IiMxOTc2ZDIiLz4KPHN2ZyB4PSI0NSIgeT0iNDUiIHdpZHRoPSI5MCIgaGVpZ2h0PSI5MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+" />
+
+<title>Paludario</title>
+<style>
+	/* Mobile-first CSS ottimizzato */
+	body { 
+		font-family: system-ui, Arial, sans-serif; 
+		margin: 12px; 
+		-webkit-text-size-adjust: 100%;
+		-webkit-tap-highlight-color: transparent;
+	}
+	
+	/* Pulsanti touch-friendly */
+	button { 
+		cursor: pointer; 
+		min-height: 44px;
+		min-width: 44px;
+		padding: 12px 16px;
+		font-size: 16px;
+		border-radius: 8px;
+		border: 1px solid #ddd;
+		background: #f8f9fa;
+		transition: all 0.2s;
+	}
+	button:hover {
+		background: #e9ecef;
+		transform: translateY(-1px);
+	}
+	button:active {
+		transform: translateY(0);
+	}
+	
+	/* Input touch-friendly */
+	input, select {
+		min-height: 44px;
+		font-size: 16px;
+		padding: 8px 12px;
+		border-radius: 6px;
+		border: 1px solid #ddd;
+		background: #fff;
+	}
+	input:focus, select:focus {
+		outline: none;
+		border-color: #1976d2;
+		box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+	}
+	
+	h1 { margin: 0 0 16px 0; font-size: 24px; }
+	h2 { margin: 24px 0 16px 0; font-size: 20px; }
+	
+	fieldset { 
+		border: 1px solid #ccc; 
+		padding: 16px; 
+		margin: 16px 0 20px 0; 
+		border-radius: 8px;
+	}
+	legend { 
+		padding: 0 8px; 
+		font-weight: 600; 
+		font-size: 16px;
+	}
+	
+	.row { 
+		display: flex; 
+		flex-wrap: wrap; 
+		gap: 12px 16px; 
+		align-items: center; 
+		margin-bottom: 12px;
+	}
+	.field { 
+		display: inline-flex; 
+		align-items: center; 
+		gap: 8px; 
+		min-height: 44px;
+	}
+	.field label { 
+		margin: 0; 
+		font-weight: 500; 
+		font-size: 14px;
+		white-space: nowrap;
+	}
+	
+	.unit { 
+		font-size: 12px; 
+		color: #555; 
+		background: #f3f3f3; 
+		border: 1px solid #e0e0e0; 
+		padding: 4px 8px; 
+		border-radius: 6px; 
+	}
+	
+	input[type="number"] { width: 100px; }
+	input[type="time"] { width: 120px; }
+	input[type="datetime-local"] { width: 200px; }
+	
+	table { 
+		border-collapse: collapse; 
+		width: 100%; 
+		margin-top: 12px; 
+		font-size: 14px;
+	}
+	th, td { 
+		border: 1px solid #ddd; 
+		padding: 8px 10px; 
+		text-align: left; 
+	}
+	th { 
+		background: #f7f7f7; 
+		position: sticky; 
+		top: 0; 
+		font-weight: 600;
+	}
+	
+	.grid { display: grid; gap: 16px; }
+	.grid-2 { grid-template-columns: 1fr; }
+	
+	.mono { 
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; 
+		font-size: 13px;
+	}
+	
+	canvas { 
+		width: 100%; 
+		height: 200px; 
+		max-height: 50vh; 
+		border: 1px solid #eee; 
+		background: #fff; 
+		border-radius: 8px;
+	}
+	
+	.legend { 
+		display: flex; 
+		flex-wrap: wrap; 
+		gap: 12px; 
+		margin: 12px 0 0 0; 
+	}
+	.legend span { 
+		display: inline-flex; 
+		align-items: center; 
+		gap: 8px; 
+		font-size: 13px; 
+		padding: 4px 8px;
+		background: #f8f9fa;
+		border-radius: 6px;
+	}
+	.legend i { 
+		width: 16px; 
+		height: 4px; 
+		display: inline-block; 
+		border-radius: 2px;
+	}
+	
+	.tiny { 
+		font-size: 12px; 
+		padding: 6px 10px; 
+		line-height: 1.4; 
+		min-height: 32px;
+	}
+	
+	.color-dot { 
+		width: 14px; 
+		height: 14px; 
+		border-radius: 50%; 
+		display: inline-block; 
+		margin-right: 6px; 
+	}
+	.color-dot.red { background: #e53935; }
+	.color-dot.green { background: #43a047; }
+	.color-dot.blue { background: #1e88e5; }
+	.color-dot.white { background: #757575; }
+	.color-dot.orange { background: #ff9800; }
+	
+	/* Status indicator */
+	.status-indicator {
+		position: fixed;
+		top: 10px;
+		left: 10px;
+		z-index: 1000;
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-size: 12px;
+		font-weight: bold;
+		background: #4caf50;
+		color: white;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+	}
+	.status-indicator.syncing {
+		background: #ff9800;
+	}
+	.status-indicator.error {
+		background: #f44336;
+	}
+	
+	/* Dark mode styles */
+	.dark-mode {
+		background-color: #1a1a1a !important;
+		color: #ffffff !important;
+	}
+	.dark-mode th {
+		background: #333 !important;
+		color: #ffffff !important;
+	}
+	.dark-mode fieldset {
+		border-color: #555 !important;
+	}
+	.dark-mode legend {
+		color: #ffffff !important;
+	}
+	.dark-mode .unit {
+		background: #444 !important;
+		color: #ccc !important;
+		border-color: #666 !important;
+	}
+	.dark-mode input, .dark-mode select {
+		background: #333 !important;
+		color: #ffffff !important;
+		border-color: #555 !important;
+	}
+	.dark-mode canvas {
+		background: #222 !important;
+		border-color: #555 !important;
+	}
+	.dark-mode button {
+		background: #444 !important;
+		color: #ffffff !important;
+		border-color: #666 !important;
+	}
+	.dark-mode button:hover {
+		background: #555 !important;
+	}
+	
+	/* Stili per il titolo editabile */
+	#main-title:hover {
+		border-color: #ddd !important;
+	}
+	#main-title:focus {
+		border-color: #1976d2 !important;
+		outline: none;
+		background: rgba(25, 118, 210, 0.05);
+	}
+	.dark-mode #main-title:hover {
+		border-color: #666 !important;
+	}
+	.dark-mode #main-title:focus {
+		border-color: #64b5f6 !important;
+		background: rgba(100, 181, 246, 0.1);
+	}
+	
+	/* Responsive design */
+	@media (min-width: 768px) {
+		body { margin: 18px; }
+		.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+		input[type="number"] { width: 90px; }
+		input[type="time"] { width: 100px; }
+		input[type="datetime-local"] { width: 210px; }
+		canvas { height: 190px; }
+	}
+	
+	/* Safe area per iPhone X e successivi */
+	@supports (padding: max(0px)) {
+		body {
+			padding-left: max(12px, env(safe-area-inset-left));
+			padding-right: max(12px, env(safe-area-inset-right));
+		}
+	}
+</style>
+</head>
+<body>
+
+<div id="status-indicator" class="status-indicator">🔄 Sincronizzazione...</div>
+
+<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+	<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🌙 Dark Mode</button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
+	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 8px; border-radius: 8px; transition: border-color 0.2s; margin: 0; font-size: 28px;">🌱 Paludario</h1>
+	<div class="field" style="margin: 0;">
+		<label for="liters" style="font-weight: 600; font-size: 18px;">💧 Litri</label>
+		<input id="liters" type="number" step="0.1" min="0" style="width: 100px; font-size: 18px; font-weight: 600;" />
+		<span class="unit">L</span>
+	</div>
+</div>
+
+<h2>💧 Valori Acqua</h2>
+<fieldset>
+	<legend>➕ Nuovo valore</legend>
+	<div class="row">
+		<div class="field">
+			<label for="water-dt">📅 Data/Ora</label>
+			<input id="water-dt" type="datetime-local" />
+			<button class="tiny ok-btn" data-for="water-dt">OK</button>
+			<button class="tiny clear-btn" data-for="water-dt">Pulisci</button>
+		</div>
+	</div>
+	<div class="row">
+		<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.01" min="0" /></div>
+		<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="0.1" min="0" /><span class="unit">dKH</span></div>
+		<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="0.1" min="0" /><span class="unit">dGH</span></div>
+		<div class="field"><label for="no2">⚠️ NO2</label><input id="no2" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="0.1" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="nh4">☠️ NH4</label><input id="nh4" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="temp">🌡️ Temperatura</label><input id="temp" type="number" step="0.1" min="0" /><span class="unit">°C</span></div>
+		<div class="field"><label for="cond">⚡ Conducibilità</label><input id="cond" type="number" step="1" min="0" /><span class="unit">µS/cm</span></div>
+		<button id="add-water">➕ Aggiungi</button>
+		<button id="clear-water">🧹 Pulisci</button>
+	</div>
+</fieldset>
+
+<div class="row">
+	<div class="field">
+		<label for="param-select">📈 Parametro per grafico</label>
+		<select id="param-select">
+			<option value="ph">🧪 pH</option>
+			<option value="kh">⚗️ KH</option>
+			<option value="gh">🔬 GH</option>
+			<option value="no2">⚠️ NO2</option>
+			<option value="no3">⚠️ NO3</option>
+			<option value="nh4">☠️ NH4</option>
+			<option value="temp">🌡️ Temperatura</option>
+			<option value="cond">⚡ Conducibilità</option>
+		</select>
+	</div>
+	<button id="refresh-water-chart">🔄 Aggiorna grafico</button>
+</div>
+<canvas id="waterChart"></canvas>
+
+<table id="water-table">
+	<thead>
+		<tr>
+			<th>📅 Data/Ora</th>
+			<th>🧪 pH</th><th>⚗️ KH</th><th>🔬 GH</th>
+			<th>⚠️ NO2</th><th>⚠️ NO3</th><th>☠️ NH4</th>
+			<th>🌡️ Temperatura °C</th><th>⚡ Conducibilità µS/cm</th>
+			<th>⚙️ Azioni</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+
+<h2>⏰ Profilo tipico giornaliero (0–24)</h2>
+
+<div class="grid grid-2">
+	<fieldset>
+		<legend>💦 Spray Pioggia (intervalli ON)</legend>
+		<div class="row">
+			<div class="field">
+				<label>🕐 Inizio</label><input id="spray-start" type="time" step="60" />
+				<button class="tiny ok-btn" data-for="spray-start">OK</button>
+			</div>
+			<div class="field">
+				<label>🕐 Fine</label><input id="spray-end" type="time" step="60" />
+				<button class="tiny ok-btn" data-for="spray-end">OK</button>
+			</div>
+			<button id="add-spray">➕ Aggiungi</button>
+			<button id="clear-spray">🧹 Pulisci</button>
+		</div>
+		<table id="spray-table">
+			<thead><tr><th>🕐 Inizio</th><th>🕐 Fine</th><th>⚙️ Azioni</th></tr></thead>
+			<tbody></tbody>
+		</table>
+	</fieldset>
+
+	<fieldset>
+		<legend>💨 Ventola Deumidificante (intervalli ON)</legend>
+		<div class="row">
+			<div class="field">
+				<label>🕐 Inizio</label><input id="fan-start" type="time" step="60" />
+				<button class="tiny ok-btn" data-for="fan-start">OK</button>
+			</div>
+			<div class="field">
+				<label>🕐 Fine</label><input id="fan-end" type="time" step="60" />
+				<button class="tiny ok-btn" data-for="fan-end">OK</button>
+			</div>
+			<button id="add-fan">➕ Aggiungi</button>
+			<button id="clear-fan">🧹 Pulisci</button>
+		</div>
+		<table id="fan-table">
+			<thead><tr><th>🕐 Inizio</th><th>🕐 Fine</th><th>⚙️ Azioni</th></tr></thead>
+			<tbody></tbody>
+		</table>
+	</fieldset>
+</div>
+
+<fieldset>
+	<legend>💡 Luci RGBW + Plafoniera (0–100%)</legend>
+	<div class="row">
+		<div class="field">
+			<label>🕐 Ora</label><input id="light-time" type="time" step="60" />
+			<button class="tiny ok-btn" data-for="light-time">OK</button>
+		</div>
+		<div class="field">
+			<label><span class="color-dot red"></span>R</label><input id="ch1" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+		</div>
+		<div class="field">
+			<label><span class="color-dot green"></span>G</label><input id="ch2" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+		</div>
+		<div class="field">
+			<label><span class="color-dot blue"></span>B</label><input id="ch3" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+		</div>
+		<div class="field">
+			<label><span class="color-dot white"></span>W</label><input id="ch4" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+		</div>
+		<div class="field">
+			<label><span class="color-dot orange"></span>Plafoniera</label><input id="ch5" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+		</div>
+		<button id="add-light">➕ Aggiungi</button>
+		<button id="clear-lights">🧹 Pulisci</button>
+	</div>
+	<table id="light-table">
+		<thead>
+			<tr><th>🕐 Ora</th><th><span class="color-dot red"></span>R</th><th><span class="color-dot green"></span>G</th><th><span class="color-dot blue"></span>B</th><th><span class="color-dot white"></span>W</th><th><span class="color-dot orange"></span>Plafoniera</th><th>⚙️ Azioni</th></tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</fieldset>
+
+<div class="row">
+	<button id="refresh-day-chart">🔄 Aggiorna grafico</button>
+	<button id="toggle-backgrounds">🎨 Mostra Sfondi</button>
+	<button id="toggle-fill">📊 Grafico Pieno</button>
+	<button id="sync-data">🔄 Sincronizza Dati</button>
+</div>
+<canvas id="dayChart"></canvas>
+<div class="legend" id="dayLegend"></div>
+
+<script src="paludario-functions.js"></script>
+<script src="paludario-charts.js"></script>
+<script src="paludario-app.js"></script>
+</body>
+</html>

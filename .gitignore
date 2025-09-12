@@ -1,0 +1,14 @@
+# File di configurazione locale
+config.js
+
+# File temporanei
+*.tmp
+*.log
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
+# File di backup
+*.bak
+*.backup
