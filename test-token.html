@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Token GitHub</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; width: 300px; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔑 Test Token GitHub</h1>
+    
+    <div class="test">
+        <h3>Inserisci il Nuovo Token</h3>
+        <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <button onclick="testToken()">Testa Token</button>
+        <div id="token-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test Connessione Repository</h3>
+        <button onclick="testRepository()">Testa Repository</button>
+        <div id="repo-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test Salvataggio File</h3>
+        <button onclick="testSaveFile()">Testa Salvataggio</button>
+        <div id="save-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Log</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        let currentToken = '';
+        
+        function addLog(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        async function testToken() {
+            const token = document.getElementById('token-input').value;
+            const resultEl = document.getElementById('token-result');
+            
+            if (!token) {
+                resultEl.innerHTML = '<span class="error">❌ Inserisci un token</span>';
+                return;
+            }
+            
+            currentToken = token;
+            resultEl.innerHTML = 'Testando token...';
+            addLog('Testando token: ' + token.substring(0, 10) + '...');
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    resultEl.innerHTML = `<span class="success">✅ Token valido! Utente: ${userData.login}</span>`;
+                    addLog('Token valido per utente: ' + userData.login, 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Token non valido: ${errorData.message}</span>`;
+                    addLog('Token non valido: ' + errorData.message, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog('Errore test token: ' + error.message, 'error');
+            }
+        }
+        
+        async function testRepository() {
+            const resultEl = document.getElementById('repo-result');
+            
+            if (!currentToken) {
+                resultEl.innerHTML = '<span class="error">❌ Prima testa il token</span>';
+                return;
+            }
+            
+            resultEl.innerHTML = 'Testando repository...';
+            addLog('Testando accesso al repository...');
+            
+            try {
+                const response = await fetch('https://api.github.com/repos/Tia2694/Paludario', {
+                    headers: {
+                        'Authorization': `token ${currentToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const repoData = await response.json();
+                    resultEl.innerHTML = `<span class="success">✅ Repository accessibile: ${repoData.full_name}</span>`;
+                    addLog('Repository accessibile: ' + repoData.full_name, 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Errore repository: ${errorData.message}</span>`;
+                    addLog('Errore repository: ' + errorData.message, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog('Errore test repository: ' + error.message, 'error');
+            }
+        }
+        
+        async function testSaveFile() {
+            const resultEl = document.getElementById('save-result');
+            
+            if (!currentToken) {
+                resultEl.innerHTML = '<span class="error">❌ Prima testa il token</span>';
+                return;
+            }
+            
+            resultEl.innerHTML = 'Testando salvataggio...';
+            addLog('Testando salvataggio file...');
+            
+            try {
+                const testData = { test: 'connessione', timestamp: new Date().toISOString() };
+                const jsonString = JSON.stringify(testData, null, 2);
+                const content = btoa(unescape(encodeURIComponent(jsonString)));
+                
+                const response = await fetch('https://api.github.com/repos/Tia2694/Paludario/contents/data/test.json', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${currentToken}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Test connessione - ' + new Date().toISOString(),
+                        content: content,
+                        branch: 'main'
+                    })
+                });
+                
+                if (response.ok) {
+                    resultEl.innerHTML = '<span class="success">✅ Salvataggio funziona!</span>';
+                    addLog('Salvataggio test riuscito!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    resultEl.innerHTML = `<span class="error">❌ Errore salvataggio: ${errorData.message}</span>`;
+                    addLog('Errore salvataggio: ' + errorData.message, 'error');
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog('Errore test salvataggio: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

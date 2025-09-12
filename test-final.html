@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Finale Paludario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Finale Paludario - Debug Completo</h1>
+    
+    <div class="test">
+        <h3>1. Test Configurazione</h3>
+        <div id="config-test">Testando...</div>
+    </div>
+    
+    <div class="test">
+        <h3>2. Test Connessione GitHub</h3>
+        <button class="btn-primary" onclick="testGitHubConnection()">Testa Connessione</button>
+        <div id="github-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>3. Test Salvataggio Campi</h3>
+        <input type="text" id="test-title" value="🌱 Paludario Test" placeholder="Titolo con emoji">
+        <input type="number" id="test-liters" value="75" placeholder="Litri">
+        <button class="btn-success" onclick="testSaveFields()">Testa Salvataggio</button>
+        <div id="fields-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>4. Test Valore Acqua</h3>
+        <input type="datetime-local" id="test-water-dt">
+        <input type="number" id="test-ph" value="7.2" placeholder="pH">
+        <button class="btn-success" onclick="testSaveWater()">Testa Acqua</button>
+        <div id="water-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>5. Test Programmazione Luci</h3>
+        <input type="time" id="test-light-time" value="08:00">
+        <input type="number" id="test-ch1" value="50" placeholder="R">
+        <button class="btn-success" onclick="testSaveLight()">Testa Luci</button>
+        <div id="light-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>6. Log Dettagliato</h3>
+        <button class="btn-danger" onclick="clearLog()">Pulisci Log</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        // Override console per logging
+        const logEl = document.getElementById('log');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function clearLog() {
+            logEl.innerHTML = '';
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+    </script>
+    
+    <script src="paludario-app.js"></script>
+    <script src="paludario-functions.js"></script>
+    <script src="paludario-charts.js"></script>
+    
+    <script>
+        // Inizializza data/ora
+        document.getElementById('test-water-dt').value = new Date().toISOString().slice(0, 16);
+        
+        function testConfig() {
+            const configEl = document.getElementById('config-test');
+            try {
+                if (typeof GITHUB_CONFIG !== 'undefined' && GITHUB_CONFIG.username && GITHUB_CONFIG.token) {
+                    configEl.innerHTML = '<span class="success">✅ Configurazione OK</span>';
+                    console.log('Configurazione valida:', GITHUB_CONFIG.username);
+                } else {
+                    configEl.innerHTML = '<span class="error">❌ Configurazione mancante</span>';
+                    console.error('Configurazione GitHub incompleta');
+                }
+            } catch (error) {
+                configEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                console.error('Errore configurazione:', error);
+            }
+        }
+        
+        async function testGitHubConnection() {
+            const githubEl = document.getElementById('github-test');
+            githubEl.innerHTML = 'Testando connessione...';
+            
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`);
+                if (response.ok) {
+                    githubEl.innerHTML = '<span class="success">✅ Repository GitHub accessibile</span>';
+                    console.log('Connessione GitHub OK');
+                } else {
+                    githubEl.innerHTML = `<span class="error">❌ Errore repository: ${response.status}</span>`;
+                    console.error('Errore repository GitHub:', response.status);
+                }
+            } catch (error) {
+                githubEl.innerHTML = `<span class="error">❌ Errore connessione: ${error.message}</span>`;
+                console.error('Errore connessione GitHub:', error);
+            }
+        }
+        
+        async function testSaveFields() {
+            const fieldsEl = document.getElementById('fields-test');
+            fieldsEl.innerHTML = 'Salvando...';
+            
+            try {
+                const title = document.getElementById('test-title').value;
+                const liters = document.getElementById('test-liters').value;
+                
+                console.log('Testando salvataggio campi:', { title, liters });
+                
+                if (dataManager && dataManager.updateSettings) {
+                    await dataManager.updateSettings({ title, liters });
+                    fieldsEl.innerHTML = '<span class="success">✅ Campi salvati con successo</span>';
+                    console.log('Campi salvati con successo');
+                } else {
+                    fieldsEl.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                    console.error('DataManager non disponibile');
+                }
+            } catch (error) {
+                fieldsEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                console.error('Errore salvataggio campi:', error);
+            }
+        }
+        
+        async function testSaveWater() {
+            const waterEl = document.getElementById('water-test');
+            waterEl.innerHTML = 'Salvando...';
+            
+            try {
+                const waterData = {
+                    id: 'test-' + Date.now(),
+                    ts: document.getElementById('test-water-dt').value || new Date().toISOString().slice(0, 16),
+                    ph: parseFloat(document.getElementById('test-ph').value) || null,
+                    kh: null, gh: null, no2: null, no3: null, nh4: null, temp: null, cond: null
+                };
+                
+                console.log('Testando salvataggio acqua:', waterData);
+                
+                if (dataManager && dataManager.updateWater) {
+                    const currentWater = dataManager.data.water || [];
+                    currentWater.push(waterData);
+                    await dataManager.updateWater(currentWater);
+                    waterEl.innerHTML = '<span class="success">✅ Acqua salvata con successo</span>';
+                    console.log('Acqua salvata con successo');
+                } else {
+                    waterEl.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                    console.error('DataManager non disponibile per acqua');
+                }
+            } catch (error) {
+                waterEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                console.error('Errore salvataggio acqua:', error);
+            }
+        }
+        
+        async function testSaveLight() {
+            const lightEl = document.getElementById('light-test');
+            lightEl.innerHTML = 'Salvando...';
+            
+            try {
+                const lightData = {
+                    t: document.getElementById('test-light-time').value,
+                    ch1: parseInt(document.getElementById('test-ch1').value) || 0,
+                    ch2: 0, ch3: 0, ch4: 0, ch5: 0
+                };
+                
+                console.log('Testando salvataggio luci:', lightData);
+                
+                if (dataManager && dataManager.updateDayTemplate) {
+                    const currentPlan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
+                    currentPlan.lights.push(lightData);
+                    await dataManager.updateDayTemplate(currentPlan);
+                    lightEl.innerHTML = '<span class="success">✅ Luci salvate con successo</span>';
+                    console.log('Luci salvate con successo');
+                } else {
+                    lightEl.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                    console.error('DataManager non disponibile per luci');
+                }
+            } catch (error) {
+                lightEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                console.error('Errore salvataggio luci:', error);
+            }
+        }
+        
+        // Avvia test iniziali
+        setTimeout(() => {
+            testConfig();
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@ const GITHUB_CONFIG = {
     username: 'Tia2694',
     repository: 'Paludario',
     branch: 'main',
-    token: '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' // Token con permessi repo
+    token: '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' // Sostituisci con il nuovo token
 };
 
 const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
@@ -122,9 +122,13 @@ class DataManager {
                 }
             } catch (e) {
                 // File non esiste, SHA rimane null
+                console.log(`File ${filePath} non esiste, creazione nuovo file`);
             }
 
-            const content = btoa(JSON.stringify(data, null, 2));
+            // Codifica sicura per caratteri Unicode
+            const jsonString = JSON.stringify(data, null, 2);
+            const content = btoa(unescape(encodeURIComponent(jsonString)));
+            
             const response = await fetch(`${API_BASE}/contents/${filePath}`, {
                 method: 'PUT',
                 headers: {
@@ -141,8 +145,11 @@ class DataManager {
             });
 
             if (!response.ok) {
-                throw new Error(`Errore nel salvataggio: ${response.statusText}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`Errore ${response.status}: ${errorData.message || response.statusText}`);
             }
+            
+            console.log(`File ${filePath} salvato con successo`);
         } catch (error) {
             console.error(`Errore nel salvataggio di ${filePath}:`, error);
             throw error;
