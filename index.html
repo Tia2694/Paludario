@@ -247,6 +247,13 @@
 	.dark-mode button:hover {
 		background: #555 !important;
 	}
+	.dark-mode #sync-data {
+		background: #64b5f6 !important;
+		color: #000 !important;
+	}
+	.dark-mode #sync-data:hover {
+		background: #90caf9 !important;
+	}
 	
 	/* Stili per il titolo editabile */
 	#main-title:hover {
@@ -288,7 +295,8 @@
 
 <div id="status-indicator" class="status-indicator">🔄 Sincronizzazione...</div>
 
-<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; gap: 8px; align-items: center;">
+	<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🔄 GitHub</button>
 	<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🌙 Dark Mode</button>
 </div>
 
@@ -438,7 +446,6 @@
 	<button id="refresh-day-chart">🔄 Aggiorna grafico</button>
 	<button id="toggle-backgrounds">🎨 Mostra Sfondi</button>
 	<button id="toggle-fill">📊 Grafico Pieno</button>
-	<button id="sync-data">🔄 Sincronizza da GitHub</button>
 	<div id="last-sync" style="font-size: 12px; color: #666; margin-top: 8px;"></div>
 </div>
 <canvas id="dayChart"></canvas>
