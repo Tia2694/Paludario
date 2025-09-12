@@ -261,8 +261,21 @@ class DataManager {
 
     // Metodi per aggiornare i dati
     updateWater(waterData) {
-        this.data.water = waterData;
+        console.log('💾 DataManager.updateWater - INIZIO');
+        console.log('📊 waterData ricevuto:', waterData.length, waterData);
+        console.log('📊 this.data.water prima:', this.data.water.length, this.data.water);
+        
+        this.data.water = [...waterData]; // Crea una copia per evitare riferimenti
+        
+        console.log('📊 this.data.water dopo:', this.data.water.length, this.data.water);
+        console.log('📊 water globale prima sincronizzazione:', water.length, water);
+        
+        // NON sincronizzare l'array globale qui per evitare conflitti
+        // L'array globale è già aggiornato dalla funzione addWaterValue
+        console.log('📊 Mantenendo array globale invariato per evitare conflitti');
+        
         this.saveData();
+        console.log('💾 DataManager.updateWater - FINE');
     }
 
     updateDayTemplate(dayData) {

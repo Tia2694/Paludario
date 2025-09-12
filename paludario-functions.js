@@ -37,7 +37,7 @@ const temp = document.getElementById('temp');
 const cond = document.getElementById('cond');
 const addWaterBtn = document.getElementById('add-water');
 const clearWaterBtn = document.getElementById('clear-water');
-const waterTableBody = document.querySelector('#water-table tbody');
+let waterTableBody;
 const paramSelect = document.getElementById('param-select');
 const refreshWaterChartBtn = document.getElementById('refresh-water-chart');
 const waterCanvas = document.getElementById('waterChart');
@@ -46,13 +46,13 @@ const sprayStart = document.getElementById('spray-start');
 const sprayEnd = document.getElementById('spray-end');
 const addSprayBtn = document.getElementById('add-spray');
 const clearSprayBtn = document.getElementById('clear-spray');
-const sprayTableBody = document.querySelector('#spray-table tbody');
+let sprayTableBody;
 
 const fanStart = document.getElementById('fan-start');
 const fanEnd = document.getElementById('fan-end');
 const addFanBtn = document.getElementById('add-fan');
 const clearFanBtn = document.getElementById('clear-fan');
-const fanTableBody = document.querySelector('#fan-table tbody');
+let fanTableBody;
 
 const lightTime = document.getElementById('light-time');
 const ch1 = document.getElementById('ch1');
@@ -62,7 +62,7 @@ const ch4 = document.getElementById('ch4');
 const ch5 = document.getElementById('ch5');
 const addLightBtn = document.getElementById('add-light');
 const clearLightsBtn = document.getElementById('clear-lights');
-const lightTableBody = document.querySelector('#light-table tbody');
+let lightTableBody;
 
 const refreshDayChartBtn = document.getElementById('refresh-day-chart');
 const toggleBackgroundsBtn = document.getElementById('toggle-backgrounds');
@@ -96,6 +96,12 @@ function initializeApp() {
 }
 
 function setupEventListeners() {
+    // Inizializza i selettori DOM
+    waterTableBody = document.querySelector('#water-table tbody');
+    sprayTableBody = document.querySelector('#spray-table tbody');
+    fanTableBody = document.querySelector('#fan-table tbody');
+    lightTableBody = document.querySelector('#light-table tbody');
+    
     // Titolo editabile
     if (mainTitle) {
         mainTitle.addEventListener('blur', () => {
@@ -233,6 +239,9 @@ function setupEventListeners() {
 
 /* ==================== VALORI ACQUA ==================== */
 function addWaterValue() {
+    console.log('🔍 addWaterValue - INIZIO');
+    console.log('📊 water array prima:', water.length, water);
+    
     const ts = waterDt.value;
     if (!ts) return alert('Inserisci data/ora');
     
@@ -249,16 +258,31 @@ function addWaterValue() {
         cond: nonNeg(cond.value),
     };
     
+    console.log('📝 Record creato:', rec);
+    
+    // Aggiungi il record all'array globale
     water.push(rec);
+    console.log('📊 water array dopo push:', water.length, water);
+    
+    // Renderizza IMMEDIATAMENTE la tabella e i grafici con i dati aggiornati
+    console.log('🎨 Chiamando renderWaterTable...');
+    renderWaterTable();
+    console.log('📈 Chiamando drawWaterChart...');
+    if (typeof drawWaterChart === 'function') {
+        drawWaterChart();
+    }
+    
+    // Poi aggiorna il dataManager con l'array completo (in background)
     if (dataManager && dataManager.updateWater) {
+        console.log('💾 Chiamando dataManager.updateWater...');
         dataManager.updateWater(water);
+        console.log('📊 water array dopo dataManager:', water.length, water);
     } else {
         console.error('DataManager non disponibile per salvare i valori acqua');
     }
-    updateGlobalData();
-    renderWaterTable();
-    drawWaterChart();
+    
     clearWaterInputs();
+    console.log('✅ addWaterValue - FINE');
 }
 
 function clearWaterInputs() {
@@ -273,10 +297,18 @@ function nonNeg(v) {
 }
 
 function renderWaterTable() {
-    if (!waterTableBody) return;
+    console.log('🎨 renderWaterTable - INIZIO');
+    console.log('🔍 waterTableBody:', waterTableBody);
+    console.log('📊 water array in renderWaterTable:', water.length, water);
+    
+    if (!waterTableBody) {
+        console.error('❌ waterTableBody non trovato!');
+        return;
+    }
     
     waterTableBody.innerHTML = '';
     const sorted = [...water].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+    console.log('📊 Dati ordinati per tabella:', sorted.length, sorted);
     
     for (const row of sorted) {
         const tr = document.createElement('tr');
@@ -300,8 +332,9 @@ function renderWaterTable() {
         btn.onclick = () => {
             const id = btn.getAttribute('data-id');
             water = water.filter(w => w.id !== id);
-            dataManager.updateWater(water);
-            updateGlobalData();
+            if (dataManager && dataManager.updateWater) {
+                dataManager.updateWater(water);
+            }
             renderWaterTable();
             drawWaterChart();
         };
@@ -317,8 +350,9 @@ function renderWaterTable() {
             const row = water.find(w => w.id === id);
             if (row) {
                 row[field] = value;
-                dataManager.updateWater(water);
-                updateGlobalData();
+                if (dataManager && dataManager.updateWater) {
+                    dataManager.updateWater(water);
+                }
                 drawWaterChart();
             }
         });
