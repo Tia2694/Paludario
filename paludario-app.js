@@ -24,50 +24,48 @@ class DataManager {
         try {
             this.updateStatus('🔄 Caricamento dati...', 'syncing');
             
-            // Prima carica dai dati locali (più veloce e affidabile)
+            // Carica prima i dati locali come fallback
             this.loadFromLocalStorage();
             
-            // Inizializza UI subito con i dati locali
-            this.initializeUI();
-            
-            // Poi prova a sincronizzare con GitHub in background (senza bloccare l'UI)
-            setTimeout(async () => {
-                try {
-                    const [waterData, dayData, settingsData] = await Promise.all([
-                        this.fetchFromGitHub(DATA_FILES.water, this.data.water),
-                        this.fetchFromGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
-                        this.fetchFromGitHub(DATA_FILES.settings, this.data.settings)
-                    ]);
+            // Prova subito a caricare da GitHub (fonte principale)
+            try {
+                const [waterData, dayData, settingsData] = await Promise.all([
+                    this.fetchFromGitHub(DATA_FILES.water, this.data.water),
+                    this.fetchFromGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
+                    this.fetchFromGitHub(DATA_FILES.settings, this.data.settings)
+                ]);
 
-                    // Usa i dati di GitHub solo se sono più recenti o se i dati locali sono vuoti
-                    let updated = false;
-                    if (waterData.length > 0 || this.data.water.length === 0) {
-                        this.data.water = waterData;
-                        updated = true;
-                    }
-                    if (Object.keys(dayData).length > 0 || Object.keys(this.data.dayTemplate).length === 0) {
-                        this.data.dayTemplate = dayData;
-                        updated = true;
-                    }
-                    if (settingsData.title || !this.data.settings.title) {
-                        this.data.settings = settingsData;
-                        updated = true;
-                    }
-                    
-                    if (updated) {
-                        this.lastSync = new Date();
-                        this.updateStatus('✅ Dati sincronizzati', 'success');
-                        this.initializeUI(); // Aggiorna UI con i nuovi dati
-                        console.log('Dati sincronizzati con GitHub');
-                    } else {
-                        this.updateStatus('✅ Dati aggiornati', 'success');
-                    }
-                    
-                } catch (githubError) {
-                    console.warn('Sincronizzazione GitHub fallita, uso dati locali:', githubError);
-                    this.updateStatus('✅ Dati locali', 'success');
+                // Usa sempre i dati di GitHub se disponibili (priorità a GitHub)
+                let updated = false;
+                if (waterData.length > 0) {
+                    this.data.water = waterData;
+                    updated = true;
                 }
-            }, 1000); // Attendi 1 secondo prima di sincronizzare
+                if (Object.keys(dayData).length > 0) {
+                    this.data.dayTemplate = dayData;
+                    updated = true;
+                }
+                if (settingsData.title) {
+                    this.data.settings = settingsData;
+                    updated = true;
+                }
+                
+                // Aggiorna anche l'array globale se abbiamo dati da GitHub
+                if (updated) {
+                    this.updateGlobalData();
+                }
+                
+                this.lastSync = new Date();
+                this.updateStatus('✅ Dati sincronizzati da GitHub', 'success');
+                console.log('Dati caricati da GitHub');
+                
+            } catch (githubError) {
+                console.warn('Caricamento GitHub fallito, uso dati locali:', githubError);
+                this.updateStatus('✅ Dati locali (GitHub non disponibile)', 'success');
+            }
+            
+            // Inizializza UI con i dati finali (GitHub o locali)
+            this.initializeUI();
             
         } catch (error) {
             console.error('Errore nel caricamento dati:', error);
@@ -226,6 +224,17 @@ class DataManager {
                     statusEl.style.opacity = '0.7';
                 }, 2000);
             }
+        }
+        
+        // Aggiorna anche l'indicatore dell'ultima sincronizzazione
+        this.updateLastSync();
+    }
+    
+    updateLastSync() {
+        const lastSyncEl = document.getElementById('last-sync');
+        if (lastSyncEl && this.lastSync) {
+            const timeStr = this.lastSync.toLocaleString();
+            lastSyncEl.textContent = `Ultima sincronizzazione: ${timeStr}`;
         }
     }
 

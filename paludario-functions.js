@@ -212,7 +212,16 @@ function setupEventListeners() {
     }
 
     if (syncDataBtn) {
-        syncDataBtn.onclick = () => dataManager.loadData();
+        syncDataBtn.onclick = () => {
+            dataManager.loadData().then(() => {
+                // Forza l'aggiornamento dell'UI dopo la sincronizzazione
+                updateGlobalData();
+                if (typeof renderWaterTable === 'function') renderWaterTable();
+                if (typeof renderDayTables === 'function') renderDayTables();
+                if (typeof drawWaterChart === 'function') drawWaterChart();
+                if (typeof drawDayChart === 'function') drawDayChart();
+            });
+        };
     }
 
     // OK/Clear buttons
