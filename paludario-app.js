@@ -230,11 +230,25 @@ class DataManager {
 
     // Metodo per aggiornare i dati globali
     updateGlobalData() {
-        if (typeof water !== 'undefined') water = this.data.water || [];
-        if (typeof plan !== 'undefined') plan = this.data.dayTemplate || { spray: [], fan: [], lights: [] };
-        if (typeof darkMode !== 'undefined') darkMode = this.data.settings?.darkMode || false;
+        if (typeof water !== 'undefined') {
+            water.length = 0;
+            water.push(...(this.data.water || []));
+        }
+        if (typeof plan !== 'undefined') {
+            plan.spray = this.data.dayTemplate?.spray || [];
+            plan.fan = this.data.dayTemplate?.fan || [];
+            plan.lights = this.data.dayTemplate?.lights || [];
+        }
+        if (typeof darkMode !== 'undefined') {
+            darkMode = this.data.settings?.darkMode || false;
+        }
     }
 }
+
+// Variabili globali
+let water = [];
+let plan = { spray: [], fan: [], lights: [] };
+let darkMode = false;
 
 // Istanza globale del data manager
 const dataManager = new DataManager();

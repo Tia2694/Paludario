@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Semplice Paludario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px; margin: 5px; }
+        input { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Semplice Paludario</h1>
+    
+    <div class="test">
+        <h3>Test 1: DataManager</h3>
+        <div id="test1">Testando...</div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: Variabili Globali</h3>
+        <div id="test2">Testando...</div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 3: Salvataggio Litri</h3>
+        <input type="number" id="test-liters" value="50" placeholder="Litri">
+        <button onclick="testLiters()">Testa Litri</button>
+        <div id="test3"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 4: Salvataggio Titolo</h3>
+        <input type="text" id="test-title" value="Test Titolo" placeholder="Titolo">
+        <button onclick="testTitle()">Testa Titolo</button>
+        <div id="test4"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Console Log</h3>
+        <div id="console-log" style="background: #f5f5f5; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        // Override console.log per mostrare nella pagina
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function logToPage(message, type = 'log') {
+            const logEl = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : 'success';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToPage(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToPage(args.join(' '), 'error');
+        };
+    </script>
+    
+    <script src="paludario-app.js"></script>
+    <script src="paludario-functions.js"></script>
+    <script src="paludario-charts.js"></script>
+    
+    <script>
+        function test1() {
+            const test1El = document.getElementById('test1');
+            try {
+                if (typeof dataManager !== 'undefined') {
+                    test1El.innerHTML = '<span class="success">✅ DataManager OK</span>';
+                    console.log('DataManager trovato:', dataManager);
+                } else {
+                    test1El.innerHTML = '<span class="error">❌ DataManager non trovato</span>';
+                    console.error('DataManager non definito');
+                }
+            } catch (error) {
+                test1El.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                console.error('Errore DataManager:', error);
+            }
+        }
+        
+        function test2() {
+            const test2El = document.getElementById('test2');
+            try {
+                const vars = {
+                    water: typeof water !== 'undefined',
+                    plan: typeof plan !== 'undefined',
+                    darkMode: typeof darkMode !== 'undefined'
+                };
+                
+                const allOk = Object.values(vars).every(v => v);
+                
+                if (allOk) {
+                    test2El.innerHTML = '<span class="success">✅ Variabili globali OK</span>';
+                    console.log('Variabili globali:', vars);
+                } else {
+                    test2El.innerHTML = `<span class="error">❌ Variabili mancanti: ${Object.keys(vars).filter(k => !vars[k]).join(', ')}</span>`;
+                    console.error('Variabili mancanti:', vars);
+                }
+            } catch (error) {
+                test2El.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                console.error('Errore variabili:', error);
+            }
+        }
+        
+        function testLiters() {
+            const test3El = document.getElementById('test3');
+            const litersValue = document.getElementById('test-liters').value;
+            
+            try {
+                console.log('Testando salvataggio litri:', litersValue);
+                
+                if (dataManager && dataManager.updateSettings) {
+                    dataManager.updateSettings({ liters: litersValue });
+                    test3El.innerHTML = '<span class="success">✅ Litri salvati</span>';
+                    console.log('Litri salvati con successo');
+                } else {
+                    test3El.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                    console.error('DataManager non disponibile per litri');
+                }
+            } catch (error) {
+                test3El.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                console.error('Errore salvataggio litri:', error);
+            }
+        }
+        
+        function testTitle() {
+            const test4El = document.getElementById('test4');
+            const titleValue = document.getElementById('test-title').value;
+            
+            try {
+                console.log('Testando salvataggio titolo:', titleValue);
+                
+                if (dataManager && dataManager.updateSettings) {
+                    dataManager.updateSettings({ title: titleValue });
+                    test4El.innerHTML = '<span class="success">✅ Titolo salvato</span>';
+                    console.log('Titolo salvato con successo');
+                } else {
+                    test4El.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                    console.error('DataManager non disponibile per titolo');
+                }
+            } catch (error) {
+                test4El.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                console.error('Errore salvataggio titolo:', error);
+            }
+        }
+        
+        // Avvia i test
+        setTimeout(() => {
+            test1();
+            test2();
+        }, 1000);
+    </script>
+</body>
+</html>

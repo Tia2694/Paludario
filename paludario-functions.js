@@ -22,10 +22,7 @@ const COLORS = {
 };
 
 /* ==================== VARIABILI GLOBALI ==================== */
-let water = [];
-let plan = { spray: [], fan: [], lights: [] };
 let showBackgrounds = true;
-let darkMode = false;
 let showFill = true;
 
 /* ==================== UI HOOKS ==================== */
@@ -546,21 +543,10 @@ function hookOkCancelButtons() {
 function updateGlobalData() {
     if (dataManager && dataManager.updateGlobalData) {
         dataManager.updateGlobalData();
-    } else if (dataManager && dataManager.data) {
-        water = dataManager.data.water || [];
-        plan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
-        darkMode = dataManager.data.settings?.darkMode || false;
     }
 }
 
 // Inizializza l'app quando il DOM è pronto
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
-    
-    // Aggiorna dati globali quando i dati vengono caricati
-    if (dataManager && dataManager.data) {
-        water = dataManager.data.water || [];
-        plan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
-        darkMode = dataManager.data.settings?.darkMode || false;
-    }
 });
