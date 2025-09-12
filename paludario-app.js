@@ -14,7 +14,21 @@ class DataManager {
         this.data = {
             water: [],
             dayTemplate: { spray: [], fan: [], lights: [] },
-            settings: { title: '🌱 Paludario', liters: '', darkMode: false }
+            settings: { 
+                title: '🌱 Paludario', 
+                liters: '', 
+                darkMode: false,
+                waterThresholds: {
+                    ph: { min: 6.0, max: 8.0 },
+                    kh: { min: 2.0, max: 15.0 },
+                    gh: { min: 3.0, max: 20.0 },
+                    no2: { min: 0.0, max: 0.5 },
+                    no3: { min: 0.0, max: 50.0 },
+                    nh4: { min: 0.0, max: 0.5 },
+                    temp: { min: 20.0, max: 30.0 },
+                    cond: { min: 100, max: 1000 }
+                }
+            }
         };
         this.syncInProgress = false;
         this.lastSync = null;
@@ -196,10 +210,24 @@ class DataManager {
     loadFromLocalStorage() {
         this.data.water = JSON.parse(localStorage.getItem('paludario.waterReadings') || '[]');
         this.data.dayTemplate = JSON.parse(localStorage.getItem('paludario.dayPlanTemplate') || '{"spray":[],"fan":[],"lights":[]}');
+        
+        const savedThresholds = localStorage.getItem('paludario.waterThresholds');
+        const defaultThresholds = {
+            ph: { min: 6.0, max: 8.0 },
+            kh: { min: 2.0, max: 15.0 },
+            gh: { min: 3.0, max: 20.0 },
+            no2: { min: 0.0, max: 0.5 },
+            no3: { min: 0.0, max: 50.0 },
+            nh4: { min: 0.0, max: 0.5 },
+            temp: { min: 20.0, max: 30.0 },
+            cond: { min: 100, max: 1000 }
+        };
+        
         this.data.settings = {
             title: localStorage.getItem('paludario.title') || '🌱 Paludario',
             liters: localStorage.getItem('paludario.liters') || '',
-            darkMode: localStorage.getItem('paludario.darkMode') === 'true'
+            darkMode: localStorage.getItem('paludario.darkMode') === 'true',
+            waterThresholds: savedThresholds ? JSON.parse(savedThresholds) : defaultThresholds
         };
         // Aggiorna i dati globali
         this.updateGlobalData();
@@ -211,6 +239,7 @@ class DataManager {
         localStorage.setItem('paludario.title', this.data.settings.title);
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
+        localStorage.setItem('paludario.waterThresholds', JSON.stringify(this.data.settings.waterThresholds));
     }
 
     updateStatus(message, type = 'success') {
@@ -310,6 +339,9 @@ class DataManager {
         }
         if (typeof darkMode !== 'undefined') {
             darkMode = this.data.settings?.darkMode || false;
+        }
+        if (typeof waterThresholds !== 'undefined') {
+            waterThresholds = this.data.settings?.waterThresholds || waterThresholds;
         }
     }
 }

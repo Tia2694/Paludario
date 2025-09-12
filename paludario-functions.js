@@ -25,6 +25,18 @@ const COLORS = {
 let showBackgrounds = true;
 let showFill = true;
 
+// Soglie per i parametri dell'acqua
+let waterThresholds = {
+    ph: { min: 6.0, max: 8.0 },
+    kh: { min: 2.0, max: 15.0 },
+    gh: { min: 3.0, max: 20.0 },
+    no2: { min: 0.0, max: 0.5 },
+    no3: { min: 0.0, max: 50.0 },
+    nh4: { min: 0.0, max: 0.5 },
+    temp: { min: 20.0, max: 30.0 },
+    cond: { min: 100, max: 1000 }
+};
+
 /* ==================== UI HOOKS ==================== */
 const waterDt = document.getElementById('water-dt');
 const ph = document.getElementById('ph');
@@ -74,6 +86,14 @@ const mainTitle = document.getElementById('main-title');
 const litersInput = document.getElementById('liters');
 const syncDataBtn = document.getElementById('sync-data');
 
+// Elementi per le soglie
+const waterSettingsBtn = document.getElementById('water-settings-btn');
+const waterSettingsModal = document.getElementById('water-settings-modal');
+const closeSettingsModal = document.getElementById('close-settings-modal');
+const thresholdSettings = document.getElementById('threshold-settings');
+const resetThresholdsBtn = document.getElementById('reset-thresholds');
+const saveThresholdsBtn = document.getElementById('save-thresholds');
+
 /* ==================== INIZIALIZZAZIONE ==================== */
 function initializeApp() {
     // Imposta data/ora corrente
@@ -93,6 +113,9 @@ function initializeApp() {
             updateGlobalData();
         });
     }
+    
+    // Carica le soglie dell'acqua
+    loadWaterThresholds();
 }
 
 function setupEventListeners() {
@@ -224,6 +247,29 @@ function setupEventListeners() {
         };
     }
 
+    // Event listeners per le soglie
+    if (waterSettingsBtn) {
+        waterSettingsBtn.onclick = openWaterSettings;
+    }
+    if (closeSettingsModal) {
+        closeSettingsModal.onclick = closeWaterSettings;
+    }
+    if (saveThresholdsBtn) {
+        saveThresholdsBtn.onclick = saveThresholds;
+    }
+    if (resetThresholdsBtn) {
+        resetThresholdsBtn.onclick = resetThresholds;
+    }
+    
+    // Chiudi modal cliccando fuori
+    if (waterSettingsModal) {
+        waterSettingsModal.onclick = (e) => {
+            if (e.target === waterSettingsModal) {
+                closeWaterSettings();
+            }
+        };
+    }
+
     // OK/Clear buttons
     hookOkCancelButtons();
 
@@ -321,18 +367,30 @@ function renderWaterTable() {
     
     for (const row of sorted) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="mono">${fmtDateTimeLocal(row.ts)}</td>
-            <td><input type="number" step="0.01" min="0" value="${row.ph ?? ''}" data-id="${row.id}" data-field="ph" class="table-input"></td>
-            <td><input type="number" step="0.1" min="0" value="${row.kh ?? ''}" data-id="${row.id}" data-field="kh" class="table-input"></td>
-            <td><input type="number" step="0.1" min="0" value="${row.gh ?? ''}" data-id="${row.id}" data-field="gh" class="table-input"></td>
-            <td><input type="number" step="0.01" min="0" value="${row.no2 ?? ''}" data-id="${row.id}" data-field="no2" class="table-input"></td>
-            <td><input type="number" step="0.1" min="0" value="${row.no3 ?? ''}" data-id="${row.id}" data-field="no3" class="table-input"></td>
-            <td><input type="number" step="0.01" min="0" value="${row.nh4 ?? ''}" data-id="${row.id}" data-field="nh4" class="table-input"></td>
-            <td><input type="number" step="0.1" min="0" value="${row.temp ?? ''}" data-id="${row.id}" data-field="temp" class="table-input"></td>
-            <td><input type="number" step="1" min="0" value="${row.cond ?? ''}" data-id="${row.id}" data-field="cond" class="table-input"></td>
-            <td><button data-id="${row.id}" class="del-water">🗑️ Elimina</button></td>
-        `;
+        
+        // Genera le celle con colorazione basata sulle soglie
+        const cells = [
+            { value: row.ph, field: 'ph', step: '0.01' },
+            { value: row.kh, field: 'kh', step: '0.1' },
+            { value: row.gh, field: 'gh', step: '0.1' },
+            { value: row.no2, field: 'no2', step: '0.01' },
+            { value: row.no3, field: 'no3', step: '0.1' },
+            { value: row.nh4, field: 'nh4', step: '0.01' },
+            { value: row.temp, field: 'temp', step: '0.1' },
+            { value: row.cond, field: 'cond', step: '1' }
+        ];
+        
+        let cellsHtml = `<td class="mono">${fmtDateTimeLocal(row.ts)}</td>`;
+        
+        cells.forEach(cell => {
+            const isOutOfThreshold = isValueOutOfThreshold(cell.field, cell.value);
+            const style = isOutOfThreshold ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+            cellsHtml += `<td><input type="number" step="${cell.step}" min="0" value="${cell.value ?? ''}" data-id="${row.id}" data-field="${cell.field}" class="table-input" style="${style}"></td>`;
+        });
+        
+        cellsHtml += `<td><button data-id="${row.id}" class="del-water">🗑️ Elimina</button></td>`;
+        
+        tr.innerHTML = cellsHtml;
         waterTableBody.appendChild(tr);
     }
     
@@ -363,6 +421,18 @@ function renderWaterTable() {
                     dataManager.updateWater(water);
                 }
                 drawWaterChart();
+            }
+            
+            // Aggiorna la colorazione della casella in base alle soglie
+            const isOutOfThreshold = isValueOutOfThreshold(field, value);
+            if (isOutOfThreshold) {
+                input.style.background = '#ffebee';
+                input.style.borderColor = '#f44336';
+                input.style.color = '#d32f2f';
+            } else {
+                input.style.background = '';
+                input.style.borderColor = '';
+                input.style.color = '';
             }
         });
     });
@@ -599,6 +669,131 @@ function updateGlobalData() {
     if (dataManager && dataManager.updateGlobalData) {
         dataManager.updateGlobalData();
     }
+}
+
+/* ==================== GESTIONE SOGLIE ACQUA ==================== */
+function loadWaterThresholds() {
+    const saved = localStorage.getItem('paludario.waterThresholds');
+    if (saved) {
+        try {
+            waterThresholds = { ...waterThresholds, ...JSON.parse(saved) };
+        } catch (e) {
+            console.warn('Errore nel caricamento delle soglie:', e);
+        }
+    }
+}
+
+function saveWaterThresholds() {
+    localStorage.setItem('paludario.waterThresholds', JSON.stringify(waterThresholds));
+    // Salva anche su GitHub se disponibile
+    if (dataManager && dataManager.updateSettings) {
+        dataManager.updateSettings({ waterThresholds });
+    }
+}
+
+function openWaterSettings() {
+    generateThresholdSettings();
+    waterSettingsModal.style.display = 'block';
+}
+
+function closeWaterSettings() {
+    waterSettingsModal.style.display = 'none';
+}
+
+function generateThresholdSettings() {
+    if (!thresholdSettings) return;
+    
+    const paramNames = {
+        ph: { name: 'pH', unit: '', icon: '🧪' },
+        kh: { name: 'KH', unit: 'dKH', icon: '⚗️' },
+        gh: { name: 'GH', unit: 'dGH', icon: '🔬' },
+        no2: { name: 'NO2', unit: 'mg/L', icon: '⚠️' },
+        no3: { name: 'NO3', unit: 'mg/L', icon: '⚠️' },
+        nh4: { name: 'NH4', unit: 'mg/L', icon: '☠️' },
+        temp: { name: 'Temperatura', unit: '°C', icon: '🌡️' },
+        cond: { name: 'Conducibilità', unit: 'µS/cm', icon: '⚡' }
+    };
+    
+    thresholdSettings.innerHTML = '';
+    
+    Object.keys(waterThresholds).forEach(param => {
+        const config = paramNames[param];
+        const threshold = waterThresholds[param];
+        
+        const item = document.createElement('div');
+        item.className = 'threshold-item';
+        item.style.cssText = 'background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px;';
+        
+        item.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <span style="font-size: 20px;">${config.icon}</span>
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
+                    <span style="font-size: 12px; color: #666;">${config.unit}</span>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Minimo</label>
+                    <input type="number" step="0.01" id="threshold-${param}-min" value="${threshold.min}" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Massimo</label>
+                    <input type="number" step="0.01" id="threshold-${param}-max" value="${threshold.max}" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+            </div>
+        `;
+        
+        thresholdSettings.appendChild(item);
+    });
+}
+
+function saveThresholds() {
+    Object.keys(waterThresholds).forEach(param => {
+        const minInput = document.getElementById(`threshold-${param}-min`);
+        const maxInput = document.getElementById(`threshold-${param}-max`);
+        
+        if (minInput && maxInput) {
+            waterThresholds[param].min = parseFloat(minInput.value) || 0;
+            waterThresholds[param].max = parseFloat(maxInput.value) || 0;
+        }
+    });
+    
+    saveWaterThresholds();
+    closeWaterSettings();
+    
+    // Aggiorna la tabella per mostrare le nuove soglie
+    renderWaterTable();
+    
+    console.log('Soglie salvate:', waterThresholds);
+}
+
+function resetThresholds() {
+    waterThresholds = {
+        ph: { min: 6.0, max: 8.0 },
+        kh: { min: 2.0, max: 15.0 },
+        gh: { min: 3.0, max: 20.0 },
+        no2: { min: 0.0, max: 0.5 },
+        no3: { min: 0.0, max: 50.0 },
+        nh4: { min: 0.0, max: 0.5 },
+        temp: { min: 20.0, max: 30.0 },
+        cond: { min: 100, max: 1000 }
+    };
+    
+    generateThresholdSettings();
+    console.log('Soglie resettate ai valori predefiniti');
+}
+
+function isValueOutOfThreshold(param, value) {
+    if (value === null || value === undefined || value === '') return false;
+    
+    const threshold = waterThresholds[param];
+    if (!threshold) return false;
+    
+    const numValue = Number(value);
+    return numValue < threshold.min || numValue > threshold.max;
 }
 
 // Inizializza l'app quando il DOM è pronto
