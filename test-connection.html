@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Connessione GitHub</title>
+</head>
+<body>
+    <h1>Test Connessione GitHub</h1>
+    <div id="status">Testando...</div>
+    <div id="details"></div>
+
+    <script>
+        const GITHUB_CONFIG = {
+            username: 'Tia2694',
+            repository: 'Paludario',
+            branch: 'main',
+            token: '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'
+        };
+
+        const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
+
+        async function testConnection() {
+            const statusEl = document.getElementById('status');
+            const detailsEl = document.getElementById('details');
+
+            try {
+                // Test 1: Verifica repository
+                statusEl.textContent = 'Testando connessione al repository...';
+                const repoResponse = await fetch(API_BASE);
+                
+                if (repoResponse.ok) {
+                    statusEl.textContent = '✅ Repository trovato!';
+                    detailsEl.innerHTML += '<p>✅ Repository esiste</p>';
+                } else {
+                    statusEl.textContent = '❌ Repository non trovato';
+                    detailsEl.innerHTML += `<p>❌ Errore repository: ${repoResponse.status} ${repoResponse.statusText}</p>`;
+                    return;
+                }
+
+                // Test 2: Verifica token
+                statusEl.textContent = 'Testando token...';
+                const tokenResponse = await fetch(`${API_BASE}/contents/data`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (tokenResponse.ok) {
+                    statusEl.textContent = '✅ Token valido!';
+                    detailsEl.innerHTML += '<p>✅ Token funziona</p>';
+                } else {
+                    statusEl.textContent = '❌ Token non valido';
+                    detailsEl.innerHTML += `<p>❌ Errore token: ${tokenResponse.status} ${tokenResponse.statusText}</p>`;
+                    return;
+                }
+
+                // Test 3: Test salvataggio
+                statusEl.textContent = 'Testando salvataggio...';
+                const testData = { test: 'connessione', timestamp: new Date().toISOString() };
+                const saveResponse = await fetch(`${API_BASE}/contents/data/test.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Test connessione - ' + new Date().toISOString(),
+                        content: btoa(JSON.stringify(testData, null, 2)),
+                        branch: GITHUB_CONFIG.branch
+                    })
+                });
+
+                if (saveResponse.ok) {
+                    statusEl.textContent = '✅ Tutto funziona! Salvataggio OK';
+                    detailsEl.innerHTML += '<p>✅ Salvataggio funziona</p>';
+                } else {
+                    const errorData = await saveResponse.json();
+                    statusEl.textContent = '❌ Errore salvataggio';
+                    detailsEl.innerHTML += `<p>❌ Errore salvataggio: ${saveResponse.status} ${saveResponse.statusText}</p>`;
+                    detailsEl.innerHTML += `<p>Dettagli: ${JSON.stringify(errorData, null, 2)}</p>`;
+                }
+
+            } catch (error) {
+                statusEl.textContent = '❌ Errore di connessione';
+                detailsEl.innerHTML += `<p>❌ Errore: ${error.message}</p>`;
+            }
+        }
+
+        // Avvia il test
+        testConnection();
+    </script>
+</body>
+</html>

@@ -227,6 +227,13 @@ class DataManager {
         this.data.settings = { ...this.data.settings, ...settings };
         this.saveData();
     }
+
+    // Metodo per aggiornare i dati globali
+    updateGlobalData() {
+        if (typeof water !== 'undefined') water = this.data.water || [];
+        if (typeof plan !== 'undefined') plan = this.data.dayTemplate || { spray: [], fan: [], lights: [] };
+        if (typeof darkMode !== 'undefined') darkMode = this.data.settings?.darkMode || false;
+    }
 }
 
 // Istanza globale del data manager

@@ -86,18 +86,27 @@ function initializeApp() {
         waterDt.value = d.toISOString().slice(0, 16);
     }
 
-    // Carica dati
-    dataManager.loadData();
-
     // Event listeners
     setupEventListeners();
+
+    // Carica dati dopo aver impostato i listener
+    if (dataManager && dataManager.loadData) {
+        dataManager.loadData().then(() => {
+            // Aggiorna i dati globali dopo il caricamento
+            updateGlobalData();
+        });
+    }
 }
 
 function setupEventListeners() {
     // Titolo editabile
     if (mainTitle) {
         mainTitle.addEventListener('blur', () => {
-            dataManager.updateSettings({ title: mainTitle.textContent });
+            if (dataManager && dataManager.updateSettings) {
+                dataManager.updateSettings({ title: mainTitle.textContent });
+            } else {
+                console.error('DataManager non disponibile per salvare il titolo');
+            }
         });
         mainTitle.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -113,7 +122,20 @@ function setupEventListeners() {
             if (litersInput.value !== '' && Number(litersInput.value) < 0) {
                 litersInput.value = 0;
             }
-            dataManager.updateSettings({ liters: litersInput.value });
+            // Aggiorna i dati globali
+            if (dataManager && dataManager.updateSettings) {
+                dataManager.updateSettings({ liters: litersInput.value });
+            } else {
+                console.error('DataManager non disponibile per salvare i litri');
+            }
+        });
+        
+        litersInput.addEventListener('blur', () => {
+            if (dataManager && dataManager.updateSettings) {
+                dataManager.updateSettings({ liters: litersInput.value });
+            } else {
+                console.error('DataManager non disponibile per salvare i litri');
+            }
         });
     }
 
@@ -231,7 +253,11 @@ function addWaterValue() {
     };
     
     water.push(rec);
-    dataManager.updateWater(water);
+    if (dataManager && dataManager.updateWater) {
+        dataManager.updateWater(water);
+    } else {
+        console.error('DataManager non disponibile per salvare i valori acqua');
+    }
     renderWaterTable();
     drawWaterChart();
     clearWaterInputs();
@@ -305,7 +331,11 @@ function addSprayInterval() {
     if (toMinutes(sprayEnd.value) <= toMinutes(sprayStart.value)) return alert('Fine deve essere dopo Inizio');
     
     plan.spray.push({ s: sprayStart.value, e: sprayEnd.value });
-    dataManager.updateDayTemplate(plan);
+    if (dataManager && dataManager.updateDayTemplate) {
+        dataManager.updateDayTemplate(plan);
+    } else {
+        console.error('DataManager non disponibile per salvare la programmazione spray');
+    }
     renderDayTables();
     drawDayChart();
     clearSprayInputs();
@@ -316,7 +346,11 @@ function addFanInterval() {
     if (toMinutes(fanEnd.value) <= toMinutes(fanStart.value)) return alert('Fine deve essere dopo Inizio');
     
     plan.fan.push({ s: fanStart.value, e: fanEnd.value });
-    dataManager.updateDayTemplate(plan);
+    if (dataManager && dataManager.updateDayTemplate) {
+        dataManager.updateDayTemplate(plan);
+    } else {
+        console.error('DataManager non disponibile per salvare la programmazione ventola');
+    }
     renderDayTables();
     drawDayChart();
     clearFanInputs();
@@ -335,7 +369,11 @@ function addLightValue() {
         ch5: val(ch5.value)
     });
     
-    dataManager.updateDayTemplate(plan);
+    if (dataManager && dataManager.updateDayTemplate) {
+        dataManager.updateDayTemplate(plan);
+    } else {
+        console.error('DataManager non disponibile per salvare la programmazione luci');
+    }
     renderDayTables();
     drawDayChart();
     clearLightInputs();
@@ -506,9 +544,13 @@ function hookOkCancelButtons() {
 
 /* ==================== AGGIORNA DATI GLOBALI ==================== */
 function updateGlobalData() {
-    water = dataManager.data.water;
-    plan = dataManager.data.dayTemplate;
-    darkMode = dataManager.data.settings.darkMode;
+    if (dataManager && dataManager.updateGlobalData) {
+        dataManager.updateGlobalData();
+    } else if (dataManager && dataManager.data) {
+        water = dataManager.data.water || [];
+        plan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
+        darkMode = dataManager.data.settings?.darkMode || false;
+    }
 }
 
 // Inizializza l'app quando il DOM è pronto
@@ -516,9 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     
     // Aggiorna dati globali quando i dati vengono caricati
-    dataManager.data = {
-        water: water,
-        dayTemplate: plan,
-        settings: { title: '🌱 Paludario', liters: '', darkMode: false }
-    };
+    if (dataManager && dataManager.data) {
+        water = dataManager.data.water || [];
+        plan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
+        darkMode = dataManager.data.settings?.darkMode || false;
+    }
 });

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Salvataggio Paludario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px; margin: 5px; }
+        input { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Sistema Salvataggio</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Configurazione GitHub</h3>
+        <div id="config-status">Testando...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test DataManager</h3>
+        <div id="datamanager-status">Testando...</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Salvataggio Campi</h3>
+        <input type="text" id="test-title" placeholder="Titolo" value="Test Titolo">
+        <input type="number" id="test-liters" placeholder="Litri" value="50">
+        <button onclick="testSaveFields()">Testa Salvataggio Campi</button>
+        <div id="fields-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Test Valore Acqua</h3>
+        <input type="datetime-local" id="test-water-dt">
+        <input type="number" id="test-ph" placeholder="pH" value="7.2">
+        <button onclick="testSaveWater()">Testa Salvataggio Acqua</button>
+        <div id="water-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Test Programmazione</h3>
+        <input type="time" id="test-light-time" value="08:00">
+        <input type="number" id="test-ch1" placeholder="R" value="50">
+        <button onclick="testSaveLight()">Testa Salvataggio Luci</button>
+        <div id="light-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>6. Log Dettagliato</h3>
+        <div id="detailed-log" style="background: #f5f5f5; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script src="paludario-functions.js"></script>
+    <script src="paludario-charts.js"></script>
+    <script src="paludario-app.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('detailed-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        async function testConfig() {
+            const statusEl = document.getElementById('config-status');
+            
+            try {
+                log('Testando configurazione GitHub...');
+                
+                if (typeof GITHUB_CONFIG === 'undefined') {
+                    throw new Error('GITHUB_CONFIG non definito');
+                }
+                
+                log(`Username: ${GITHUB_CONFIG.username}`);
+                log(`Repository: ${GITHUB_CONFIG.repository}`);
+                log(`Branch: ${GITHUB_CONFIG.branch}`);
+                log(`Token: ${GITHUB_CONFIG.token ? 'Presente' : 'Mancante'}`);
+                
+                if (!GITHUB_CONFIG.username || !GITHUB_CONFIG.repository || !GITHUB_CONFIG.token) {
+                    throw new Error('Configurazione GitHub incompleta');
+                }
+                
+                statusEl.innerHTML = '<span class="success">✅ Configurazione OK</span>';
+                log('Configurazione GitHub valida', 'success');
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                log(`Errore configurazione: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDataManager() {
+            const statusEl = document.getElementById('datamanager-status');
+            
+            try {
+                log('Testando DataManager...');
+                
+                if (typeof dataManager === 'undefined') {
+                    throw new Error('dataManager non definito');
+                }
+                
+                log('DataManager trovato');
+                log(`Dati caricati: ${dataManager.data ? 'Sì' : 'No'}`);
+                
+                if (dataManager.data) {
+                    log(`Water records: ${dataManager.data.water ? dataManager.data.water.length : 0}`);
+                    log(`Day template: ${dataManager.data.dayTemplate ? 'Presente' : 'Mancante'}`);
+                    log(`Settings: ${dataManager.data.settings ? 'Presente' : 'Mancante'}`);
+                }
+                
+                statusEl.innerHTML = '<span class="success">✅ DataManager OK</span>';
+                log('DataManager funzionante', 'success');
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                log(`Errore DataManager: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveFields() {
+            const statusEl = document.getElementById('fields-status');
+            
+            try {
+                log('Testando salvataggio campi...');
+                
+                const title = document.getElementById('test-title').value;
+                const liters = document.getElementById('test-liters').value;
+                
+                log(`Titolo: ${title}`);
+                log(`Litri: ${liters}`);
+                
+                if (dataManager && dataManager.updateSettings) {
+                    await dataManager.updateSettings({ 
+                        title: title, 
+                        liters: liters 
+                    });
+                    
+                    statusEl.innerHTML = '<span class="success">✅ Campi salvati</span>';
+                    log('Campi salvati con successo', 'success');
+                } else {
+                    throw new Error('dataManager.updateSettings non disponibile');
+                }
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                log(`Errore salvataggio campi: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveWater() {
+            const statusEl = document.getElementById('water-status');
+            
+            try {
+                log('Testando salvataggio acqua...');
+                
+                const waterData = {
+                    id: 'test-' + Date.now(),
+                    ts: document.getElementById('test-water-dt').value || new Date().toISOString().slice(0, 16),
+                    ph: parseFloat(document.getElementById('test-ph').value) || null,
+                    kh: null, gh: null, no2: null, no3: null, nh4: null, temp: null, cond: null
+                };
+                
+                log(`Dati acqua: ${JSON.stringify(waterData)}`);
+                
+                if (dataManager && dataManager.updateWater) {
+                    const currentWater = dataManager.data.water || [];
+                    currentWater.push(waterData);
+                    await dataManager.updateWater(currentWater);
+                    
+                    statusEl.innerHTML = '<span class="success">✅ Acqua salvata</span>';
+                    log('Acqua salvata con successo', 'success');
+                } else {
+                    throw new Error('dataManager.updateWater non disponibile');
+                }
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                log(`Errore salvataggio acqua: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSaveLight() {
+            const statusEl = document.getElementById('light-status');
+            
+            try {
+                log('Testando salvataggio luci...');
+                
+                const lightData = {
+                    t: document.getElementById('test-light-time').value,
+                    ch1: parseInt(document.getElementById('test-ch1').value) || 0,
+                    ch2: 0, ch3: 0, ch4: 0, ch5: 0
+                };
+                
+                log(`Dati luci: ${JSON.stringify(lightData)}`);
+                
+                if (dataManager && dataManager.updateDayTemplate) {
+                    const currentPlan = dataManager.data.dayTemplate || { spray: [], fan: [], lights: [] };
+                    currentPlan.lights.push(lightData);
+                    await dataManager.updateDayTemplate(currentPlan);
+                    
+                    statusEl.innerHTML = '<span class="success">✅ Luci salvate</span>';
+                    log('Luci salvate con successo', 'success');
+                } else {
+                    throw new Error('dataManager.updateDayTemplate non disponibile');
+                }
+                
+            } catch (error) {
+                statusEl.innerHTML = `<span class="error">❌ ${error.message}</span>`;
+                log(`Errore salvataggio luci: ${error.message}`, 'error');
+            }
+        }
+
+        // Inizializza data/ora
+        document.getElementById('test-water-dt').value = new Date().toISOString().slice(0, 16);
+
+        // Avvia i test
+        setTimeout(() => {
+            testConfig();
+            testDataManager();
+        }, 1000);
+    </script>
+</body>
+</html>
