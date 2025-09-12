@@ -1,11 +1,5 @@
 /* ==================== CONFIGURAZIONE GITHUB ==================== */
-const GITHUB_CONFIG = {
-    // Sostituisci con i tuoi dati GitHub
-    username: 'Tia2694',
-    repository: 'Paludario',
-    branch: 'main',
-    token: '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' // Il tuo token
-};
+// La configurazione viene caricata da config.js
 
 const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
 const DATA_FILES = {
@@ -89,22 +83,30 @@ class DataManager {
         
         try {
             this.syncInProgress = true;
-            this.updateStatus('🔄 Salvataggio su GitHub...', 'syncing');
+            this.updateStatus('🔄 Salvataggio...', 'syncing');
             
-            // Salva SOLO su GitHub
-            await Promise.all([
-                this.saveToGitHub(DATA_FILES.water, this.data.water),
-                this.saveToGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
-                this.saveToGitHub(DATA_FILES.settings, this.data.settings)
-            ]);
+            // Prima salva localmente (sempre)
+            this.saveToLocalStorage();
             
-            this.lastSync = new Date();
-            this.updateStatus('✅ Dati salvati su GitHub', 'success');
-            console.log('Dati salvati su GitHub');
+            // Poi prova a salvare su GitHub
+            try {
+                await Promise.all([
+                    this.saveToGitHub(DATA_FILES.water, this.data.water),
+                    this.saveToGitHub(DATA_FILES.dayTemplate, this.data.dayTemplate),
+                    this.saveToGitHub(DATA_FILES.settings, this.data.settings)
+                ]);
+                
+                this.lastSync = new Date();
+                this.updateStatus('✅ Dati salvati su GitHub', 'success');
+                console.log('Dati salvati su GitHub');
+            } catch (githubError) {
+                console.warn('Salvataggio GitHub fallito, dati salvati localmente:', githubError);
+                this.updateStatus('✅ Dati salvati localmente', 'success');
+            }
             
         } catch (error) {
-            console.error('Errore nel salvataggio GitHub:', error);
-            this.updateStatus('❌ Errore salvataggio GitHub', 'error');
+            console.error('Errore nel salvataggio:', error);
+            this.updateStatus('❌ Errore salvataggio', 'error');
             throw error; // Rilancia l'errore per gestirlo nell'UI
         } finally {
             this.syncInProgress = false;
@@ -201,7 +203,8 @@ class DataManager {
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true'
         };
-        this.initializeUI();
+        // Aggiorna i dati globali
+        this.updateGlobalData();
     }
 
     saveToLocalStorage() {

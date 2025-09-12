@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug App Paludario</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; height: 400px; overflow-y: auto; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug App Paludario</h1>
+    
+    <div class="test">
+        <h3>Test 1: Verifica Script</h3>
+        <div id="script-test">Testando...</div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 2: Verifica DataManager</h3>
+        <div id="datamanager-test">Testando...</div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 3: Test Aggiungi Valore</h3>
+        <input type="datetime-local" id="test-dt" value="">
+        <input type="number" id="test-ph" value="7.2" placeholder="pH">
+        <button onclick="testAddWater()">Testa Aggiungi Acqua</button>
+        <div id="add-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Test 4: Test Salvataggio</h3>
+        <button onclick="testSave()">Testa Salvataggio</button>
+        <div id="save-test"></div>
+    </div>
+    
+    <div class="test">
+        <h3>Log Dettagliato</h3>
+        <button onclick="clearLog()">Pulisci Log</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        // Override console per logging
+        const logEl = document.getElementById('log');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function clearLog() {
+            logEl.innerHTML = '';
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog(args.join(' '), 'error');
+        };
+    </script>
+    
+    <script src="paludario-app.js"></script>
+    <script src="paludario-functions.js"></script>
+    <script src="paludario-charts.js"></script>
+    
+    <script>
+        // Inizializza data/ora
+        document.getElementById('test-dt').value = new Date().toISOString().slice(0, 16);
+        
+        function testScripts() {
+            const scriptEl = document.getElementById('script-test');
+            try {
+                const checks = {
+                    'GITHUB_CONFIG': typeof GITHUB_CONFIG !== 'undefined',
+                    'dataManager': typeof dataManager !== 'undefined',
+                    'water': typeof water !== 'undefined',
+                    'plan': typeof plan !== 'undefined',
+                    'darkMode': typeof darkMode !== 'undefined'
+                };
+                
+                const allOk = Object.values(checks).every(v => v);
+                
+                if (allOk) {
+                    scriptEl.innerHTML = '<span class="success">✅ Tutti gli script caricati</span>';
+                    addLog('Script caricati correttamente', 'success');
+                } else {
+                    const missing = Object.keys(checks).filter(k => !checks[k]);
+                    scriptEl.innerHTML = `<span class="error">❌ Script mancanti: ${missing.join(', ')}</span>`;
+                    addLog(`Script mancanti: ${missing.join(', ')}`, 'error');
+                }
+            } catch (error) {
+                scriptEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore script: ${error.message}`, 'error');
+            }
+        }
+        
+        function testDataManager() {
+            const dmEl = document.getElementById('datamanager-test');
+            try {
+                if (typeof dataManager !== 'undefined') {
+                    dmEl.innerHTML = '<span class="success">✅ DataManager OK</span>';
+                    addLog('DataManager funzionante', 'success');
+                    
+                    // Testa i metodi
+                    if (dataManager.loadData) {
+                        addLog('loadData disponibile', 'success');
+                    }
+                    if (dataManager.saveData) {
+                        addLog('saveData disponibile', 'success');
+                    }
+                    if (dataManager.updateWater) {
+                        addLog('updateWater disponibile', 'success');
+                    }
+                } else {
+                    dmEl.innerHTML = '<span class="error">❌ DataManager non trovato</span>';
+                    addLog('DataManager non trovato', 'error');
+                }
+            } catch (error) {
+                dmEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore DataManager: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAddWater() {
+            const addEl = document.getElementById('add-test');
+            addEl.innerHTML = 'Testando aggiunta acqua...';
+            
+            try {
+                const waterData = {
+                    id: 'test-' + Date.now(),
+                    ts: document.getElementById('test-dt').value || new Date().toISOString().slice(0, 16),
+                    ph: parseFloat(document.getElementById('test-ph').value) || null,
+                    kh: null, gh: null, no2: null, no3: null, nh4: null, temp: null, cond: null
+                };
+                
+                addLog('Testando aggiunta acqua: ' + JSON.stringify(waterData));
+                
+                if (typeof water !== 'undefined') {
+                    water.push(waterData);
+                    addLog('Acqua aggiunta all\'array locale', 'success');
+                    
+                    if (dataManager && dataManager.updateWater) {
+                        await dataManager.updateWater(water);
+                        addEl.innerHTML = '<span class="success">✅ Acqua aggiunta e salvata</span>';
+                        addLog('Acqua salvata su GitHub', 'success');
+                    } else {
+                        addEl.innerHTML = '<span class="error">❌ DataManager non disponibile</span>';
+                        addLog('DataManager non disponibile per salvataggio', 'error');
+                    }
+                } else {
+                    addEl.innerHTML = '<span class="error">❌ Array water non trovato</span>';
+                    addLog('Array water non trovato', 'error');
+                }
+            } catch (error) {
+                addEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore aggiunta acqua: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSave() {
+            const saveEl = document.getElementById('save-test');
+            saveEl.innerHTML = 'Testando salvataggio...';
+            
+            try {
+                if (dataManager && dataManager.saveData) {
+                    await dataManager.saveData();
+                    saveEl.innerHTML = '<span class="success">✅ Salvataggio OK</span>';
+                    addLog('Salvataggio completato', 'success');
+                } else {
+                    saveEl.innerHTML = '<span class="error">❌ DataManager.saveData non disponibile</span>';
+                    addLog('DataManager.saveData non disponibile', 'error');
+                }
+            } catch (error) {
+                saveEl.innerHTML = `<span class="error">❌ Errore: ${error.message}</span>`;
+                addLog(`Errore salvataggio: ${error.message}`, 'error');
+            }
+        }
+        
+        // Avvia test automatici
+        setTimeout(() => {
+            testScripts();
+            testDataManager();
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -255,6 +255,7 @@ function addWaterValue() {
     } else {
         console.error('DataManager non disponibile per salvare i valori acqua');
     }
+    updateGlobalData();
     renderWaterTable();
     drawWaterChart();
     clearWaterInputs();
@@ -300,6 +301,7 @@ function renderWaterTable() {
             const id = btn.getAttribute('data-id');
             water = water.filter(w => w.id !== id);
             dataManager.updateWater(water);
+            updateGlobalData();
             renderWaterTable();
             drawWaterChart();
         };
@@ -316,6 +318,7 @@ function renderWaterTable() {
             if (row) {
                 row[field] = value;
                 dataManager.updateWater(water);
+                updateGlobalData();
                 drawWaterChart();
             }
         });
@@ -333,6 +336,7 @@ function addSprayInterval() {
     } else {
         console.error('DataManager non disponibile per salvare la programmazione spray');
     }
+    updateGlobalData();
     renderDayTables();
     drawDayChart();
     clearSprayInputs();
@@ -348,6 +352,7 @@ function addFanInterval() {
     } else {
         console.error('DataManager non disponibile per salvare la programmazione ventola');
     }
+    updateGlobalData();
     renderDayTables();
     drawDayChart();
     clearFanInputs();
@@ -371,6 +376,7 @@ function addLightValue() {
     } else {
         console.error('DataManager non disponibile per salvare la programmazione luci');
     }
+    updateGlobalData();
     renderDayTables();
     drawDayChart();
     clearLightInputs();
@@ -422,6 +428,7 @@ function renderSprayTable() {
             const i = Number(btn.getAttribute('data-original-i'));
             plan.spray.splice(i, 1);
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             renderDayTables();
             drawDayChart();
         };
@@ -433,6 +440,7 @@ function renderSprayTable() {
             const field = input.getAttribute('data-field');
             plan.spray[i][field] = input.value;
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             drawDayChart();
         });
     });
@@ -460,6 +468,7 @@ function renderFanTable() {
             const i = Number(btn.getAttribute('data-original-i'));
             plan.fan.splice(i, 1);
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             renderDayTables();
             drawDayChart();
         };
@@ -471,6 +480,7 @@ function renderFanTable() {
             const field = input.getAttribute('data-field');
             plan.fan[i][field] = input.value;
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             drawDayChart();
         });
     });
@@ -502,6 +512,7 @@ function renderLightTable() {
             const i = Number(btn.getAttribute('data-original-i'));
             plan.lights.splice(i, 1);
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             renderDayTables();
             drawDayChart();
         };
@@ -513,6 +524,7 @@ function renderLightTable() {
             const field = input.getAttribute('data-field');
             plan.lights[i][field] = field === 't' ? input.value : Number(input.value);
             dataManager.updateDayTemplate(plan);
+            updateGlobalData();
             drawDayChart();
         });
     });

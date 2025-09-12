@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#1976d2" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Paludario" />
+<meta name="description" content="Gestione completa del paludario - Valori acqua, programmazione luci e sistemi" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="msapplication-TileColor" content="#1976d2" />
+<meta name="msapplication-tap-highlight" content="no" />
+
+<title>Paludario - Versione Semplice</title>
+<style>
+	body { 
+		font-family: system-ui, Arial, sans-serif; 
+		margin: 12px; 
+		-webkit-text-size-adjust: 100%;
+		-webkit-tap-highlight-color: transparent;
+	}
+	
+	button { 
+		cursor: pointer; 
+		min-height: 44px;
+		min-width: 44px;
+		padding: 12px 16px;
+		font-size: 16px;
+		border-radius: 8px;
+		border: 1px solid #ddd;
+		background: #f8f9fa;
+		transition: all 0.2s;
+		margin: 5px;
+	}
+	button:hover {
+		background: #e9ecef;
+		transform: translateY(-1px);
+	}
+	
+	input, select {
+		min-height: 44px;
+		font-size: 16px;
+		padding: 8px 12px;
+		border-radius: 6px;
+		border: 1px solid #ddd;
+		background: #fff;
+		margin: 5px;
+	}
+	
+	h1 { margin: 0 0 16px 0; font-size: 24px; }
+	h2 { margin: 24px 0 16px 0; font-size: 20px; }
+	
+	fieldset { 
+		border: 1px solid #ccc; 
+		padding: 16px; 
+		margin: 16px 0 20px 0; 
+		border-radius: 8px;
+	}
+	legend { 
+		padding: 0 8px; 
+		font-weight: 600; 
+		font-size: 16px;
+	}
+	
+	.row { 
+		display: flex; 
+		flex-wrap: wrap; 
+		gap: 12px 16px; 
+		align-items: center; 
+		margin-bottom: 12px;
+	}
+	.field { 
+		display: inline-flex; 
+		align-items: center; 
+		gap: 8px; 
+		min-height: 44px;
+	}
+	.field label { 
+		margin: 0; 
+		font-weight: 500; 
+		font-size: 14px;
+		white-space: nowrap;
+	}
+	
+	.unit { 
+		font-size: 12px; 
+		color: #555; 
+		background: #f3f3f3; 
+		border: 1px solid #e0e0e0; 
+		padding: 4px 8px; 
+		border-radius: 6px; 
+	}
+	
+	table { 
+		border-collapse: collapse; 
+		width: 100%; 
+		margin-top: 12px; 
+		font-size: 14px;
+	}
+	th, td { 
+		border: 1px solid #ddd; 
+		padding: 8px 10px; 
+		text-align: left; 
+	}
+	th { 
+		background: #f7f7f7; 
+		position: sticky; 
+		top: 0; 
+		font-weight: 600;
+	}
+	
+	.status {
+		position: fixed;
+		top: 10px;
+		left: 10px;
+		z-index: 1000;
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-size: 12px;
+		font-weight: bold;
+		background: #4caf50;
+		color: white;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+	}
+	.status.error {
+		background: #f44336;
+	}
+	.status.syncing {
+		background: #ff9800;
+	}
+</style>
+</head>
+<body>
+
+<div id="status" class="status">✅ App caricata</div>
+
+<h1>🌱 Paludario - Versione Semplice</h1>
+
+<div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
+	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 8px; border-radius: 8px; transition: border-color 0.2s; margin: 0; font-size: 28px;">🌱 Paludario</h1>
+	<div class="field" style="margin: 0;">
+		<label for="liters" style="font-weight: 600; font-size: 18px;">💧 Litri</label>
+		<input id="liters" type="number" step="0.1" min="0" style="width: 100px; font-size: 18px; font-weight: 600;" />
+		<span class="unit">L</span>
+	</div>
+</div>
+
+<h2>💧 Valori Acqua</h2>
+<fieldset>
+	<legend>➕ Nuovo valore</legend>
+	<div class="row">
+		<div class="field">
+			<label for="water-dt">📅 Data/Ora</label>
+			<input id="water-dt" type="datetime-local" />
+		</div>
+	</div>
+	<div class="row">
+		<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.01" min="0" /></div>
+		<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="0.1" min="0" /><span class="unit">dKH</span></div>
+		<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="0.1" min="0" /><span class="unit">dGH</span></div>
+		<div class="field"><label for="no2">⚠️ NO2</label><input id="no2" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="0.1" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="nh4">☠️ NH4</label><input id="nh4" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+		<div class="field"><label for="temp">🌡️ Temperatura</label><input id="temp" type="number" step="0.1" min="0" /><span class="unit">°C</span></div>
+		<div class="field"><label for="cond">⚡ Conducibilità</label><input id="cond" type="number" step="1" min="0" /><span class="unit">µS/cm</span></div>
+		<button id="add-water">➕ Aggiungi</button>
+		<button id="clear-water">🧹 Pulisci</button>
+	</div>
+</fieldset>
+
+<table id="water-table">
+	<thead>
+		<tr>
+			<th>📅 Data/Ora</th>
+			<th>🧪 pH</th><th>⚗️ KH</th><th>🔬 GH</th>
+			<th>⚠️ NO2</th><th>⚠️ NO3</th><th>☠️ NH4</th>
+			<th>🌡️ Temperatura °C</th><th>⚡ Conducibilità µS/cm</th>
+			<th>⚙️ Azioni</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+
+<script>
+// Configurazione GitHub
+const GITHUB_CONFIG = {
+    username: 'Tia2694',
+    repository: 'Paludario',
+    branch: 'main',
+    token: 'INSERISCI_QUI_IL_NUOVO_TOKEN'
+};
+
+const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
+
+// Dati dell'app
+let waterData = [];
+let settings = { title: '🌱 Paludario', liters: '' };
+
+// Elementi UI
+const statusEl = document.getElementById('status');
+const mainTitle = document.getElementById('main-title');
+const litersInput = document.getElementById('liters');
+const waterDt = document.getElementById('water-dt');
+const ph = document.getElementById('ph');
+const kh = document.getElementById('kh');
+const gh = document.getElementById('gh');
+const no2 = document.getElementById('no2');
+const no3 = document.getElementById('no3');
+const nh4 = document.getElementById('nh4');
+const temp = document.getElementById('temp');
+const cond = document.getElementById('cond');
+const addWaterBtn = document.getElementById('add-water');
+const clearWaterBtn = document.getElementById('clear-water');
+const waterTableBody = document.querySelector('#water-table tbody');
+
+// Funzioni di utilità
+function updateStatus(message, type = 'success') {
+    statusEl.textContent = message;
+    statusEl.className = `status ${type}`;
+}
+
+function nonNeg(v) {
+    if (v === '' || v == null) return null;
+    const n = Number(v);
+    if (!isFinite(n)) return null;
+    return Math.max(0, n);
+}
+
+function fmtDateTimeLocal(dtStr) { 
+    const d = new Date(dtStr); 
+    return isNaN(d) ? (dtStr || '') : d.toLocaleString(); 
+}
+
+// Funzioni di salvataggio
+async function saveToGitHub(filePath, data) {
+    try {
+        const jsonString = JSON.stringify(data, null, 2);
+        const content = btoa(unescape(encodeURIComponent(jsonString)));
+        
+        const response = await fetch(`${API_BASE}/contents/${filePath}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Aggiorna ${filePath} - ${new Date().toISOString()}`,
+                content: content,
+                branch: GITHUB_CONFIG.branch
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Errore ${response.status}: ${errorData.message || response.statusText}`);
+        }
+        
+        console.log(`File ${filePath} salvato con successo`);
+    } catch (error) {
+        console.error(`Errore nel salvataggio di ${filePath}:`, error);
+        throw error;
+    }
+}
+
+async function loadFromGitHub(filePath, defaultValue) {
+    try {
+        const response = await fetch(`${API_BASE}/contents/${filePath}`, {
+            headers: {
+                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            return JSON.parse(atob(data.content));
+        } else {
+            console.log(`File ${filePath} non trovato, uso valori di default`);
+            return defaultValue;
+        }
+    } catch (error) {
+        console.error(`Errore nel fetch di ${filePath}:`, error);
+        return defaultValue;
+    }
+}
+
+// Funzioni dell'app
+async function addWaterValue() {
+    const ts = waterDt.value;
+    if (!ts) return alert('Inserisci data/ora');
+    
+    const rec = {
+        id: Math.random().toString(36).slice(2),
+        ts,
+        ph: nonNeg(ph.value),
+        kh: nonNeg(kh.value),
+        gh: nonNeg(gh.value),
+        no2: nonNeg(no2.value),
+        no3: nonNeg(no3.value),
+        nh4: nonNeg(nh4.value),
+        temp: nonNeg(temp.value),
+        cond: nonNeg(cond.value),
+    };
+    
+    waterData.push(rec);
+    
+    try {
+        updateStatus('🔄 Salvataggio...', 'syncing');
+        await saveToGitHub('data/water.json', waterData);
+        updateStatus('✅ Dati salvati', 'success');
+    } catch (error) {
+        updateStatus('❌ Errore salvataggio', 'error');
+        console.error('Errore salvataggio:', error);
+    }
+    
+    renderWaterTable();
+    clearWaterInputs();
+}
+
+function clearWaterInputs() {
+    [ph, kh, gh, no2, no3, nh4, temp, cond].forEach(i => i.value = '');
+}
+
+function renderWaterTable() {
+    if (!waterTableBody) return;
+    
+    waterTableBody.innerHTML = '';
+    const sorted = [...waterData].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+    
+    for (const row of sorted) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="mono">${fmtDateTimeLocal(row.ts)}</td>
+            <td>${row.ph ?? ''}</td>
+            <td>${row.kh ?? ''}</td>
+            <td>${row.gh ?? ''}</td>
+            <td>${row.no2 ?? ''}</td>
+            <td>${row.no3 ?? ''}</td>
+            <td>${row.nh4 ?? ''}</td>
+            <td>${row.temp ?? ''}</td>
+            <td>${row.cond ?? ''}</td>
+            <td><button onclick="deleteWater('${row.id}')">🗑️ Elimina</button></td>
+        `;
+        waterTableBody.appendChild(tr);
+    }
+}
+
+function deleteWater(id) {
+    waterData = waterData.filter(w => w.id !== id);
+    renderWaterTable();
+    
+    // Salva su GitHub
+    saveToGitHub('data/water.json', waterData).catch(error => {
+        console.error('Errore salvataggio dopo eliminazione:', error);
+    });
+}
+
+async function saveSettings() {
+    try {
+        updateStatus('🔄 Salvataggio impostazioni...', 'syncing');
+        await saveToGitHub('data/settings.json', settings);
+        updateStatus('✅ Impostazioni salvate', 'success');
+    } catch (error) {
+        updateStatus('❌ Errore salvataggio impostazioni', 'error');
+        console.error('Errore salvataggio impostazioni:', error);
+    }
+}
+
+async function loadData() {
+    try {
+        updateStatus('🔄 Caricamento dati...', 'syncing');
+        
+        const [water, settingsData] = await Promise.all([
+            loadFromGitHub('data/water.json', []),
+            loadFromGitHub('data/settings.json', { title: '🌱 Paludario', liters: '' })
+        ]);
+        
+        waterData = water;
+        settings = settingsData;
+        
+        // Aggiorna UI
+        mainTitle.textContent = settings.title;
+        litersInput.value = settings.liters;
+        renderWaterTable();
+        
+        updateStatus('✅ Dati caricati', 'success');
+    } catch (error) {
+        updateStatus('❌ Errore caricamento', 'error');
+        console.error('Errore caricamento:', error);
+    }
+}
+
+// Event listeners
+mainTitle.addEventListener('blur', () => {
+    settings.title = mainTitle.textContent;
+    saveSettings();
+});
+
+litersInput.addEventListener('input', () => {
+    if (litersInput.value !== '' && Number(litersInput.value) < 0) {
+        litersInput.value = 0;
+    }
+    settings.liters = litersInput.value;
+    saveSettings();
+});
+
+addWaterBtn.onclick = addWaterValue;
+clearWaterBtn.onclick = clearWaterInputs;
+
+// Inizializza app
+document.addEventListener('DOMContentLoaded', () => {
+    // Imposta data/ora corrente
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    waterDt.value = d.toISOString().slice(0, 16);
+    
+    // Carica dati
+    loadData();
+});
+</script>
+</body>
+</html>
