@@ -671,13 +671,33 @@
 	}
 	
 	.mobile-mode .field {
-		margin: 12px 0 !important;
+		margin: 8px 0 !important;
+		width: 100% !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: stretch !important;
 	}
 	
 	.mobile-mode .field label {
 		font-size: 16px !important;
-		margin-bottom: 8px !important;
+		margin-bottom: 6px !important;
 		display: block !important;
+		width: 100% !important;
+	}
+	
+	.mobile-mode .field input {
+		width: 100% !important;
+		max-width: none !important;
+		box-sizing: border-box !important;
+		margin: 0 !important;
+	}
+	
+	.mobile-mode .field .unit {
+		margin-top: 6px !important;
+		align-self: flex-start !important;
+		width: auto !important;
+		padding: 4px 8px !important;
+		font-size: 12px !important;
 	}
 	
 	.mobile-mode fieldset {
@@ -688,6 +708,90 @@
 	.mobile-mode legend {
 		font-size: 18px !important;
 		padding: 0 8px !important;
+	}
+	
+	/* Layout specifico per la sezione "Nuovo valore" in mobile */
+	.mobile-mode .row {
+		display: flex !important;
+		flex-direction: column !important;
+		gap: 8px !important;
+		align-items: stretch !important;
+	}
+	
+	.mobile-mode .row .field {
+		flex: none !important;
+		width: 100% !important;
+		margin: 4px 0 !important;
+	}
+	
+	/* Pulsanti compatti per mobile nella sezione nuovo valore */
+	.mobile-mode #add-water,
+	.mobile-mode #clear-water {
+		width: calc(50% - 4px) !important;
+		display: inline-block !important;
+		margin: 8px 2px !important;
+		font-size: 14px !important;
+		padding: 10px 8px !important;
+		min-height: 44px !important;
+	}
+	
+	/* Input datetime-local ottimizzato per mobile */
+	.mobile-mode #water-dt {
+		width: 100% !important;
+		max-width: none !important;
+		font-size: 16px !important;
+	}
+	
+	/* Pulsanti OK e Pulisci per datetime */
+	.mobile-mode .ok-btn,
+	.mobile-mode .clear-btn {
+		width: calc(33.33% - 4px) !important;
+		display: inline-block !important;
+		margin: 4px 2px !important;
+		font-size: 12px !important;
+		padding: 8px 4px !important;
+		min-height: 40px !important;
+	}
+	
+	/* Ottimizzazioni specifiche per la sezione "Nuovo valore" */
+	.mobile-mode fieldset legend {
+		font-size: 16px !important;
+		padding: 6px 12px !important;
+		margin-bottom: 8px !important;
+	}
+	
+	/* Riduce il padding del fieldset in mobile per più spazio */
+	.mobile-mode fieldset {
+		padding: 8px !important;
+		margin: 12px 0 !important;
+	}
+	
+	/* Ottimizza la riga con datetime-local */
+	.mobile-mode .field:has(#water-dt) {
+		margin-bottom: 12px !important;
+	}
+	
+	.mobile-mode .field:has(#water-dt) .ok-btn,
+	.mobile-mode .field:has(#water-dt) .clear-btn {
+		width: calc(50% - 6px) !important;
+		margin: 6px 3px !important;
+	}
+	
+	/* Migliora la disposizione dei campi di input */
+	.mobile-mode .row:has(.field:not(:has(#water-dt))) {
+		display: grid !important;
+		grid-template-columns: 1fr 1fr !important;
+		gap: 8px !important;
+		margin-bottom: 12px !important;
+	}
+	
+	/* Pulsanti finali in una riga compatta */
+	.mobile-mode .row:has(#add-water) {
+		display: flex !important;
+		flex-direction: row !important;
+		justify-content: space-between !important;
+		margin-top: 8px !important;
+		gap: 8px !important;
 	}
 	
 	.mobile-mode h1, .mobile-mode h2 {
@@ -887,6 +991,37 @@
 	.dark-mode #main-title:focus {
 		border-color: #64b5f6 !important;
 		background: rgba(100, 181, 246, 0.1);
+	}
+	
+	/* Responsive design per schermi molto piccoli */
+	@media (max-width: 480px) {
+		.mobile-mode .row:has(.field:not(:has(#water-dt))) {
+			grid-template-columns: 1fr !important;
+			gap: 6px !important;
+		}
+		
+		.mobile-mode .field {
+			margin: 4px 0 !important;
+		}
+		
+		.mobile-mode fieldset {
+			padding: 6px !important;
+			margin: 8px 0 !important;
+		}
+		
+		.mobile-mode #add-water,
+		.mobile-mode #clear-water {
+			width: 100% !important;
+			margin: 4px 0 !important;
+			font-size: 16px !important;
+		}
+		
+		.mobile-mode .ok-btn,
+		.mobile-mode .clear-btn {
+			width: calc(50% - 4px) !important;
+			margin: 4px 2px !important;
+			font-size: 14px !important;
+		}
 	}
 	
 	/* Responsive design */
