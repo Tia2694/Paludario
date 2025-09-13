@@ -2,7 +2,7 @@
   "title": "Paludario",
   "liters": "25",
   "darkMode": false,
-  "mobileMode": false,
+  "mobileMode": true,
   "waterThresholds": {
     "ph": {
       "min": 6.4,
