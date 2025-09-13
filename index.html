@@ -757,16 +757,162 @@
 		font-size: 16px !important;
 	}
 	
+	/* Regole generali per le tabelle mobile - ripristinate */
 	.mobile-mode table {
 		font-size: 14px !important;
 		width: auto !important;
 		min-width: 100% !important;
 	}
 	
+	/* Container scrollabile per la tabella su mobile */
+	.mobile-mode .table-container {
+		overflow-x: auto !important;
+		width: 100% !important;
+		-webkit-overflow-scrolling: touch !important; /* Scroll fluido su iOS */
+		display: block !important; /* Forza display block per il container */
+	}
+	
+	/* Forza la larghezza della tabella anche se ci sono conflitti */
+	.mobile-mode #water-table {
+		width: 1200px !important;
+		min-width: 1200px !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
+	/* Regola molto specifica per sovrascrivere qualsiasi conflitto */
+	body.mobile-mode .table-container table#water-table {
+		width: 1200px !important;
+		min-width: 1200px !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
+	/* Tabella animali con larghezza fissa per evitare compressione su schermi stretti */
+	.mobile-mode #animals-table {
+		width: 800px !important;
+		min-width: 800px !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
+	body.mobile-mode .table-container table#animals-table {
+		width: 800px !important;
+		min-width: 800px !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
+	/* Colonne specifiche per la tabella animali */
+	.mobile-mode #animals-table th:nth-child(1), .mobile-mode #animals-table td:nth-child(1) {
+		width: 200px !important; /* Specie/Razza */
+	}
+	.mobile-mode #animals-table th:nth-child(2), .mobile-mode #animals-table td:nth-child(2) {
+		width: 100px !important; /* Tipo */
+	}
+	.mobile-mode #animals-table th:nth-child(3), .mobile-mode #animals-table td:nth-child(3) {
+		width: 80px !important; /* Esemplari */
+	}
+	.mobile-mode #animals-table th:nth-child(4), .mobile-mode #animals-table td:nth-child(4) {
+		width: 80px !important; /* Maschi */
+	}
+	.mobile-mode #animals-table th:nth-child(5), .mobile-mode #animals-table td:nth-child(5) {
+		width: 80px !important; /* Femmine */
+	}
+	.mobile-mode #animals-table th:nth-child(6), .mobile-mode #animals-table td:nth-child(6) {
+		width: 120px !important; /* Data Acquisto */
+	}
+	.mobile-mode #animals-table th:nth-child(7), .mobile-mode #animals-table td:nth-child(7) {
+		width: 80px !important; /* Stato */
+	}
+	.mobile-mode #animals-table th:nth-child(8), .mobile-mode #animals-table td:nth-child(8) {
+		width: 100px !important; /* Azioni */
+	}
+	
+	/* Regole generali per celle mobile - ripristinate */
 	.mobile-mode th, .mobile-mode td {
 		padding: 8px 4px !important;
 		font-size: 12px !important;
 	}
+	
+	/* Colonne specifiche SOLO per la tabella valori acqua */
+	.mobile-mode #water-table th:nth-child(1), .mobile-mode #water-table td:nth-child(1) {
+		width: 280px !important; /* DATA/ORA - più spazio per date complete */
+	}
+	.mobile-mode #water-table th:nth-child(2), .mobile-mode #water-table td:nth-child(2) {
+		width: 80px !important; /* PH */
+	}
+	.mobile-mode #water-table th:nth-child(3), .mobile-mode #water-table td:nth-child(3) {
+		width: 80px !important; /* ΔPH% */
+	}
+	.mobile-mode #water-table th:nth-child(4), .mobile-mode #water-table td:nth-child(4) {
+		width: 80px !important; /* KH */
+	}
+	.mobile-mode #water-table th:nth-child(5), .mobile-mode #water-table td:nth-child(5) {
+		width: 80px !important; /* ΔKH% */
+	}
+	.mobile-mode #water-table th:nth-child(6), .mobile-mode #water-table td:nth-child(6) {
+		width: 80px !important; /* GH */
+	}
+	.mobile-mode #water-table th:nth-child(7), .mobile-mode #water-table td:nth-child(7) {
+		width: 80px !important; /* ΔGH% */
+	}
+	.mobile-mode #water-table th:nth-child(8), .mobile-mode #water-table td:nth-child(8) {
+		width: 80px !important; /* NO2 */
+	}
+	.mobile-mode #water-table th:nth-child(9), .mobile-mode #water-table td:nth-child(9) {
+		width: 80px !important; /* ΔNO2% */
+	}
+	.mobile-mode #water-table th:nth-child(10), .mobile-mode #water-table td:nth-child(10) {
+		width: 80px !important; /* NO3 */
+	}
+	.mobile-mode #water-table th:nth-child(11), .mobile-mode #water-table td:nth-child(11) {
+		width: 80px !important; /* ΔNO3% */
+	}
+	.mobile-mode #water-table th:nth-child(12), .mobile-mode #water-table td:nth-child(12) {
+		width: 80px !important; /* NH4 */
+	}
+	.mobile-mode #water-table th:nth-child(13), .mobile-mode #water-table td:nth-child(13) {
+		width: 80px !important; /* ΔNH4% */
+	}
+	.mobile-mode #water-table th:nth-child(14), .mobile-mode #water-table td:nth-child(14) {
+		width: 80px !important; /* Temp °C */
+	}
+	.mobile-mode #water-table th:nth-child(15), .mobile-mode #water-table td:nth-child(15) {
+		width: 80px !important; /* ΔTemp% */
+	}
+	
+	/* Input nelle celle SOLO per la tabella valori acqua - dimensioni compatte */
+	.mobile-mode #water-table td input {
+		width: 100% !important;
+		height: 24px !important; /* Altezza fissa molto ridotta */
+		font-size: 12px !important; /* Font più piccolo */
+		padding: 2px 4px !important; /* Padding minimo */
+		border: 1px solid #ddd !important;
+		border-radius: 3px !important;
+		box-sizing: border-box !important;
+		line-height: 1.2 !important; /* Line height compatto */
+	}
+	
+	.mobile-mode #water-table td input:focus {
+		border-color: var(--primary-green) !important;
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2) !important;
+	}
+	
+	/* Dark mode per input nelle celle della tabella valori acqua */
+	.dark-mode .mobile-mode #water-table td input {
+		background: #333 !important;
+		color: #fff !important;
+		border-color: #555 !important;
+	}
+	
+	.dark-mode .mobile-mode #water-table td input:focus {
+		border-color: var(--accent-teal) !important;
+		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+	}
+	
+	/* Rimuove regole specifiche per celle tabella valori acqua - usa le regole generali */
 	
 	.mobile-mode .field {
 		margin: 8px 0 !important;

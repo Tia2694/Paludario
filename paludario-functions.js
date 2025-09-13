@@ -190,6 +190,14 @@ function setupEventListeners() {
         clearLightsBtn.onclick = clearLightInputs;
     }
 
+    // Animali
+    if (addAnimalBtn) {
+        addAnimalBtn.onclick = addAnimal;
+    }
+    if (clearAnimalBtn) {
+        clearAnimalBtn.onclick = clearAnimalForm;
+    }
+
     // Grafici
     if (refreshWaterChartBtn) {
         refreshWaterChartBtn.onclick = () => drawWaterChart();
@@ -397,10 +405,7 @@ function setupEventListeners() {
         drawDayChart();
     });
     
-    // Event listeners per animali
-    if (clearAnimalBtn) {
-        clearAnimalBtn.addEventListener('click', clearAnimalForm);
-    }
+    // Event listeners per animali - rimossi da qui, ora sono in setupEventListeners()
     
     // Validazione campi animali
     if (animalMales && animalFemales && animalCount) {
@@ -688,6 +693,7 @@ const animalMales = document.getElementById('animal-males');
 const animalFemales = document.getElementById('animal-females');
 const animalPurchaseDate = document.getElementById('animal-purchase-date');
 const animalStatus = document.getElementById('animal-status');
+const addAnimalBtn = document.getElementById('add-animal');
 const clearAnimalBtn = document.getElementById('clear-animal');
 const animalsTable = document.getElementById('animals-table');
 
