@@ -134,6 +134,72 @@ function setupEventListeners() {
             }
         });
     }
+    
+    // Sottotitolo editabile
+    const mainSubtitle = document.getElementById('main-subtitle');
+    if (mainSubtitle) {
+        mainSubtitle.addEventListener('blur', () => {
+            if (dataManager && dataManager.updateSettings) {
+                dataManager.updateSettings({ subtitle: mainSubtitle.textContent });
+            } else {
+                console.error('DataManager non disponibile per salvare il sottotitolo');
+            }
+        });
+        mainSubtitle.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                mainSubtitle.blur();
+            }
+        });
+    }
+    
+    // Icona editabile (solo emoji singole)
+    const mainIcon = document.getElementById('main-icon');
+    if (mainIcon) {
+        mainIcon.addEventListener('blur', () => {
+            if (dataManager && dataManager.updateSettings) {
+                dataManager.updateSettings({ icon: mainIcon.textContent });
+            } else {
+                console.error('DataManager non disponibile per salvare l\'icona');
+            }
+        });
+        
+        mainIcon.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                mainIcon.blur();
+            }
+        });
+        
+        // Filtra solo emoji singole durante l'input
+        mainIcon.addEventListener('input', (e) => {
+            let content = e.target.textContent;
+            
+            // Rimuovi tutto tranne il primo carattere emoji
+            const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{1F018}-\u{1F0F5}]|[\u{1F200}-\u{1F2FF}]/u;
+            const matches = content.match(emojiRegex);
+            
+            if (matches && matches.length > 0) {
+                // Mantieni solo la prima emoji
+                e.target.textContent = matches[0];
+            } else if (content.length > 0) {
+                // Se non è un'emoji valida, ripristina l'icona precedente
+                e.target.textContent = dataManager?.data?.settings?.icon || '🌱';
+            }
+        });
+        
+        // Previeni l'incollaggio di testo non emoji
+        mainIcon.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{1F018}-\u{1F0F5}]|[\u{1F200}-\u{1F2FF}]/u;
+            const matches = paste.match(emojiRegex);
+            
+            if (matches && matches.length > 0) {
+                mainIcon.textContent = matches[0];
+            }
+        });
+    }
 
     // Litri
     if (litersInput) {
@@ -301,6 +367,18 @@ function setupEventListeners() {
                         mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
                     }
                     
+                    // Aggiorna il sottotitolo
+                    const mainSubtitle = document.getElementById('main-subtitle');
+                    if (mainSubtitle && dataManager.data.settings) {
+                        mainSubtitle.textContent = dataManager.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale';
+                    }
+                    
+                    // Aggiorna l'icona
+                    const mainIcon = document.getElementById('main-icon');
+                    if (mainIcon && dataManager.data.settings) {
+                        mainIcon.textContent = dataManager.data.settings.icon || '🌱';
+                    }
+                    
                     if (typeof renderWaterTable === 'function') renderWaterTable();
                     if (typeof renderDayTables === 'function') renderDayTables();
                     if (typeof drawWaterChart === 'function') drawWaterChart();
@@ -317,6 +395,18 @@ function setupEventListeners() {
                     
                     if (mainTitle && dataManager.data.settings) {
                         mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
+                    }
+                    
+                    // Aggiorna il sottotitolo
+                    const mainSubtitle = document.getElementById('main-subtitle');
+                    if (mainSubtitle && dataManager.data.settings) {
+                        mainSubtitle.textContent = dataManager.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale';
+                    }
+                    
+                    // Aggiorna l'icona
+                    const mainIcon = document.getElementById('main-icon');
+                    if (mainIcon && dataManager.data.settings) {
+                        mainIcon.textContent = dataManager.data.settings.icon || '🌱';
                     }
                     
                     if (typeof renderWaterTable === 'function') renderWaterTable();
@@ -357,6 +447,20 @@ function setupEventListeners() {
             if (mainTitle && dataManager.data.settings) {
                 mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
                 console.log('Titolo aggiornato a:', mainTitle.textContent);
+            }
+            
+            // Aggiorna il sottotitolo
+            const mainSubtitle = document.getElementById('main-subtitle');
+            if (mainSubtitle && dataManager.data.settings) {
+                mainSubtitle.textContent = dataManager.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale';
+                console.log('Sottotitolo aggiornato a:', mainSubtitle.textContent);
+            }
+            
+            // Aggiorna l'icona
+            const mainIcon = document.getElementById('main-icon');
+            if (mainIcon && dataManager.data.settings) {
+                mainIcon.textContent = dataManager.data.settings.icon || '🌱';
+                console.log('Icona aggiornata a:', mainIcon.textContent);
             }
         };
     }

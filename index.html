@@ -1509,6 +1509,45 @@
 		background: rgba(100, 181, 246, 0.1);
 	}
 	
+	/* Stili per il sottotitolo editabile */
+	#main-subtitle:hover {
+		border-color: #ccc !important;
+	}
+	#main-subtitle:focus {
+		border-color: var(--primary-green) !important;
+		outline: none;
+		background: rgba(46, 125, 50, 0.05);
+	}
+	.dark-mode #main-subtitle:hover {
+		border-color: #555 !important;
+	}
+	.dark-mode #main-subtitle:focus {
+		border-color: var(--accent-teal) !important;
+		background: rgba(0, 105, 92, 0.1);
+	}
+	.dark-mode #main-subtitle {
+		color: #ccc !important;
+	}
+	
+	/* Stili per l'icona editabile */
+	#main-icon:hover {
+		border-color: #ddd !important;
+		transform: scale(1.1) !important;
+	}
+	#main-icon:focus {
+		border-color: var(--primary-green) !important;
+		outline: none;
+		background: rgba(46, 125, 50, 0.1);
+		transform: scale(1.05) !important;
+	}
+	.dark-mode #main-icon:hover {
+		border-color: #666 !important;
+	}
+	.dark-mode #main-icon:focus {
+		border-color: var(--accent-teal) !important;
+		background: rgba(0, 105, 92, 0.1);
+	}
+	
 	/* Responsive design per schermi molto piccoli */
 	@media (max-width: 480px) {
 		.mobile-mode body {
@@ -1691,9 +1730,9 @@
 <div class="header-decorative" id="header-section" style="text-align: center; margin-bottom: 32px; padding: 24px; background: linear-gradient(135deg, rgba(46,125,50,0.05) 0%, rgba(0,105,92,0.05) 100%); border-radius: 20px; border: 1px solid rgba(46,125,50,0.1);">
 	<button class="background-upload-btn" id="background-upload-btn" title="Cambia sfondo">🖼️</button>
 	<input type="file" id="background-upload-input" class="background-upload-input" accept="image/*" />
-	<div style="display: inline-block; font-size: 48px; margin-bottom: 8px; animation: float 3s ease-in-out infinite;">🌱</div>
+	<div id="main-icon" contenteditable="true" style="display: inline-block; font-size: 48px; margin-bottom: 8px; animation: float 3s ease-in-out infinite; cursor: pointer; border: 2px solid transparent; padding: 8px; border-radius: 12px; transition: all 0.3s ease; min-width: 64px; text-align: center;">🌱</div>
 	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 12px 20px; border-radius: 16px; transition: all 0.3s ease; margin: 0 0 8px 0; font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Paludario</h1>
-	<p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Sistema di monitoraggio e controllo ambientale</p>
+	<p id="main-subtitle" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 8px 16px; border-radius: 12px; transition: all 0.3s ease; margin: 0; color: #666; font-size: 16px; font-weight: 500;">Sistema di monitoraggio e controllo ambientale</p>
 	<div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
 		<div class="field" style="margin: 0; position: relative; display: inline-flex; align-items: center;">
 			<label for="liters" style="font-weight: 600; font-size: 16px; color: var(--primary-green); margin-right: 8px;">🪣 Volume Acqua</label>

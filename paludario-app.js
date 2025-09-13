@@ -260,6 +260,8 @@ class DataManager {
         
         this.data.settings = {
             title: localStorage.getItem('paludario.title') || '🌱 Paludario',
+            subtitle: localStorage.getItem('paludario.subtitle') || 'Sistema di monitoraggio e controllo ambientale',
+            icon: localStorage.getItem('paludario.icon') || '🌱',
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
             mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
@@ -275,6 +277,8 @@ class DataManager {
         localStorage.setItem('paludario.waterReadings', JSON.stringify(this.data.water));
         localStorage.setItem('paludario.dayPlanTemplate', JSON.stringify(this.data.dayTemplate));
         localStorage.setItem('paludario.title', this.data.settings.title);
+        localStorage.setItem('paludario.subtitle', this.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale');
+        localStorage.setItem('paludario.icon', this.data.settings.icon || '🌱');
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
         localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
@@ -315,6 +319,18 @@ class DataManager {
         const mainTitle = document.getElementById('main-title');
         if (mainTitle) {
             mainTitle.textContent = this.data.settings.title;
+        }
+        
+        // Inizializza sottotitolo
+        const mainSubtitle = document.getElementById('main-subtitle');
+        if (mainSubtitle) {
+            mainSubtitle.textContent = this.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale';
+        }
+        
+        // Inizializza icona
+        const mainIcon = document.getElementById('main-icon');
+        if (mainIcon) {
+            mainIcon.textContent = this.data.settings.icon || '🌱';
         }
 
         // Inizializza litri
