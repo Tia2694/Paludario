@@ -85,6 +85,7 @@ const dayLegend = document.getElementById('dayLegend');
 const mainTitle = document.getElementById('main-title');
 const litersInput = document.getElementById('liters');
 const syncDataBtn = document.getElementById('sync-data');
+const debugSyncBtn = document.getElementById('debug-sync');
 
 // Elementi per le soglie
 const waterSettingsBtn = document.getElementById('water-settings-btn');
@@ -95,7 +96,7 @@ const resetThresholdsBtn = document.getElementById('reset-thresholds');
 const saveThresholdsBtn = document.getElementById('save-thresholds');
 
 /* ==================== INIZIALIZZAZIONE ==================== */
-function initializeApp() {
+function setupAppAfterLoad() {
     // Imposta data/ora corrente
     if (waterDt) {
         const d = new Date();
@@ -105,14 +106,6 @@ function initializeApp() {
 
     // Event listeners
     setupEventListeners();
-
-    // Carica dati dopo aver impostato i listener
-    if (dataManager && dataManager.loadData) {
-        dataManager.loadData().then(() => {
-            // Aggiorna i dati globali dopo il caricamento
-            updateGlobalData();
-        });
-    }
     
     // Carica le soglie dell'acqua
     loadWaterThresholds();
@@ -236,14 +229,79 @@ function setupEventListeners() {
 
     if (syncDataBtn) {
         syncDataBtn.onclick = () => {
-            dataManager.loadData().then(() => {
-                // Forza l'aggiornamento dell'UI dopo la sincronizzazione
-                updateGlobalData();
-                if (typeof renderWaterTable === 'function') renderWaterTable();
-                if (typeof renderDayTables === 'function') renderDayTables();
-                if (typeof drawWaterChart === 'function') drawWaterChart();
-                if (typeof drawDayChart === 'function') drawDayChart();
-            });
+            if (dataManager && dataManager.forceSync) {
+                dataManager.forceSync().then(() => {
+                    // Forza l'aggiornamento dell'UI dopo la sincronizzazione
+                    updateGlobalData();
+                    
+                    // Aggiorna specificamente il campo litri
+                    if (litersInput && dataManager.data.settings) {
+                        console.log('Aggiornando campo litri da sync:', dataManager.data.settings.liters);
+                        litersInput.value = dataManager.data.settings.liters || '';
+                    }
+                    
+                    // Aggiorna il titolo
+                    if (mainTitle && dataManager.data.settings) {
+                        mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
+                    }
+                    
+                    if (typeof renderWaterTable === 'function') renderWaterTable();
+                    if (typeof renderDayTables === 'function') renderDayTables();
+                    if (typeof drawWaterChart === 'function') drawWaterChart();
+                    if (typeof drawDayChart === 'function') drawDayChart();
+                });
+            } else {
+                // Fallback al metodo precedente
+                dataManager.loadData().then(() => {
+                    updateGlobalData();
+                    
+                    if (litersInput && dataManager.data.settings) {
+                        litersInput.value = dataManager.data.settings.liters || '';
+                    }
+                    
+                    if (mainTitle && dataManager.data.settings) {
+                        mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
+                    }
+                    
+                    if (typeof renderWaterTable === 'function') renderWaterTable();
+                    if (typeof renderDayTables === 'function') renderDayTables();
+                    if (typeof drawWaterChart === 'function') drawWaterChart();
+                    if (typeof drawDayChart === 'function') drawDayChart();
+                });
+            }
+        };
+    }
+
+    if (debugSyncBtn) {
+        debugSyncBtn.onclick = () => {
+            console.log('=== DEBUG SINCRONIZZAZIONE ===');
+            console.log('DataManager:', dataManager);
+            console.log('Settings attuali:', dataManager.data.settings);
+            console.log('GitHub configurato:', !!GITHUB_CONFIG.token);
+            console.log('Auto sync attiva:', !!dataManager.autoSyncInterval);
+            console.log('Ultima sincronizzazione:', dataManager.lastSync);
+            console.log('Hash dati attuali:', dataManager.calculateDataHash ? dataManager.calculateDataHash() : 'N/A');
+            console.log('Campo litri DOM:', litersInput);
+            console.log('Valore campo litri:', litersInput ? litersInput.value : 'NON TROVATO');
+            console.log('Titolo DOM:', mainTitle);
+            console.log('Valore titolo:', mainTitle ? mainTitle.textContent : 'NON TROVATO');
+            
+            // Test connessione GitHub
+            if (GITHUB_CONFIG.token && typeof validateGitHubToken === 'function') {
+                validateGitHubToken().then(valid => {
+                    console.log('Token GitHub valido:', valid);
+                });
+            }
+            
+            // Forza l'aggiornamento dell'UI
+            if (litersInput && dataManager.data.settings) {
+                litersInput.value = dataManager.data.settings.liters || '';
+                console.log('Campo litri aggiornato a:', litersInput.value);
+            }
+            if (mainTitle && dataManager.data.settings) {
+                mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
+                console.log('Titolo aggiornato a:', mainTitle.textContent);
+            }
         };
     }
 
@@ -796,7 +854,4 @@ function isValueOutOfThreshold(param, value) {
     return numValue < threshold.min || numValue > threshold.max;
 }
 
-// Inizializza l'app quando il DOM è pronto
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-});
+// L'inizializzazione è ora gestita da paludario-app.js

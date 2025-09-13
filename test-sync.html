@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Sincronizzazione Paludario</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .info { color: #1976d2; background: #e3f2fd; }
+        button { padding: 10px 15px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Test Sincronizzazione Paludario</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Configurazione</h3>
+        <div id="config-status"></div>
+        <button onclick="testConfig()">Test Config</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Caricamento Dati</h3>
+        <div id="load-status"></div>
+        <button onclick="testLoadData()">Carica Dati</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Modifica Litri</h3>
+        <input type="number" id="liters-input" placeholder="Inserisci litri" value="25">
+        <button onclick="testSaveLiters()">Salva Litri</button>
+        <div id="save-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Test Sincronizzazione GitHub</h3>
+        <button onclick="testSyncToGitHub()">Sincronizza su GitHub</button>
+        <div id="sync-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Test Ricaricamento</h3>
+        <button onclick="testReload()">Ricarica Dati</button>
+        <div id="reload-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>6. Dati Attuali</h3>
+        <div id="current-data"></div>
+        <button onclick="showCurrentData()">Mostra Dati</button>
+    </div>
+
+    <!-- Carica i file JavaScript -->
+    <script src="config.js"></script>
+    <script src="paludario-app.js"></script>
+    <script src="paludario-functions.js"></script>
+    
+    <script>
+        let dataManager;
+        
+        async function testConfig() {
+            const container = document.getElementById('config-status');
+            try {
+                if (typeof GITHUB_CONFIG === 'undefined') {
+                    container.innerHTML = '<div class="error">❌ GITHUB_CONFIG non definito</div>';
+                    return;
+                }
+                
+                const config = GITHUB_CONFIG;
+                let html = '<div class="success">✅ Configurazione GitHub caricata</div>';
+                html += '<pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                
+                // Verifica campi obbligatori
+                if (!config.username) html += '<div class="error">❌ Username mancante</div>';
+                if (!config.repository) html += '<div class="error">❌ Repository mancante</div>';
+                if (!config.token) html += '<div class="error">❌ Token mancante</div>';
+                if (!config.branch) html += '<div class="error">❌ Branch mancante</div>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testLoadData() {
+            const container = document.getElementById('load-status');
+            container.innerHTML = '<div class="info">🔄 Caricamento dati...</div>';
+            
+            try {
+                dataManager = new DataManager();
+                await dataManager.loadData();
+                
+                let html = '<div class="success">✅ Dati caricati con successo</div>';
+                html += '<pre>Settings: ' + JSON.stringify(dataManager.data.settings, null, 2) + '</pre>';
+                html += '<pre>Water data: ' + dataManager.data.water.length + ' elementi</pre>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore caricamento: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testSaveLiters() {
+            const container = document.getElementById('save-status');
+            const litersValue = document.getElementById('liters-input').value;
+            
+            if (!dataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non inizializzato</div>';
+                return;
+            }
+            
+            try {
+                container.innerHTML = '<div class="info">🔄 Salvataggio litri...</div>';
+                
+                // Aggiorna i dati
+                dataManager.updateSettings({ liters: litersValue });
+                
+                container.innerHTML = '<div class="success">✅ Litri salvati localmente: ' + litersValue + '</div>';
+                
+                // Mostra i dati attuali
+                showCurrentData();
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore salvataggio: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testSyncToGitHub() {
+            const container = document.getElementById('sync-status');
+            
+            if (!dataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non inizializzato</div>';
+                return;
+            }
+            
+            try {
+                container.innerHTML = '<div class="info">🔄 Sincronizzazione su GitHub...</div>';
+                
+                await dataManager.syncToGitHub();
+                
+                container.innerHTML = '<div class="success">✅ Dati sincronizzati su GitHub</div>';
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore sincronizzazione: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testReload() {
+            const container = document.getElementById('reload-status');
+            
+            if (!dataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non inizializzato</div>';
+                return;
+            }
+            
+            try {
+                container.innerHTML = '<div class="info">🔄 Ricaricamento dati...</div>';
+                
+                await dataManager.loadData();
+                
+                let html = '<div class="success">✅ Dati ricaricati</div>';
+                html += '<pre>Litri attuali: ' + dataManager.data.settings.liters + '</pre>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore ricaricamento: ' + error.message + '</div>';
+            }
+        }
+        
+        function showCurrentData() {
+            const container = document.getElementById('current-data');
+            
+            if (!dataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non inizializzato</div>';
+                return;
+            }
+            
+            let html = '<div class="info">📊 Dati Attuali:</div>';
+            html += '<pre>' + JSON.stringify(dataManager.data, null, 2) + '</pre>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Test automatico all'avvio
+        window.addEventListener('load', () => {
+            console.log('Test page caricata');
+            testConfig();
+        });
+    </script>
+</body>
+</html>

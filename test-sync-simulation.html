@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Sincronizzazione - Simulazione</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .info { color: #1976d2; background: #e3f2fd; }
+        .warning { color: #f57c00; background: #fff3e0; }
+        button { padding: 10px 15px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #1976d2; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Test Sincronizzazione - Simulazione</h1>
+    
+    <div class="warning">
+        <strong>⚠️ Nota:</strong> Questo test simula la sincronizzazione. Per testare la sincronizzazione reale, 
+        usa l'applicazione principale tramite un server web.
+    </div>
+    
+    <div class="test">
+        <h3>1. Test Configurazione</h3>
+        <div id="config-result"></div>
+        <button onclick="testConfig()">Test Config</button>
+    </div>
+    
+    <div class="test">
+        <h3>2. Test Modifica Litri</h3>
+        <input type="number" id="liters-input" placeholder="Inserisci litri" value="25">
+        <button onclick="testSaveLiters()">Salva Litri</button>
+        <div id="save-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>3. Test Sincronizzazione (Simulazione)</h3>
+        <button onclick="testSync()">Simula Sincronizzazione</button>
+        <div id="sync-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>4. Dati Attuali</h3>
+        <div id="data-result"></div>
+        <button onclick="showData()">Mostra Dati</button>
+    </div>
+    
+    <div class="test">
+        <h3>5. Istruzioni per Test Reale</h3>
+        <div class="step">
+            <strong>Passo 1:</strong> Avvia un server web locale<br>
+            <code>cd paludario_GitHub && python -m http.server 8000</code>
+        </div>
+        <div class="step">
+            <strong>Passo 2:</strong> Apri l'applicazione<br>
+            <code>http://localhost:8000/index.html</code>
+        </div>
+        <div class="step">
+            <strong>Passo 3:</strong> Modifica i litri e verifica la sincronizzazione
+        </div>
+    </div>
+
+    <script>
+        // Configurazione GitHub
+        const GITHUB_CONFIG = {
+            username: 'Tia2694',
+            repository: 'Paludario',
+            branch: 'main',
+            token: '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'
+        };
+        
+        let dataManager;
+        
+        function testConfig() {
+            const container = document.getElementById('config-result');
+            try {
+                const config = GITHUB_CONFIG;
+                let html = '<div class="success">✅ Configurazione OK</div>';
+                html += '<pre>' + JSON.stringify(config, null, 2) + '</pre>';
+                
+                if (!config.username) html += '<div class="error">❌ Username mancante</div>';
+                if (!config.repository) html += '<div class="error">❌ Repository mancante</div>';
+                if (!config.token) html += '<div class="error">❌ Token mancante</div>';
+                if (!config.branch) html += '<div class="error">❌ Branch mancante</div>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore: ' + error.message + '</div>';
+            }
+        }
+        
+        // Classe DataManager semplificata per il test
+        class TestDataManager {
+            constructor() {
+                this.data = {
+                    water: [],
+                    dayTemplate: { spray: [], fan: [], lights: [] },
+                    settings: { 
+                        title: '🌱 Paludario', 
+                        liters: '', 
+                        darkMode: false,
+                        waterThresholds: {
+                            ph: { min: 6.0, max: 8.0 },
+                            kh: { min: 2.0, max: 15.0 },
+                            gh: { min: 3.0, max: 20.0 },
+                            no2: { min: 0.0, max: 0.5 },
+                            no3: { min: 0.0, max: 50.0 },
+                            nh4: { min: 0.0, max: 0.5 },
+                            temp: { min: 20.0, max: 30.0 },
+                            cond: { min: 100, max: 1000 }
+                        }
+                    }
+                };
+            }
+            
+            updateSettings(settings) {
+                this.data.settings = { ...this.data.settings, ...settings };
+                console.log('Settings aggiornate:', this.data.settings);
+            }
+            
+            async syncToGitHub() {
+                // Simula la sincronizzazione
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        console.log('Sincronizzazione simulata completata');
+                        resolve();
+                    }, 1000);
+                });
+            }
+        }
+        
+        async function testSaveLiters() {
+            const container = document.getElementById('save-result');
+            const litersValue = document.getElementById('liters-input').value;
+            
+            try {
+                container.innerHTML = '<div class="info">🔄 Salvataggio...</div>';
+                
+                if (!dataManager) {
+                    dataManager = new TestDataManager();
+                }
+                
+                // Aggiorna i dati
+                dataManager.updateSettings({ liters: litersValue });
+                
+                container.innerHTML = '<div class="success">✅ Litri salvati: ' + litersValue + '</div>';
+                
+                // Mostra i dati
+                showData();
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testSync() {
+            const container = document.getElementById('sync-result');
+            
+            try {
+                container.innerHTML = '<div class="info">🔄 Simulazione sincronizzazione...</div>';
+                
+                if (!dataManager) {
+                    dataManager = new TestDataManager();
+                }
+                
+                await dataManager.syncToGitHub();
+                
+                container.innerHTML = '<div class="success">✅ Sincronizzazione simulata completata</div>';
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore: ' + error.message + '</div>';
+            }
+        }
+        
+        function showData() {
+            const container = document.getElementById('data-result');
+            
+            if (!dataManager) {
+                dataManager = new TestDataManager();
+            }
+            
+            let html = '<div class="info">📊 Dati Attuali:</div>';
+            html += '<pre>' + JSON.stringify(dataManager.data, null, 2) + '</pre>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Inizializza
+        window.addEventListener('load', () => {
+            dataManager = new TestDataManager();
+            testConfig();
+        });
+    </script>
+</body>
+</html>

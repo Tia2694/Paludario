@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Sincronizzazione Paludario</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .info { color: #1976d2; background: #e3f2fd; }
+        button { padding: 10px 15px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .syncing { background: #fff3e0; border: 1px solid #ff9800; }
+        .success-status { background: #e8f5e8; border: 1px solid #4caf50; }
+        .error-status { background: #ffebee; border: 1px solid #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Test Sincronizzazione Paludario</h1>
+    
+    <div class="test-section">
+        <h3>📊 Stato Attuale</h3>
+        <div id="current-status" class="status info">Caricamento...</div>
+        <button onclick="refreshStatus()">Aggiorna Stato</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔐 Configurazione GitHub</h3>
+        <div id="github-status"></div>
+        <button onclick="testGitHubConnection()">Test Connessione</button>
+        <button onclick="configureGitHub()">Configura GitHub</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📥 Test Download</h3>
+        <div id="download-test"></div>
+        <button onclick="testDownload()">Test Download</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📤 Test Upload</h3>
+        <div id="upload-test"></div>
+        <button onclick="testUpload()">Test Upload</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔄 Test Sincronizzazione Completa</h3>
+        <div id="full-sync-test"></div>
+        <button onclick="testFullSync()">Test Sincronizzazione Completa</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📱 Test Multi-Dispositivo</h3>
+        <div id="multi-device-test"></div>
+        <p><strong>Istruzioni:</strong></p>
+        <ol>
+            <li>Apri questo stesso link su un altro dispositivo/browser</li>
+            <li>Modifica qualcosa su un dispositivo</li>
+            <li>Attendi 30 secondi o clicca "Aggiorna Stato" sull'altro dispositivo</li>
+            <li>Verifica che i cambiamenti si sincronizzino</li>
+        </ol>
+        <button onclick="simulateMultiDeviceTest()">Simula Test Multi-Dispositivo</button>
+    </div>
+
+    <!-- Carica i file JavaScript -->
+    <script src="config.js"></script>
+    <script src="paludario-app.js"></script>
+    
+    <script>
+        let testDataManager;
+        
+        // Inizializza il test
+        async function initTest() {
+            try {
+                // Inizializza GitHub se disponibile
+                if (typeof initializeGitHubConfig === 'function') {
+                    await initializeGitHubConfig();
+                }
+                
+                // Crea un data manager per i test
+                testDataManager = new DataManager();
+                
+                refreshStatus();
+                testGitHubConnection();
+                
+            } catch (error) {
+                console.error('Errore inizializzazione test:', error);
+                document.getElementById('current-status').innerHTML = 
+                    '<div class="error">❌ Errore inizializzazione: ' + error.message + '</div>';
+            }
+        }
+        
+        function refreshStatus() {
+            const statusEl = document.getElementById('current-status');
+            let html = '<div class="info">📊 Stato Sistema:</div>';
+            
+            html += '<pre>';
+            html += 'GitHub configurato: ' + (GITHUB_CONFIG.token ? '✅ Sì' : '❌ No') + '\n';
+            html += 'DataManager disponibile: ' + (testDataManager ? '✅ Sì' : '❌ No') + '\n';
+            if (testDataManager) {
+                html += 'Auto sync attiva: ' + (testDataManager.autoSyncInterval ? '✅ Sì' : '❌ No') + '\n';
+                html += 'Ultima sincronizzazione: ' + (testDataManager.lastSync ? testDataManager.lastSync.toLocaleString() : 'Mai') + '\n';
+                html += 'Dati acqua: ' + testDataManager.data.water.length + ' elementi\n';
+                html += 'Titolo: ' + testDataManager.data.settings.title + '\n';
+                html += 'Litri: ' + testDataManager.data.settings.liters + '\n';
+            }
+            html += '</pre>';
+            
+            statusEl.innerHTML = html;
+        }
+        
+        function testGitHubConnection() {
+            const container = document.getElementById('github-status');
+            container.innerHTML = '<div class="info">🔄 Test connessione GitHub...</div>';
+            
+            if (!GITHUB_CONFIG.token) {
+                container.innerHTML = '<div class="error">❌ Token GitHub non configurato</div>';
+                return;
+            }
+            
+            if (typeof validateGitHubToken === 'function') {
+                validateGitHubToken().then(valid => {
+                    if (valid) {
+                        container.innerHTML = '<div class="success">✅ Connessione GitHub OK</div>';
+                    } else {
+                        container.innerHTML = '<div class="error">❌ Token GitHub non valido</div>';
+                    }
+                }).catch(error => {
+                    container.innerHTML = '<div class="error">❌ Errore connessione: ' + error.message + '</div>';
+                });
+            } else {
+                container.innerHTML = '<div class="error">❌ Funzione validateGitHubToken non disponibile</div>';
+            }
+        }
+        
+        function configureGitHub() {
+            if (typeof loadGitHubToken === 'function') {
+                loadGitHubToken();
+                setTimeout(() => {
+                    testGitHubConnection();
+                    refreshStatus();
+                }, 1000);
+            } else {
+                alert('Funzione loadGitHubToken non disponibile');
+            }
+        }
+        
+        function testDownload() {
+            const container = document.getElementById('download-test');
+            container.innerHTML = '<div class="info">🔄 Test download da GitHub...</div>';
+            
+            if (!testDataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non disponibile</div>';
+                return;
+            }
+            
+            testDataManager.loadData().then(() => {
+                let html = '<div class="success">✅ Download completato</div>';
+                html += '<pre>';
+                html += 'Water data: ' + testDataManager.data.water.length + ' elementi\n';
+                html += 'Day template: ' + JSON.stringify(testDataManager.data.dayTemplate, null, 2) + '\n';
+                html += 'Settings: ' + JSON.stringify(testDataManager.data.settings, null, 2) + '\n';
+                html += '</pre>';
+                container.innerHTML = html;
+                refreshStatus();
+            }).catch(error => {
+                container.innerHTML = '<div class="error">❌ Errore download: ' + error.message + '</div>';
+            });
+        }
+        
+        function testUpload() {
+            const container = document.getElementById('upload-test');
+            container.innerHTML = '<div class="info">🔄 Test upload su GitHub...</div>';
+            
+            if (!testDataManager) {
+                container.innerHTML = '<div class="error">❌ DataManager non disponibile</div>';
+                return;
+            }
+            
+            // Modifica i dati di test
+            const testWater = {
+                id: 'test-' + Date.now(),
+                ts: new Date().toISOString(),
+                ph: 7.2,
+                kh: 8.0,
+                gh: 12.0,
+                no2: 0.1,
+                no3: 25.0,
+                nh4: 0.2,
+                temp: 24.5,
+                cond: 450
+            };
+            
+            testDataManager.data.water.push(testWater);
+            testDataManager.data.settings.title = '🧪 Test Sincronizzazione - ' + new Date().toLocaleTimeString();
+            
+            testDataManager.saveData().then(() => {
+                container.innerHTML = '<div class="success">✅ Upload completato</div><pre>Dati di test aggiunti e salvati su GitHub</pre>';
+                refreshStatus();
+            }).catch(error => {
+                container.innerHTML = '<div class="error">❌ Errore upload: ' + error.message + '</div>';
+            });
+        }
+        
+        function testFullSync() {
+            const container = document.getElementById('full-sync-test');
+            container.innerHTML = '<div class="info">🔄 Test sincronizzazione completa...</div>';
+            
+            if (!testDataManager || !testDataManager.forceSync) {
+                container.innerHTML = '<div class="error">❌ DataManager o forceSync non disponibile</div>';
+                return;
+            }
+            
+            testDataManager.forceSync().then(() => {
+                container.innerHTML = '<div class="success">✅ Sincronizzazione completa OK</div>';
+                refreshStatus();
+            }).catch(error => {
+                container.innerHTML = '<div class="error">❌ Errore sincronizzazione: ' + error.message + '</div>';
+            });
+        }
+        
+        function simulateMultiDeviceTest() {
+            const container = document.getElementById('multi-device-test');
+            
+            let html = '<div class="info">🧪 Simulazione test multi-dispositivo:</div>';
+            html += '<pre>';
+            html += '1. Apri questo stesso link su un altro dispositivo/browser\n';
+            html += '2. Su questo dispositivo, clicca "Test Upload" per modificare i dati\n';
+            html += '3. Su un altro dispositivo, clicca "Test Download" per vedere i cambiamenti\n';
+            html += '4. Oppure aspetta 30 secondi per la sincronizzazione automatica\n';
+            html += '\n';
+            html += 'Dati attuali:\n';
+            if (testDataManager) {
+                html += '- Titolo: ' + testDataManager.data.settings.title + '\n';
+                html += '- Elementi acqua: ' + testDataManager.data.water.length + '\n';
+                html += '- Ultima sincronizzazione: ' + (testDataManager.lastSync ? testDataManager.lastSync.toLocaleString() : 'Mai') + '\n';
+            }
+            html += '</pre>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Avvia il test quando il DOM è pronto
+        document.addEventListener('DOMContentLoaded', initTest);
+    </script>
+</body>
+</html>

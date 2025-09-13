@@ -1,94 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
-    <title>Test Connessione GitHub</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Connessione Paludario</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .info { color: #1976d2; background: #e3f2fd; }
+        .warning { color: #f57c00; background: #fff3e0; }
+        button { padding: 10px 15px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
 </head>
 <body>
-    <h1>Test Connessione GitHub</h1>
-    <div id="status">Testando...</div>
-    <div id="details"></div>
+    <h1>🔗 Test Connessione Paludario</h1>
+    
+    <div class="test">
+        <h3>1. Informazioni Dispositivo</h3>
+        <div id="device-info"></div>
+    </div>
+    
+    <div class="test">
+        <h3>2. Test Connessione Server</h3>
+        <button onclick="testServerConnection()">Test Connessione</button>
+        <div id="connection-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>3. Test Caricamento Dati</h3>
+        <button onclick="testDataLoading()">Test Caricamento Dati</button>
+        <div id="data-result"></div>
+    </div>
+    
+    <div class="test">
+        <h3>4. Test Sincronizzazione</h3>
+        <button onclick="testSync()">Test Sincronizzazione</button>
+        <div id="sync-result"></div>
+    </div>
 
     <script>
-        const GITHUB_CONFIG = {
-            username: 'Tia2694',
-            repository: 'Paludario',
-            branch: 'main',
-            token: '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'
-        };
-
-        const API_BASE = `https://api.github.com/repos/${GITHUB_CONFIG.username}/${GITHUB_CONFIG.repository}`;
-
-        async function testConnection() {
-            const statusEl = document.getElementById('status');
-            const detailsEl = document.getElementById('details');
-
+        // Mostra informazioni del dispositivo
+        function showDeviceInfo() {
+            const container = document.getElementById('device-info');
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                url: window.location.href,
+                protocol: window.location.protocol,
+                host: window.location.host,
+                port: window.location.port
+            };
+            
+            let html = '<div class="info">📱 Informazioni Dispositivo:</div>';
+            html += '<pre>' + JSON.stringify(info, null, 2) + '</pre>';
+            
+            container.innerHTML = html;
+        }
+        
+        async function testServerConnection() {
+            const container = document.getElementById('connection-result');
+            container.innerHTML = '<div class="info">🔄 Test connessione...</div>';
+            
             try {
-                // Test 1: Verifica repository
-                statusEl.textContent = 'Testando connessione al repository...';
-                const repoResponse = await fetch(API_BASE);
-                
-                if (repoResponse.ok) {
-                    statusEl.textContent = '✅ Repository trovato!';
-                    detailsEl.innerHTML += '<p>✅ Repository esiste</p>';
+                // Test connessione base
+                const response = await fetch(window.location.origin + '/index.html');
+                if (response.ok) {
+                    container.innerHTML = '<div class="success">✅ Connessione server OK</div>';
                 } else {
-                    statusEl.textContent = '❌ Repository non trovato';
-                    detailsEl.innerHTML += `<p>❌ Errore repository: ${repoResponse.status} ${repoResponse.statusText}</p>`;
-                    return;
+                    container.innerHTML = '<div class="error">❌ Errore connessione: ' + response.status + '</div>';
                 }
-
-                // Test 2: Verifica token
-                statusEl.textContent = 'Testando token...';
-                const tokenResponse = await fetch(`${API_BASE}/contents/data`, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-
-                if (tokenResponse.ok) {
-                    statusEl.textContent = '✅ Token valido!';
-                    detailsEl.innerHTML += '<p>✅ Token funziona</p>';
-                } else {
-                    statusEl.textContent = '❌ Token non valido';
-                    detailsEl.innerHTML += `<p>❌ Errore token: ${tokenResponse.status} ${tokenResponse.statusText}</p>`;
-                    return;
-                }
-
-                // Test 3: Test salvataggio
-                statusEl.textContent = 'Testando salvataggio...';
-                const testData = { test: 'connessione', timestamp: new Date().toISOString() };
-                const saveResponse = await fetch(`${API_BASE}/contents/data/test.json`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
-                        'Accept': 'application/vnd.github.v3+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: 'Test connessione - ' + new Date().toISOString(),
-                        content: btoa(JSON.stringify(testData, null, 2)),
-                        branch: GITHUB_CONFIG.branch
-                    })
-                });
-
-                if (saveResponse.ok) {
-                    statusEl.textContent = '✅ Tutto funziona! Salvataggio OK';
-                    detailsEl.innerHTML += '<p>✅ Salvataggio funziona</p>';
-                } else {
-                    const errorData = await saveResponse.json();
-                    statusEl.textContent = '❌ Errore salvataggio';
-                    detailsEl.innerHTML += `<p>❌ Errore salvataggio: ${saveResponse.status} ${saveResponse.statusText}</p>`;
-                    detailsEl.innerHTML += `<p>Dettagli: ${JSON.stringify(errorData, null, 2)}</p>`;
-                }
-
             } catch (error) {
-                statusEl.textContent = '❌ Errore di connessione';
-                detailsEl.innerHTML += `<p>❌ Errore: ${error.message}</p>`;
+                container.innerHTML = '<div class="error">❌ Errore connessione: ' + error.message + '</div>';
             }
         }
-
-        // Avvia il test
-        testConnection();
+        
+        async function testDataLoading() {
+            const container = document.getElementById('data-result');
+            container.innerHTML = '<div class="info">🔄 Test caricamento dati...</div>';
+            
+            try {
+                // Test caricamento file di dati
+                const [waterResponse, settingsResponse] = await Promise.all([
+                    fetch(window.location.origin + '/data/water.json'),
+                    fetch(window.location.origin + '/data/settings.json')
+                ]);
+                
+                let html = '<div class="success">✅ File dati accessibili</div>';
+                
+                if (waterResponse.ok) {
+                    const waterData = await waterResponse.json();
+                    html += '<div class="info">Water data: ' + waterData.length + ' elementi</div>';
+                } else {
+                    html += '<div class="warning">⚠️ Water data non accessibile</div>';
+                }
+                
+                if (settingsResponse.ok) {
+                    const settingsData = await settingsResponse.json();
+                    html += '<div class="info">Settings: ' + JSON.stringify(settingsData, null, 2) + '</div>';
+                } else {
+                    html += '<div class="warning">⚠️ Settings non accessibili</div>';
+                }
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore caricamento dati: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testSync() {
+            const container = document.getElementById('sync-result');
+            container.innerHTML = '<div class="info">🔄 Test sincronizzazione...</div>';
+            
+            try {
+                // Test se i file JavaScript sono caricati
+                if (typeof GITHUB_CONFIG === 'undefined') {
+                    container.innerHTML = '<div class="error">❌ GITHUB_CONFIG non definito</div>';
+                    return;
+                }
+                
+                if (typeof DataManager === 'undefined') {
+                    container.innerHTML = '<div class="error">❌ DataManager non definito</div>';
+                    return;
+                }
+                
+                const dataManager = new DataManager();
+                await dataManager.loadData();
+                
+                let html = '<div class="success">✅ Sincronizzazione OK</div>';
+                html += '<div class="info">Settings: ' + JSON.stringify(dataManager.data.settings, null, 2) + '</div>';
+                
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="error">❌ Errore sincronizzazione: ' + error.message + '</div>';
+            }
+        }
+        
+        // Inizializza
+        window.addEventListener('load', () => {
+            showDeviceInfo();
+        });
     </script>
 </body>
 </html>
