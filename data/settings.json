@@ -3,7 +3,7 @@
   "subtitle": "Sistema di monitoraggio e controllo ambientale",
   "icon": "",
   "liters": "25",
-  "darkMode": true,
+  "darkMode": false,
   "mobileMode": true,
   "lockedMode": false,
   "waterThresholds": {
