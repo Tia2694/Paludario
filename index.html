@@ -1557,7 +1557,7 @@
 	.locked-mode input,
 	.locked-mode select:not(#param-select),
 	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#refresh-water-chart):not(#toggle-backgrounds):not(#toggle-fill),
-	.locked-mode [contenteditable="true"]:not(#main-icon) {
+	.locked-mode [contenteditable="true"] {
 		pointer-events: none !important;
 		opacity: 0.6 !important;
 		cursor: not-allowed !important;
@@ -1565,9 +1565,6 @@
 	
 	/* Blocca completamente la selezione dell'icona del titolo */
 	.locked-mode #main-icon {
-		pointer-events: none !important;
-		opacity: 0.6 !important;
-		cursor: not-allowed !important;
 		user-select: none !important;
 		-webkit-user-select: none !important;
 		-moz-user-select: none !important;
@@ -2576,6 +2573,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 lockToggle.innerHTML = '🔓 Unlock';
                 lockToggle.title = 'Disattiva modalità solo visualizzazione';
                 
+                // Disabilita contenteditable per titolo, sottotitolo e icona
+                const mainTitle = document.getElementById('main-title');
+                const mainSubtitle = document.getElementById('main-subtitle');
+                const mainIcon = document.getElementById('main-icon');
+                
+                if (mainTitle) mainTitle.contentEditable = 'false';
+                if (mainSubtitle) mainSubtitle.contentEditable = 'false';
+                if (mainIcon) mainIcon.contentEditable = 'false';
+                
                 // Chiudi tutti i menu aperti
                 const toggleSections = document.querySelectorAll('.toggle-section.visible');
                 const toggleButtons = document.querySelectorAll('.toggle-btn:not(.collapsed)');
@@ -2595,6 +2601,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 lockToggle.classList.remove('locked');
                 lockToggle.innerHTML = '🔒 Lock';
                 lockToggle.title = 'Attiva modalità solo visualizzazione';
+                
+                // Riabilita contenteditable per titolo, sottotitolo e icona
+                const mainTitle = document.getElementById('main-title');
+                const mainSubtitle = document.getElementById('main-subtitle');
+                const mainIcon = document.getElementById('main-icon');
+                
+                if (mainTitle) mainTitle.contentEditable = 'true';
+                if (mainSubtitle) mainSubtitle.contentEditable = 'true';
+                if (mainIcon) mainIcon.contentEditable = 'true';
                 
                 console.log('Modalità solo visualizzazione disattivata');
             }
