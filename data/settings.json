@@ -1,7 +1,7 @@
 {
   "title": "Paludario",
   "liters": "25",
-  "darkMode": false,
+  "darkMode": true,
   "waterThresholds": {
     "ph": {
       "min": 6,
