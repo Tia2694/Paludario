@@ -1572,6 +1572,31 @@
 		cursor: not-allowed !important;
 	}
 	
+	/* Pulsanti nelle sezioni toggle in modalità locked - semivisibili ma non cliccabili */
+	.locked-mode .toggle-section button {
+		pointer-events: none !important;
+		opacity: 0.3 !important;
+		cursor: not-allowed !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		-webkit-touch-callout: none !important;
+	}
+	
+	/* Input nelle sezioni toggle in modalità locked - semivisibili ma non cliccabili */
+	.locked-mode .toggle-section input,
+	.locked-mode .toggle-section select {
+		pointer-events: none !important;
+		opacity: 0.3 !important;
+		cursor: not-allowed !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		-webkit-touch-callout: none !important;
+	}
+	
 	/* Blocca completamente la selezione dell'icona del titolo */
 	.locked-mode #main-icon {
 		user-select: none !important;
@@ -1587,13 +1612,24 @@
 	}
 	
 	.locked-mode .toggle-section {
-		display: none !important;
+		opacity: 0.3 !important;
+		pointer-events: none !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		-webkit-touch-callout: none !important;
 	}
 	
 	.locked-mode .toggle-btn {
 		pointer-events: none !important;
-		opacity: 0.6 !important;
+		opacity: 0.4 !important;
 		cursor: not-allowed !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		-webkit-touch-callout: none !important;
 	}
 	
 	/* Mantieni funzionali solo scroll e pulsante lock */
@@ -2586,17 +2622,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (mainSubtitle) mainSubtitle.contentEditable = 'false';
                 if (mainIcon) mainIcon.contentEditable = 'false';
                 
-                // Chiudi tutti i menu aperti
-                const toggleSections = document.querySelectorAll('.toggle-section.visible');
-                const toggleButtons = document.querySelectorAll('.toggle-btn:not(.collapsed)');
-                
-                toggleSections.forEach(section => {
-                    section.classList.remove('visible');
-                });
-                
-                toggleButtons.forEach(button => {
-                    button.classList.add('collapsed');
-                });
+                // Mantieni le sezioni visibili ma non interattive in modalità locked
+                // Non chiudere i menu aperti, lasciali semivisibili
                 
             } else {
                 // Disattiva modalità locked
