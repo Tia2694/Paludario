@@ -4,7 +4,7 @@
   "icon": "🦀",
   "liters": "25",
   "darkMode": true,
-  "mobileMode": true,
+  "mobileMode": false,
   "lockedMode": false,
   "waterThresholds": {
     "ph": {
