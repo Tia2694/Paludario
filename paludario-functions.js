@@ -224,6 +224,8 @@ function setupEventListeners() {
             dataManager.updateSettings({ darkMode });
             drawWaterChart();
             drawDayChart();
+            // Riapplica gli stili per i valori fuori soglia
+            updateThresholdStyling();
         };
     }
 
@@ -394,6 +396,34 @@ function setupEventListeners() {
         drawWaterChart();
         drawDayChart();
     });
+    
+    // Event listeners per animali
+    if (clearAnimalBtn) {
+        clearAnimalBtn.addEventListener('click', clearAnimalForm);
+    }
+    
+    // Validazione campi animali
+    if (animalMales && animalFemales && animalCount) {
+        [animalMales, animalFemales, animalCount].forEach(input => {
+            if (input) {
+                input.addEventListener('input', validateAnimalFields);
+            }
+        });
+    }
+    
+    // Event listeners per aria
+    if (clearAirBtn) {
+        clearAirBtn.addEventListener('click', clearAirForm);
+    }
+    
+    // Validazione campi aria
+    if (airTempMin && airTempMax && airHumidityMin && airHumidityMax) {
+        [airTempMin, airTempMax, airHumidityMin, airHumidityMax].forEach(input => {
+            if (input) {
+                input.addEventListener('input', validateAirFields);
+            }
+        });
+    }
 }
 
 /* ==================== VALORI ACQUA ==================== */
@@ -642,6 +672,342 @@ function renderWaterTable() {
                 input.style.color = '';
             }
         });
+    });
+}
+
+/* ==================== GESTIONE ANIMALI ==================== */
+
+// Array per memorizzare gli animali
+let animals = [];
+
+// Elementi del form animali
+const animalSpecies = document.getElementById('animal-species');
+const animalType = document.getElementById('animal-type');
+const animalCount = document.getElementById('animal-count');
+const animalMales = document.getElementById('animal-males');
+const animalFemales = document.getElementById('animal-females');
+const animalPurchaseDate = document.getElementById('animal-purchase-date');
+const animalStatus = document.getElementById('animal-status');
+const clearAnimalBtn = document.getElementById('clear-animal');
+const animalsTable = document.getElementById('animals-table');
+
+// Funzione per aggiungere un animale
+function addAnimal() {
+    if (!animalSpecies.value.trim()) {
+        alert('Inserisci la specie/razza');
+        return;
+    }
+    
+    const males = parseInt(animalMales.value) || 0;
+    const females = parseInt(animalFemales.value) || 0;
+    const total = parseInt(animalCount.value) || 1;
+    
+    if (males + females > total) {
+        alert('La somma di maschi e femmine non può superare il totale degli esemplari');
+        return;
+    }
+    
+    const animal = {
+        id: Date.now(),
+        species: animalSpecies.value.trim(),
+        type: animalType.value,
+        count: total,
+        males: males,
+        females: females,
+        purchaseDate: animalPurchaseDate.value || new Date().toISOString().split('T')[0],
+        status: animalStatus.value
+    };
+    
+    animals.push(animal);
+    renderAnimalsTable();
+    clearAnimalForm();
+    
+    // Salva nel localStorage
+    if (dataManager) {
+        dataManager.updateSettings({ animals });
+    }
+}
+
+// Funzione per pulire il form animali
+function clearAnimalForm() {
+    animalSpecies.value = '';
+    animalType.value = 'pesce';
+    animalCount.value = '1';
+    animalMales.value = '0';
+    animalFemales.value = '0';
+    animalPurchaseDate.value = '';
+    animalStatus.value = 'vivo';
+}
+
+// Funzione per rimuovere un animale
+function removeAnimal(id) {
+    if (confirm('Sei sicuro di voler rimuovere questo animale?')) {
+        animals = animals.filter(animal => animal.id !== id);
+        renderAnimalsTable();
+        
+        // Salva nel localStorage
+        if (dataManager) {
+            dataManager.updateSettings({ animals });
+        }
+    }
+}
+
+// Funzione per aggiornare lo stato di un animale
+function updateAnimalStatus(id, newStatus) {
+    const animal = animals.find(a => a.id === id);
+    if (animal) {
+        animal.status = newStatus;
+        renderAnimalsTable();
+        
+        // Salva nel localStorage
+        if (dataManager) {
+            dataManager.updateSettings({ animals });
+        }
+    }
+}
+
+// Funzione per rendere la tabella animali
+function renderAnimalsTable() {
+    if (!animalsTable) return;
+    
+    const tbody = animalsTable.querySelector('tbody');
+    if (!tbody) return;
+    
+    if (animals.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666; padding: 20px;">Nessun animale registrato</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = animals.map(animal => {
+        const statusOptions = {
+            'vivo': '🟢 Vivo',
+            'morto': '🔴 Morto',
+            'malato': '🟡 Malato',
+            'gravida': '🟣 Gravidanza'
+        };
+        
+        const typeOptions = {
+            'pesce': '🐟 Pesce',
+            'mollusco': '🐚 Mollusco',
+            'crostaceo': '🦐 Crostaceo'
+        };
+        
+        return `
+            <tr>
+                <td><strong>${animal.species}</strong></td>
+                <td>${typeOptions[animal.type] || '🐟 Pesce'}</td>
+                <td>${animal.count}</td>
+                <td>${animal.males}</td>
+                <td>${animal.females}</td>
+                <td>${animal.purchaseDate}</td>
+                <td>
+                    <select onchange="updateAnimalStatus(${animal.id}, this.value)" style="background: transparent; border: none; color: inherit; font-size: inherit;">
+                        <option value="vivo" ${animal.status === 'vivo' ? 'selected' : ''}>🟢 Vivo</option>
+                        <option value="morto" ${animal.status === 'morto' ? 'selected' : ''}>🔴 Morto</option>
+                        <option value="malato" ${animal.status === 'malato' ? 'selected' : ''}>🟡 Malato</option>
+                        <option value="gravida" ${animal.status === 'gravida' ? 'selected' : ''}>🟣 Gravidanza</option>
+                    </select>
+                </td>
+                <td>
+                    <button onclick="removeAnimal(${animal.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Funzione per validare i campi animali
+function validateAnimalFields() {
+    const males = parseInt(animalMales.value) || 0;
+    const females = parseInt(animalFemales.value) || 0;
+    const total = parseInt(animalCount.value) || 1;
+    
+    if (males + females > total) {
+        animalMales.style.borderColor = '#f44336';
+        animalFemales.style.borderColor = '#f44336';
+        animalCount.style.borderColor = '#f44336';
+    } else {
+        animalMales.style.borderColor = '';
+        animalFemales.style.borderColor = '';
+        animalCount.style.borderColor = '';
+    }
+}
+
+/* ==================== GESTIONE ARIA ==================== */
+
+// Array per memorizzare i rilevamenti aria
+let airReadings = [];
+
+// Elementi del form aria
+const airDatetime = document.getElementById('air-datetime');
+const airTempMin = document.getElementById('air-temp-min');
+const airTempMax = document.getElementById('air-temp-max');
+const airHumidityMin = document.getElementById('air-humidity-min');
+const airHumidityMax = document.getElementById('air-humidity-max');
+const clearAirBtn = document.getElementById('clear-air');
+const airTable = document.getElementById('air-table');
+
+// Funzione per aggiungere un rilevamento aria
+function addAirReading() {
+    if (!airDatetime.value) {
+        alert('Inserisci data e ora');
+        return;
+    }
+    
+    const tempMin = parseFloat(airTempMin.value);
+    const tempMax = parseFloat(airTempMax.value);
+    const humidityMin = parseFloat(airHumidityMin.value);
+    const humidityMax = parseFloat(airHumidityMax.value);
+    
+    if (isNaN(tempMin) || isNaN(tempMax) || isNaN(humidityMin) || isNaN(humidityMax)) {
+        alert('Inserisci tutti i valori numerici');
+        return;
+    }
+    
+    if (tempMin > tempMax) {
+        alert('La temperatura minima non può essere maggiore della massima');
+        return;
+    }
+    
+    if (humidityMin > humidityMax) {
+        alert('L\'umidità minima non può essere maggiore della massima');
+        return;
+    }
+    
+    const airReading = {
+        id: Date.now(),
+        datetime: airDatetime.value,
+        tempMin: tempMin,
+        tempMax: tempMax,
+        humidityMin: humidityMin,
+        humidityMax: humidityMax
+    };
+    
+    airReadings.push(airReading);
+    renderAirTable();
+    clearAirForm();
+    
+    // Salva nel localStorage
+    if (dataManager) {
+        dataManager.updateSettings({ airReadings });
+    }
+}
+
+// Funzione per pulire il form aria
+function clearAirForm() {
+    airDatetime.value = '';
+    airTempMin.value = '';
+    airTempMax.value = '';
+    airHumidityMin.value = '';
+    airHumidityMax.value = '';
+}
+
+// Funzione per rimuovere un rilevamento aria
+function removeAirReading(id) {
+    if (confirm('Sei sicuro di voler rimuovere questo rilevamento?')) {
+        airReadings = airReadings.filter(reading => reading.id !== id);
+        renderAirTable();
+        
+        // Salva nel localStorage
+        if (dataManager) {
+            dataManager.updateSettings({ airReadings });
+        }
+    }
+}
+
+// Funzione per rendere la tabella aria
+function renderAirTable() {
+    if (!airTable) return;
+    
+    const tbody = airTable.querySelector('tbody');
+    if (!tbody) return;
+    
+    if (airReadings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666; padding: 20px;">Nessun rilevamento registrato</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = airReadings.map(reading => {
+        return `
+            <tr>
+                <td class="mono">${fmtDateTimeLocal(reading.datetime)}</td>
+                <td>${reading.tempMin}°C</td>
+                <td>${reading.tempMax}°C</td>
+                <td>${reading.humidityMin}%</td>
+                <td>${reading.humidityMax}%</td>
+                <td>
+                    <button onclick="removeAirReading(${reading.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Funzione per validare i campi aria
+function validateAirFields() {
+    const tempMin = parseFloat(airTempMin.value) || 0;
+    const tempMax = parseFloat(airTempMax.value) || 0;
+    const humidityMin = parseFloat(airHumidityMin.value) || 0;
+    const humidityMax = parseFloat(airHumidityMax.value) || 0;
+    
+    // Reset border colors
+    [airTempMin, airTempMax, airHumidityMin, airHumidityMax].forEach(input => {
+        if (input) input.style.borderColor = '';
+    });
+    
+    if (tempMin > tempMax && tempMin > 0 && tempMax > 0) {
+        airTempMin.style.borderColor = '#f44336';
+        airTempMax.style.borderColor = '#f44336';
+    }
+    
+    if (humidityMin > humidityMax && humidityMin > 0 && humidityMax > 0) {
+        airHumidityMin.style.borderColor = '#f44336';
+        airHumidityMax.style.borderColor = '#f44336';
+    }
+}
+
+/* ==================== GESTIONE SOGLIE ==================== */
+
+// Funzione per aggiornare gli stili dei valori fuori soglia
+function updateThresholdStyling() {
+    // Aggiorna gli input nella sezione "Nuovo valore"
+    const waterFields = ['ph', 'kh', 'gh', 'no2', 'no3', 'nh4', 'temp', 'cond'];
+    waterFields.forEach(field => {
+        const input = document.getElementById(field);
+        if (input && input.value) {
+            const value = parseFloat(input.value);
+            if (!isNaN(value)) {
+                const isOutOfThreshold = isValueOutOfThreshold(field, value);
+                if (isOutOfThreshold) {
+                    input.style.background = '#ffebee';
+                    input.style.borderColor = '#f44336';
+                    input.style.color = '#d32f2f';
+                } else {
+                    input.style.background = '';
+                    input.style.borderColor = '';
+                    input.style.color = '';
+                }
+            }
+        }
+    });
+    
+    // Aggiorna gli input nella tabella
+    const tableInputs = document.querySelectorAll('.table-input');
+    tableInputs.forEach(input => {
+        const field = input.dataset.field;
+        const value = parseFloat(input.value);
+        if (field && !isNaN(value)) {
+            const isOutOfThreshold = isValueOutOfThreshold(field, value);
+            if (isOutOfThreshold) {
+                input.style.background = '#ffebee';
+                input.style.borderColor = '#f44336';
+                input.style.color = '#d32f2f';
+            } else {
+                input.style.background = '';
+                input.style.borderColor = '';
+                input.style.color = '';
+            }
+        }
     });
 }
 

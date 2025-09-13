@@ -249,7 +249,9 @@ class DataManager {
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
             mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
-            waterThresholds: savedThresholds ? JSON.parse(savedThresholds) : defaultThresholds
+            waterThresholds: savedThresholds ? JSON.parse(savedThresholds) : defaultThresholds,
+            animals: JSON.parse(localStorage.getItem('paludario.animals') || '[]'),
+            airReadings: JSON.parse(localStorage.getItem('paludario.airReadings') || '[]')
         };
         // Aggiorna i dati globali
         this.updateGlobalData();
@@ -263,6 +265,8 @@ class DataManager {
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
         localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
         localStorage.setItem('paludario.waterThresholds', JSON.stringify(this.data.settings.waterThresholds));
+        localStorage.setItem('paludario.animals', JSON.stringify(this.data.settings.animals || []));
+        localStorage.setItem('paludario.airReadings', JSON.stringify(this.data.settings.airReadings || []));
     }
 
     updateStatus(message, type = 'success') {
@@ -328,6 +332,22 @@ class DataManager {
             }
         }
 
+        // Inizializza animali
+        if (this.data.settings.animals && typeof animals !== 'undefined') {
+            animals = this.data.settings.animals;
+            if (typeof renderAnimalsTable === 'function') {
+                renderAnimalsTable();
+            }
+        }
+        
+        // Inizializza rilevamenti aria
+        if (this.data.settings.airReadings && typeof airReadings !== 'undefined') {
+            airReadings = this.data.settings.airReadings;
+            if (typeof renderAirTable === 'function') {
+                renderAirTable();
+            }
+        }
+
         // Aggiorna UI
         if (typeof renderWaterTable === 'function') renderWaterTable();
         if (typeof renderDayTables === 'function') renderDayTables();
@@ -381,6 +401,12 @@ class DataManager {
         }
         if (typeof darkMode !== 'undefined') {
             darkMode = this.data.settings?.darkMode || false;
+            // Applica gli stili per i valori fuori soglia dopo il caricamento
+            setTimeout(() => {
+                if (typeof updateThresholdStyling === 'function') {
+                    updateThresholdStyling();
+                }
+            }, 100);
         }
         if (typeof waterThresholds !== 'undefined') {
             waterThresholds = this.data.settings?.waterThresholds || waterThresholds;

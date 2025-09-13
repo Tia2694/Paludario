@@ -429,6 +429,11 @@
 		margin-right: 6px; 
 	}
 	.color-dot.red { background: #e53935; }
+	
+	.dark-mode .color-dot.red { 
+		background: #ff5252 !important; 
+		box-shadow: 0 0 4px rgba(255, 82, 82, 0.5) !important;
+	}
 	.color-dot.green { background: #43a047; }
 	.color-dot.blue { background: #1e88e5; }
 	.color-dot.white { background: #757575; }
@@ -545,13 +550,78 @@
 	}
 	
 	.dark-mode .variation-negative {
-		background: #b71c1c !important;
-		color: #ef5350 !important;
+		background: #d32f2f !important;
+		color: #ffcdd2 !important;
+		font-weight: bold !important;
+		text-shadow: 0 0 2px rgba(255, 255, 255, 0.3) !important;
 	}
 	
 	.dark-mode .variation-neutral {
 		background: #424242 !important;
 		color: #bdbdbd !important;
+	}
+	
+	/* Stili migliorati per valori rossi in dark mode */
+	.dark-mode td:has(.variation-negative),
+	.dark-mode .variation-column.variation-negative {
+		background: #d32f2f !important;
+		color: #ffcdd2 !important;
+		font-weight: bold !important;
+		text-shadow: 0 0 2px rgba(255, 255, 255, 0.3) !important;
+		border: 1px solid #ff5252 !important;
+	}
+	
+	/* Evidenziazione per celle con valori critici in dark mode */
+	.dark-mode td[style*="color: red"],
+	.dark-mode td[style*="background: red"] {
+		background: #d32f2f !important;
+		color: #ffcdd2 !important;
+		font-weight: bold !important;
+		text-shadow: 0 0 2px rgba(255, 255, 255, 0.3) !important;
+		border: 1px solid #ff5252 !important;
+	}
+	
+	/* Forza i colori rossi per valori fuori soglia in dark mode */
+	.dark-mode input[style*="background: #ffebee"],
+	.dark-mode input[style*="border-color: #f44336"],
+	.dark-mode input[style*="color: #d32f2f"] {
+		background: #ffebee !important;
+		border-color: #f44336 !important;
+		color: #d32f2f !important;
+		font-weight: bold !important;
+	}
+	
+	/* Stili per la sezione animali */
+	#animals-table select {
+		background: transparent !important;
+		border: none !important;
+		color: inherit !important;
+		font-size: inherit !important;
+		padding: 4px !important;
+		border-radius: 4px !important;
+		cursor: pointer !important;
+	}
+	
+	#animals-table select:hover {
+		background: rgba(0, 0, 0, 0.1) !important;
+	}
+	
+	.dark-mode #animals-table select:hover {
+		background: rgba(255, 255, 255, 0.1) !important;
+	}
+	
+	/* Stili per i pulsanti di azione nella tabella animali */
+	#animals-table button {
+		min-height: 32px !important;
+		min-width: 32px !important;
+		padding: 4px 8px !important;
+		font-size: 12px !important;
+		margin: 2px !important;
+	}
+	
+	/* Animazione per l'icona degli animali */
+	.animated-icon.bounce {
+		animation: bounce 2s ease-in-out infinite;
 	}
 	
 	/* Stili per la console di controllo */
@@ -616,6 +686,24 @@
 	.dark-mode #control-console #mobile-toggle {
 		background: #7b1fa2 !important;
 		color: white !important;
+	}
+	
+	/* Pulsanti rossi migliorati per dark mode */
+	.dark-mode button[style*="background: #f44336"],
+	.dark-mode button[style*="background: #d32f2f"],
+	.dark-mode button[style*="background: #e53935"] {
+		background: #ff5252 !important;
+		color: #ffffff !important;
+		box-shadow: 0 0 8px rgba(255, 82, 82, 0.4) !important;
+		border: 1px solid #ff8a80 !important;
+	}
+	
+	.dark-mode button[style*="background: #f44336"]:hover,
+	.dark-mode button[style*="background: #d32f2f"]:hover,
+	.dark-mode button[style*="background: #e53935"]:hover {
+		background: #ff1744 !important;
+		box-shadow: 0 0 12px rgba(255, 23, 68, 0.6) !important;
+		transform: translateY(-2px) !important;
 	}
 	
 	.dark-mode #last-sync {
@@ -1014,7 +1102,9 @@
 		background: #ff9800 !important;
 	}
 	.dark-mode .status-indicator.error {
-		background: #f44336 !important;
+		background: #ff5252 !important;
+		color: #ffffff !important;
+		box-shadow: 0 0 8px rgba(255, 82, 82, 0.4) !important;
 	}
 	
 	/* Stili per il titolo editabile */
@@ -1385,6 +1475,30 @@ h2 .animated-icon {
 	animation: clock 8s linear infinite;
 }
 
+@keyframes bounce {
+	0%, 100% { transform: translateY(0px); }
+	50% { transform: translateY(-8px); }
+}
+
+.animated-icon.bounce {
+	animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { 
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% { 
+		transform: scale(1.1);
+		opacity: 0.8;
+	}
+}
+
+.animated-icon.pulse {
+	animation: pulse 2s ease-in-out infinite;
+}
+
 /* Stili per header decorativo in dark mode */
 .dark-mode .header-decorative {
 	background: linear-gradient(135deg, rgba(0,105,92,0.1) 0%, rgba(46,125,50,0.1) 100%) !important;
@@ -1396,7 +1510,72 @@ h2 .animated-icon {
 }
 </style>
 
-<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+<h2 style="margin: 0 0 16px 0;"><span class="animated-icon bounce">🐾</span> Gestione Animali</h2>
+
+<fieldset>
+	<legend>🐾 Nuovo Animale</legend>
+	<div class="row">
+		<div class="field">
+			<label for="animal-species">🐟 Specie/Razza</label>
+			<input id="animal-species" type="text" placeholder="es. Carassius auratus" />
+		</div>
+		<div class="field">
+			<label for="animal-type">🏷️ Tipo</label>
+			<select id="animal-type">
+				<option value="pesce">🐟 Pesce</option>
+				<option value="mollusco">🐚 Mollusco</option>
+				<option value="crostaceo">🦐 Crostaceo</option>
+			</select>
+		</div>
+		<div class="field">
+			<label for="animal-count">🔢 Esemplari</label>
+			<input id="animal-count" type="number" min="1" step="1" value="1" />
+		</div>
+		<div class="field">
+			<label for="animal-males">♂️ Maschi</label>
+			<input id="animal-males" type="number" min="0" step="1" value="0" />
+		</div>
+		<div class="field">
+			<label for="animal-females">♀️ Femmine</label>
+			<input id="animal-females" type="number" min="0" step="1" value="0" />
+		</div>
+		<div class="field">
+			<label for="animal-purchase-date">📅 Data Acquisto</label>
+			<input id="animal-purchase-date" type="date" />
+		</div>
+		<div class="field">
+			<label for="animal-status">🏥 Stato</label>
+			<select id="animal-status">
+				<option value="vivo">🟢 Vivo</option>
+				<option value="morto">🔴 Morto</option>
+				<option value="malato">🟡 Malato</option>
+				<option value="gravida">🟣 Gravidanza</option>
+			</select>
+		</div>
+		<button id="add-animal">➕ Aggiungi</button>
+		<button id="clear-animal">🧹 Pulisci</button>
+	</div>
+</fieldset>
+
+<div class="table-container">
+<table id="animals-table">
+	<thead>
+		<tr>
+			<th>🐟 Specie/Razza</th>
+			<th>🏷️ Tipo</th>
+			<th>🔢 Esemplari</th>
+			<th>♂️ Maschi</th>
+			<th>♀️ Femmine</th>
+			<th>📅 Data Acquisto</th>
+			<th>🏥 Stato</th>
+			<th>⚙️ Azioni</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+</div>
+
+<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; margin-top: 32px;">
 	<h2 style="margin: 0;"><span class="animated-icon water">💧</span> Valori Acqua</h2>
 	<button id="water-settings-btn" style="background: #ff9800; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 36px;">⚙️ Soglie</button>
 </div>
@@ -1532,6 +1711,60 @@ h2 .animated-icon {
 		</table>
 		</div>
 	</fieldset>
+</div>
+
+<h2 style="margin: 32px 0 16px 0;"><span class="animated-icon pulse">🌡️</span> Monitoraggio Aria</h2>
+
+<fieldset>
+	<legend>🌡️ Nuovo Rilevamento Aria</legend>
+	<div class="row">
+		<div class="field">
+			<label for="air-datetime">📅 Data/Ora</label>
+			<input id="air-datetime" type="datetime-local" />
+			<button class="tiny ok-btn" data-for="air-datetime">OK</button>
+			<button class="tiny clear-btn" data-for="air-datetime">Pulisci</button>
+		</div>
+	</div>
+	<div class="row">
+		<div class="field">
+			<label for="air-temp-min">🌡️ Temp. Min</label>
+			<input id="air-temp-min" type="number" step="0.1" min="-50" max="60" />
+			<span class="unit">°C</span>
+		</div>
+		<div class="field">
+			<label for="air-temp-max">🌡️ Temp. Max</label>
+			<input id="air-temp-max" type="number" step="0.1" min="-50" max="60" />
+			<span class="unit">°C</span>
+		</div>
+		<div class="field">
+			<label for="air-humidity-min">💧 Umidità Min</label>
+			<input id="air-humidity-min" type="number" step="1" min="0" max="100" />
+			<span class="unit">%</span>
+		</div>
+		<div class="field">
+			<label for="air-humidity-max">💧 Umidità Max</label>
+			<input id="air-humidity-max" type="number" step="1" min="0" max="100" />
+			<span class="unit">%</span>
+		</div>
+		<button id="add-air">➕ Aggiungi</button>
+		<button id="clear-air">🧹 Pulisci</button>
+	</div>
+</fieldset>
+
+<div class="table-container">
+<table id="air-table">
+	<thead>
+		<tr>
+			<th>📅 Data/Ora</th>
+			<th>🌡️ Temp. Min °C</th>
+			<th>🌡️ Temp. Max °C</th>
+			<th>💧 Umidità Min %</th>
+			<th>💧 Umidità Max %</th>
+			<th>⚙️ Azioni</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
 </div>
 
 <fieldset>
