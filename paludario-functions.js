@@ -1223,16 +1223,38 @@ function renderLightTable() {
 }
 
 function hookOkCancelButtons() {
+    // Gestione pulsanti OK
     document.querySelectorAll('.ok-btn').forEach(btn => {
-        btn.onclick = () => {
+        const handleOkClick = () => {
             const id = btn.getAttribute('data-for');
             const el = document.getElementById(id);
             el && el.blur();
         };
+        
+        // Click per desktop
+        btn.onclick = handleOkClick;
+        
+        // Touch per mobile
+        btn.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            handleOkClick();
+        });
+        
+        // Feedback visivo per touch
+        btn.addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            btn.style.opacity = '0.7';
+        });
+        
+        btn.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            btn.style.opacity = '1';
+        });
     });
     
+    // Gestione pulsanti Clear
     document.querySelectorAll('.clear-btn').forEach(btn => {
-        btn.onclick = () => {
+        const handleClearClick = () => {
             const id = btn.getAttribute('data-for');
             const el = document.getElementById(id);
             if (el) {
@@ -1240,6 +1262,26 @@ function hookOkCancelButtons() {
                 el.blur();
             }
         };
+        
+        // Click per desktop
+        btn.onclick = handleClearClick;
+        
+        // Touch per mobile
+        btn.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            handleClearClick();
+        });
+        
+        // Feedback visivo per touch
+        btn.addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            btn.style.opacity = '0.7';
+        });
+        
+        btn.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            btn.style.opacity = '1';
+        });
     });
 }
 
