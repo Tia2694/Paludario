@@ -21,62 +21,205 @@
 
 <title>Paludario</title>
 <style>
-	/* Mobile-first CSS ottimizzato */
+	/* Mobile-first CSS ottimizzato con tema paludario moderno */
+	:root {
+		--primary-green: #2e7d32;
+		--primary-blue: #1976d2;
+		--accent-teal: #00695c;
+		--accent-orange: #ff8f00;
+		--background-light: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+		--background-dark: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+		--card-light: rgba(255, 255, 255, 0.9);
+		--card-dark: rgba(45, 45, 45, 0.9);
+		--shadow-light: 0 4px 20px rgba(46, 125, 50, 0.1);
+		--shadow-dark: 0 4px 20px rgba(0, 0, 0, 0.3);
+	}
+	
 	body { 
-		font-family: system-ui, Arial, sans-serif; 
-		margin: 12px; 
+		font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+		margin: 0;
+		padding: 20px;
+		background: var(--background-light);
+		min-height: 100vh;
 		-webkit-text-size-adjust: 100%;
 		-webkit-tap-highlight-color: transparent;
+		transition: all 0.3s ease;
 	}
 	
-	/* Pulsanti touch-friendly */
+	.dark-mode body {
+		background: var(--background-dark);
+		color: #e0e0e0;
+	}
+	
+	/* Pulsanti moderni con tema paludario */
 	button { 
 		cursor: pointer; 
-		min-height: 44px;
-		min-width: 44px;
-		padding: 12px 16px;
+		min-height: 48px;
+		min-width: 48px;
+		padding: 14px 20px;
 		font-size: 16px;
-		border-radius: 8px;
-		border: 1px solid #ddd;
-		background: #f8f9fa;
-		transition: all 0.2s;
+		font-weight: 600;
+		border-radius: 12px;
+		border: none;
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		color: white;
+		box-shadow: var(--shadow-light);
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		position: relative;
+		overflow: hidden;
 	}
+	
+	button::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+		transition: left 0.5s;
+	}
+	
 	button:hover {
-		background: #e9ecef;
-		transform: translateY(-1px);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
 	}
+	
+	button:hover::before {
+		left: 100%;
+	}
+	
 	button:active {
 		transform: translateY(0);
+		box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
 	}
 	
-	/* Input touch-friendly */
-	input, select {
-		min-height: 44px;
-		font-size: 16px;
-		padding: 8px 12px;
-		border-radius: 6px;
-		border: 1px solid #ddd;
-		background: #fff;
+	.dark-mode button {
+		background: linear-gradient(135deg, var(--accent-teal) 0%, var(--primary-green) 100%);
+		box-shadow: var(--shadow-dark);
 	}
+	
+	.dark-mode button:hover {
+		box-shadow: 0 8px 25px rgba(0, 105, 92, 0.4);
+	}
+	
+	/* Input moderni */
+	input, select {
+		min-height: 48px;
+		font-size: 16px;
+		font-weight: 500;
+		padding: 14px 16px;
+		border-radius: 12px;
+		border: 2px solid rgba(46, 125, 50, 0.2);
+		background: var(--card-light);
+		transition: all 0.3s ease;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	}
+	
 	input:focus, select:focus {
 		outline: none;
-		border-color: #1976d2;
-		box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+		border-color: var(--primary-green);
+		box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+		transform: translateY(-1px);
 	}
 	
-	h1 { margin: 0 0 16px 0; font-size: 24px; }
-	h2 { margin: 24px 0 16px 0; font-size: 20px; }
+	.dark-mode input, .dark-mode select {
+		background: var(--card-dark);
+		border-color: rgba(0, 105, 92, 0.3);
+		color: #e0e0e0;
+	}
 	
+	.dark-mode input:focus, .dark-mode select:focus {
+		border-color: var(--accent-teal);
+		box-shadow: 0 0 0 3px rgba(0, 105, 92, 0.2);
+	}
+	
+	/* Titoli moderni */
+	h1 { 
+		margin: 0 0 24px 0; 
+		font-size: 32px; 
+		font-weight: 800;
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		text-align: center;
+		letter-spacing: -0.5px;
+	}
+	
+	h2 { 
+		margin: 32px 0 20px 0; 
+		font-size: 24px; 
+		font-weight: 700;
+		color: var(--primary-green);
+		position: relative;
+		padding-left: 16px;
+	}
+	
+	h2::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 4px;
+		height: 24px;
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		border-radius: 2px;
+	}
+	
+	.dark-mode h1 {
+		background: linear-gradient(135deg, var(--accent-teal) 0%, var(--primary-green) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+	
+	.dark-mode h2 {
+		color: var(--accent-teal);
+	}
+	
+	/* Fieldset moderni */
 	fieldset { 
-		border: 1px solid #ccc; 
-		padding: 16px; 
-		margin: 16px 0 20px 0; 
-		border-radius: 8px;
+		border: none;
+		padding: 24px; 
+		margin: 24px 0; 
+		border-radius: 16px;
+		background: var(--card-light);
+		box-shadow: var(--shadow-light);
+		position: relative;
+		overflow: hidden;
 	}
+	
+	fieldset::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 4px;
+		background: linear-gradient(90deg, var(--primary-green) 0%, var(--accent-teal) 50%, var(--primary-blue) 100%);
+	}
+	
+	.dark-mode fieldset {
+		background: var(--card-dark);
+		box-shadow: var(--shadow-dark);
+	}
+	
 	legend { 
-		padding: 0 8px; 
-		font-weight: 600; 
-		font-size: 16px;
+		padding: 8px 16px; 
+		font-weight: 700; 
+		font-size: 18px;
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		color: white;
+		border-radius: 12px;
+		margin-left: 16px;
+		box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+	}
+	
+	.dark-mode legend {
+		background: linear-gradient(135deg, var(--accent-teal) 0%, var(--primary-green) 100%);
+		box-shadow: 0 4px 12px rgba(0, 105, 92, 0.4);
 	}
 	
 	.row { 
@@ -112,22 +255,58 @@
 	input[type="time"] { width: 120px; }
 	input[type="datetime-local"] { width: 200px; }
 	
+	/* Tabelle moderne */
 	table { 
 		border-collapse: collapse; 
 		width: 100%; 
-		margin-top: 12px; 
-		font-size: 14px;
+		margin-top: 16px; 
+		font-size: 15px;
+		background: var(--card-light);
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: var(--shadow-light);
 	}
+	
 	th, td { 
-		border: 1px solid #ddd; 
-		padding: 8px 10px; 
+		border: none;
+		padding: 12px 16px; 
 		text-align: left; 
+		transition: all 0.2s ease;
 	}
-	th { 
-		background: #f7f7f7; 
-		position: sticky; 
-		top: 0; 
-		font-weight: 600;
+	
+	th {
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		color: white;
+		font-weight: 700;
+		font-size: 14px;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+	
+	tr:nth-child(even) {
+		background: rgba(46, 125, 50, 0.02);
+	}
+	
+	tr:hover {
+		background: rgba(46, 125, 50, 0.05);
+		transform: scale(1.01);
+	}
+	
+	.dark-mode table {
+		background: var(--card-dark);
+		box-shadow: var(--shadow-dark);
+	}
+	
+	.dark-mode th {
+		background: linear-gradient(135deg, var(--accent-teal) 0%, var(--primary-green) 100%);
+	}
+	
+	.dark-mode tr:nth-child(even) {
+		background: rgba(0, 105, 92, 0.05);
+	}
+	
+	.dark-mode tr:hover {
+		background: rgba(0, 105, 92, 0.1);
 	}
 	
 	.grid { display: grid; gap: 16px; }
@@ -296,6 +475,15 @@
 		z-index: 9999 !important;
 		transition: all 0.3s ease;
 		pointer-events: auto;
+	}
+	
+	#control-console button:hover {
+		transform: translateY(-2px) !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+	}
+	
+	#control-console button:active {
+		transform: translateY(0) !important;
 	}
 	
 	#control-console:hover {
@@ -626,18 +814,18 @@
 <body>
 
 <!-- Console di controllo inchiodata in alto a destra -->
-<div id="control-console" style="position: fixed; top: 0; right: 0; z-index: 9999; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 0 0 0 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 4px; align-items: flex-end; width: 260px; box-sizing: border-box;">
+<div id="control-console" style="position: fixed; top: 0; right: 0; z-index: 9999; background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,248,255,0.95) 100%); backdrop-filter: blur(15px); padding: 12px 16px; border-radius: 0 0 0 16px; box-shadow: 0 4px 20px rgba(46,125,50,0.15), 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 6px; align-items: flex-end; width: 280px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.2);">
 	<!-- Status indicator compatto -->
 	<div id="status-indicator" class="status-indicator" style="background: #4caf50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin: 0; white-space: nowrap;">🔄 Sincronizzazione...</div>
 	
 	<!-- Pulsanti compatti in due righe -->
-	<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-		<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🔄 Sync</button>
-		<button id="debug-sync" style="background: #ff9800; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🐛 Debug</button>
+	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+		<button id="sync-data" style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(25,118,210,0.3); transition: all 0.2s ease;">🔄 Sync</button>
+		<button id="debug-sync" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(255,152,0,0.3); transition: all 0.2s ease;">🐛 Debug</button>
 	</div>
-	<div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
-		<button id="mobile-toggle" style="background: #9c27b0; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">📱 Mobile</button>
-		<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🌙 Dark</button>
+	<div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
+		<button id="mobile-toggle" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(156,39,176,0.3); transition: all 0.2s ease;">📱 Mobile</button>
+		<button id="dark-mode-toggle" style="background: linear-gradient(135deg, #424242 0%, #303030 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(66,66,66,0.3); transition: all 0.2s ease;">🌙 Dark</button>
 	</div>
 	
 	<!-- Ultima sincronizzazione compatta -->
@@ -645,16 +833,28 @@
 </div>
 
 <!-- Spazio per evitare che il contenuto vada sotto la console -->
-<div style="height: 90px; margin-right: 260px;"></div>
+<div style="height: 100px; margin-right: 280px;"></div>
 
-<div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
-	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 8px; border-radius: 8px; transition: border-color 0.2s; margin: 0; font-size: 28px;">🌱 Paludario</h1>
-	<div class="field" style="margin: 0;">
-		<label for="liters" style="font-weight: 600; font-size: 18px;">🪣 Litri</label>
-		<input id="liters" type="number" step="0.1" min="0" style="width: 100px; font-size: 18px; font-weight: 600;" />
-		<span class="unit">L</span>
+<!-- Header decorativo -->
+<div style="text-align: center; margin-bottom: 32px; padding: 24px; background: linear-gradient(135deg, rgba(46,125,50,0.05) 0%, rgba(0,105,92,0.05) 100%); border-radius: 20px; border: 1px solid rgba(46,125,50,0.1);">
+	<div style="display: inline-block; font-size: 48px; margin-bottom: 8px; animation: float 3s ease-in-out infinite;">🌱</div>
+	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 12px 20px; border-radius: 16px; transition: all 0.3s ease; margin: 0 0 8px 0; font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Paludario</h1>
+	<p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Sistema di monitoraggio e controllo ambientale</p>
+	<div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+		<div class="field" style="margin: 0;">
+			<label for="liters" style="font-weight: 600; font-size: 16px; color: var(--primary-green);">🪣 Volume Acqua</label>
+			<input id="liters" type="number" step="0.1" min="0" style="width: 120px; font-size: 18px; font-weight: 600; text-align: center;" />
+			<span class="unit">L</span>
+		</div>
 	</div>
 </div>
+
+<style>
+@keyframes float {
+	0%, 100% { transform: translateY(0px); }
+	50% { transform: translateY(-10px); }
+}
+</style>
 
 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
 	<h2 style="margin: 0;">💧 Valori Acqua</h2>
