@@ -1548,6 +1548,80 @@
 		background: rgba(0, 105, 92, 0.1);
 	}
 	
+	/* Stili per modalità locked */
+	.locked-mode {
+		pointer-events: none !important;
+		user-select: none !important;
+	}
+	
+	.locked-mode input,
+	.locked-mode select:not(#param-select),
+	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#refresh-water-chart):not(#toggle-backgrounds):not(#toggle-fill),
+	.locked-mode [contenteditable="true"]:not(#main-icon) {
+		pointer-events: none !important;
+		opacity: 0.6 !important;
+		cursor: not-allowed !important;
+	}
+	
+	/* Blocca completamente la selezione dell'icona del titolo */
+	.locked-mode #main-icon {
+		pointer-events: none !important;
+		opacity: 0.6 !important;
+		cursor: not-allowed !important;
+		user-select: none !important;
+		-webkit-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		-webkit-touch-callout: none !important;
+		-webkit-user-drag: none !important;
+		-khtml-user-select: none !important;
+		-moz-user-select: none !important;
+		-ms-user-select: none !important;
+		user-select: none !important;
+	}
+	
+	.locked-mode .toggle-section {
+		display: none !important;
+	}
+	
+	.locked-mode .toggle-btn {
+		pointer-events: none !important;
+		opacity: 0.6 !important;
+		cursor: not-allowed !important;
+	}
+	
+	/* Mantieni funzionali solo scroll e pulsante lock */
+	.locked-mode body,
+	.locked-mode .table-container {
+		pointer-events: auto !important;
+	}
+	
+	.locked-mode #lock-toggle,
+	.locked-mode #sync-data,
+	.locked-mode #debug-sync,
+	.locked-mode #mobile-toggle,
+	.locked-mode #dark-mode-toggle,
+	.locked-mode #refresh-day-chart,
+	.locked-mode #refresh-water-chart,
+	.locked-mode #toggle-backgrounds,
+	.locked-mode #toggle-fill,
+	.locked-mode #param-select {
+		pointer-events: auto !important;
+		opacity: 1 !important;
+		cursor: pointer !important;
+	}
+	
+	/* Stile per pulsante lock attivo */
+	#lock-toggle.locked {
+		background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%) !important;
+		box-shadow: 0 2px 8px rgba(76,175,80,0.3) !important;
+	}
+	
+	.dark-mode #lock-toggle.locked {
+		background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%) !important;
+		box-shadow: 0 2px 8px rgba(102,187,106,0.4) !important;
+	}
+	
 	/* Responsive design per schermi molto piccoli */
 	@media (max-width: 480px) {
 		.mobile-mode body {
@@ -1717,6 +1791,7 @@
 	<div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
 		<button id="mobile-toggle" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(156,39,176,0.3); transition: all 0.2s ease;">📱 Mobile</button>
 		<button id="dark-mode-toggle" style="background: linear-gradient(135deg, #424242 0%, #303030 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(66,66,66,0.3); transition: all 0.2s ease;">🌙 Dark</button>
+		<button id="lock-toggle" style="background: linear-gradient(135deg, #ff5722 0%, #d84315 100%); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; min-height: 36px; white-space: nowrap; box-shadow: 0 2px 8px rgba(255,87,34,0.3); transition: all 0.2s ease;" title="Attiva modalità solo visualizzazione">🔒 Lock</button>
 	</div>
 	
 	<!-- Ultima sincronizzazione compatta -->
@@ -2484,6 +2559,57 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         `;
         document.head.appendChild(style);
+    }
+    
+    // Gestione modalità locked (solo visualizzazione)
+    const lockToggle = document.getElementById('lock-toggle');
+    if (lockToggle) {
+        let isLocked = false;
+        
+        lockToggle.addEventListener('click', function() {
+            isLocked = !isLocked;
+            
+            if (isLocked) {
+                // Attiva modalità locked
+                document.body.classList.add('locked-mode');
+                lockToggle.classList.add('locked');
+                lockToggle.innerHTML = '🔓 Unlock';
+                lockToggle.title = 'Disattiva modalità solo visualizzazione';
+                
+                // Chiudi tutti i menu aperti
+                const toggleSections = document.querySelectorAll('.toggle-section.visible');
+                const toggleButtons = document.querySelectorAll('.toggle-btn:not(.collapsed)');
+                
+                toggleSections.forEach(section => {
+                    section.classList.remove('visible');
+                });
+                
+                toggleButtons.forEach(button => {
+                    button.classList.add('collapsed');
+                });
+                
+                console.log('Modalità solo visualizzazione attivata');
+            } else {
+                // Disattiva modalità locked
+                document.body.classList.remove('locked-mode');
+                lockToggle.classList.remove('locked');
+                lockToggle.innerHTML = '🔒 Lock';
+                lockToggle.title = 'Attiva modalità solo visualizzazione';
+                
+                console.log('Modalità solo visualizzazione disattivata');
+            }
+        });
+        
+        // Carica stato locked dal localStorage
+        const savedLockState = localStorage.getItem('paludario.lockedMode') === 'true';
+        if (savedLockState) {
+            lockToggle.click(); // Attiva la modalità locked
+        }
+        
+        // Salva stato locked nel localStorage
+        lockToggle.addEventListener('click', function() {
+            localStorage.setItem('paludario.lockedMode', isLocked.toString());
+        });
     }
 });
 </script>

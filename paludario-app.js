@@ -265,6 +265,7 @@ class DataManager {
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
             mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
+            lockedMode: localStorage.getItem('paludario.lockedMode') === 'true',
             waterThresholds: savedThresholds ? JSON.parse(savedThresholds) : defaultThresholds,
             animals: JSON.parse(localStorage.getItem('paludario.animals') || '[]'),
             airReadings: JSON.parse(localStorage.getItem('paludario.airReadings') || '[]')
@@ -282,6 +283,7 @@ class DataManager {
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
         localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
+        localStorage.setItem('paludario.lockedMode', this.data.settings.lockedMode);
         localStorage.setItem('paludario.waterThresholds', JSON.stringify(this.data.settings.waterThresholds));
         localStorage.setItem('paludario.animals', JSON.stringify(this.data.settings.animals || []));
         localStorage.setItem('paludario.airReadings', JSON.stringify(this.data.settings.airReadings || []));
@@ -331,6 +333,14 @@ class DataManager {
         const mainIcon = document.getElementById('main-icon');
         if (mainIcon) {
             mainIcon.textContent = this.data.settings.icon || '🌱';
+        }
+        
+        // Inizializza stato locked
+        if (this.data.settings.lockedMode) {
+            const lockToggle = document.getElementById('lock-toggle');
+            if (lockToggle) {
+                lockToggle.click(); // Attiva la modalità locked
+            }
         }
 
         // Inizializza litri
