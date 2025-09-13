@@ -44,7 +44,6 @@ class DataManager {
             
             // Verifica se GitHub è configurato
             if (!GITHUB_CONFIG.token) {
-                console.log('GitHub non configurato, carico solo dati locali');
                 this.loadFromLocalStorage();
                 this.initializeUI();
                 this.updateStatus('✅ Dati locali (GitHub non configurato)', 'success');
@@ -74,10 +73,8 @@ class DataManager {
                 }
                 // Carica sempre i settings da GitHub se disponibili (anche se title è vuoto)
                 if (settingsData && typeof settingsData === 'object') {
-                    console.log('Settings caricati da GitHub:', settingsData);
                     // Valida e correggi l'emoji se presente
                     if (settingsData.icon) {
-                        console.log('🌐 Caricamento emoji da GitHub:', settingsData.icon, 'Tipo:', typeof settingsData.icon);
                         settingsData.icon = this.validateAndFixEmoji(settingsData.icon);
                     }
                     this.data.settings = { ...this.data.settings, ...settingsData };
@@ -91,7 +88,6 @@ class DataManager {
                 
                 this.lastSync = new Date();
                 this.updateStatus('✅ Dati sincronizzati da GitHub', 'success');
-                console.log('Dati caricati da GitHub');
                 
                 // Avvia la sincronizzazione automatica se non è già attiva
                 if (!this.isInitialized) {
@@ -142,7 +138,6 @@ class DataManager {
             
             // Valida e correggi l'emoji prima di salvare
             if (this.data.settings.icon) {
-                console.log('💾 Salvataggio emoji su GitHub:', this.data.settings.icon, 'Tipo:', typeof this.data.settings.icon);
                 this.data.settings.icon = this.validateAndFixEmoji(this.data.settings.icon);
             }
             
@@ -156,7 +151,6 @@ class DataManager {
                 
                 this.lastSync = new Date();
                 this.updateStatus('✅ Dati salvati su GitHub', 'success');
-                console.log('Dati salvati su GitHub');
             } catch (githubError) {
                 console.warn('Salvataggio GitHub fallito, dati salvati localmente:', githubError);
                 this.updateStatus('✅ Dati salvati localmente', 'success');
@@ -192,7 +186,6 @@ class DataManager {
                 const jsonString = decoder.decode(bytes);
                 return JSON.parse(jsonString);
             } else {
-                console.log(`File ${filePath} non trovato, uso valori di default`);
                 return defaultValue;
             }
         } catch (error) {
@@ -215,12 +208,9 @@ class DataManager {
                 if (getResponse.ok) {
                     const fileData = await getResponse.json();
                     sha = fileData.sha;
-                    console.log(`File ${filePath} esiste, aggiornamento`);
                 } else {
-                    console.log(`File ${filePath} non esiste, creazione nuovo file`);
                 }
             } catch (e) {
-                console.log(`File ${filePath} non esiste, creazione nuovo file`);
             }
 
             // Codifica sicura per caratteri Unicode (incluso emoji)
@@ -274,7 +264,6 @@ class DataManager {
                         
                         if (latestResponse.ok) {
                             const latestFileData = await latestResponse.json();
-                            console.log(`Ricaricate ultime modifiche per ${filePath}, riprovo con SHA: ${latestFileData.sha.substring(0, 8)}...`);
                             
                             // Prova di nuovo con i dati aggiornati
                             return await this.saveToGitHub(filePath, data, retryCount + 1);
@@ -287,7 +276,6 @@ class DataManager {
                 throw new Error(`Errore ${response.status}: ${errorData.message || response.statusText}`);
             }
             
-            console.log(`File ${filePath} salvato con successo`);
         } catch (error) {
             console.error(`Errore nel salvataggio di ${filePath}:`, error);
             throw error;
@@ -295,10 +283,7 @@ class DataManager {
     }
 
     validateAndFixEmoji(emojiText) {
-        console.log('🔍 Validazione emoji - Input:', emojiText, 'Tipo:', typeof emojiText, 'Lunghezza:', emojiText?.length);
-        
         if (!emojiText || typeof emojiText !== 'string') {
-            console.log('❌ Emoji non valida (null/undefined/non-string) -> Default 🌱');
             return '🌱';
         }
         
@@ -308,19 +293,15 @@ class DataManager {
         // Cerca la prima emoji valida
         const matches = emojiText.match(emojiRegex);
         if (matches && matches.length > 0) {
-            console.log('✅ Emoji valida trovata:', matches[0], '-> Mantenuta');
             return matches[0];
         }
         
         // Se non trova emoji valide, controlla se è un carattere corrotto
-        // e prova a ripristinare l'emoji di default
         if (emojiText.includes('?') || emojiText.includes('') || emojiText.length === 0) {
-            console.log('❌ Emoji corrotta (contiene ? o ) -> Default 🌱');
             return '🌱';
         }
         
         // Se il testo non è vuoto ma non è un'emoji valida, mantieni il default
-        console.log('❌ Emoji non riconosciuta:', emojiText, '-> Default 🌱');
         return '🌱';
     }
 
@@ -343,11 +324,7 @@ class DataManager {
         this.data.settings = {
             title: localStorage.getItem('paludario.title') || '🌱 Paludario',
             subtitle: localStorage.getItem('paludario.subtitle') || 'Sistema di monitoraggio e controllo ambientale',
-            icon: (() => {
-                const loadedIcon = localStorage.getItem('paludario.icon');
-                console.log('📥 Caricamento emoji da localStorage:', loadedIcon, 'Tipo:', typeof loadedIcon);
-                return this.validateAndFixEmoji(loadedIcon) || '🌱';
-            })(),
+            icon: this.validateAndFixEmoji(localStorage.getItem('paludario.icon')) || '🌱',
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
             mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
@@ -365,9 +342,7 @@ class DataManager {
         localStorage.setItem('paludario.dayPlanTemplate', JSON.stringify(this.data.dayTemplate));
         localStorage.setItem('paludario.title', this.data.settings.title);
         localStorage.setItem('paludario.subtitle', this.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale');
-        const iconToSave = this.data.settings.icon || '🌱';
-        console.log('💾 Salvataggio emoji in localStorage:', iconToSave, 'Tipo:', typeof iconToSave);
-        localStorage.setItem('paludario.icon', iconToSave);
+        localStorage.setItem('paludario.icon', this.data.settings.icon || '🌱');
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
         localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
@@ -403,7 +378,6 @@ class DataManager {
     }
 
     initializeUI() {
-        console.log('initializeUI chiamata, settings:', this.data.settings);
         
         // Inizializza titolo
         const mainTitle = document.getElementById('main-title');
@@ -421,12 +395,10 @@ class DataManager {
         const mainIcon = document.getElementById('main-icon');
         if (mainIcon) {
             const iconText = this.data.settings.icon || '🌱';
-            console.log('🎨 Inizializzazione emoji nell\'UI:', iconText, 'Tipo:', typeof iconText);
             const validIcon = this.validateAndFixEmoji(iconText);
             mainIcon.textContent = validIcon;
             // Aggiorna anche i dati se l'icona è stata corretta
             if (validIcon !== iconText) {
-                console.log('🔄 Emoji corretta durante inizializzazione UI:', iconText, '->', validIcon);
                 this.data.settings.icon = validIcon;
             }
         }
@@ -442,7 +414,6 @@ class DataManager {
         // Inizializza litri
         const litersInput = document.getElementById('liters');
         if (litersInput) {
-            console.log('Aggiornando campo litri con valore:', this.data.settings.liters);
             litersInput.value = this.data.settings.liters;
         } else {
             console.error('Campo liters non trovato nel DOM');
@@ -453,7 +424,7 @@ class DataManager {
             document.body.classList.add('dark-mode');
             const darkModeToggle = document.getElementById('dark-mode-toggle');
             if (darkModeToggle) {
-                darkModeToggle.textContent = '☀️ Light Mode';
+                darkModeToggle.textContent = '☀️ Light';
                 darkModeToggle.style.background = '#555';
             }
         }
@@ -493,21 +464,14 @@ class DataManager {
 
     // Metodi per aggiornare i dati
     updateWater(waterData) {
-        console.log('💾 DataManager.updateWater - INIZIO');
-        console.log('📊 waterData ricevuto:', waterData.length, waterData);
-        console.log('📊 this.data.water prima:', this.data.water.length, this.data.water);
         
         this.data.water = [...waterData]; // Crea una copia per evitare riferimenti
         
-        console.log('📊 this.data.water dopo:', this.data.water.length, this.data.water);
-        console.log('📊 water globale prima sincronizzazione:', water.length, water);
         
         // NON sincronizzare l'array globale qui per evitare conflitti
         // L'array globale è già aggiornato dalla funzione addWaterValue
-        console.log('📊 Mantenendo array globale invariato per evitare conflitti');
         
         this.saveData();
-        console.log('💾 DataManager.updateWater - FINE');
     }
 
     updateDayTemplate(dayData) {
@@ -560,7 +524,6 @@ class DataManager {
     startAutoSync() {
         if (this.autoSyncInterval) return; // Già attiva
         
-        console.log('🔄 Avvio sincronizzazione automatica ogni 30 secondi');
         this.autoSyncInterval = setInterval(() => {
             this.checkForUpdates();
         }, 30000); // Controlla ogni 30 secondi
@@ -571,7 +534,6 @@ class DataManager {
         if (this.autoSyncInterval) {
             clearInterval(this.autoSyncInterval);
             this.autoSyncInterval = null;
-            console.log('⏹️ Sincronizzazione automatica fermata');
         }
     }
 
@@ -701,9 +663,7 @@ async function initializeApp() {
         if (typeof initializeGitHubConfig === 'function') {
             const githubReady = await initializeGitHubConfig();
             if (githubReady) {
-                console.log('✅ GitHub configurato correttamente');
             } else {
-                console.log('⚠️ GitHub non configurato, funzionerà solo in modalità locale');
             }
         }
         

@@ -293,7 +293,7 @@ function setupEventListeners() {
         darkModeToggle.onclick = () => {
             darkMode = !darkMode;
             document.body.classList.toggle('dark-mode', darkMode);
-            darkModeToggle.textContent = darkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+            darkModeToggle.textContent = darkMode ? '☀️ Light' : '🌙 Dark';
             darkModeToggle.style.background = darkMode ? '#555' : '#333';
             dataManager.updateSettings({ darkMode });
             drawWaterChart();
@@ -358,7 +358,6 @@ function setupEventListeners() {
                     
                     // Aggiorna specificamente il campo litri
                     if (litersInput && dataManager.data.settings) {
-                        console.log('Aggiornando campo litri da sync:', dataManager.data.settings.liters);
                         litersInput.value = dataManager.data.settings.liters || '';
                     }
                     
@@ -420,47 +419,31 @@ function setupEventListeners() {
 
     if (debugSyncBtn) {
         debugSyncBtn.onclick = () => {
-            console.log('=== DEBUG SINCRONIZZAZIONE ===');
-            console.log('DataManager:', dataManager);
-            console.log('Settings attuali:', dataManager.data.settings);
-            console.log('GitHub configurato:', !!GITHUB_CONFIG.token);
-            console.log('Auto sync attiva:', !!dataManager.autoSyncInterval);
-            console.log('Ultima sincronizzazione:', dataManager.lastSync);
-            console.log('Hash dati attuali:', dataManager.calculateDataHash ? dataManager.calculateDataHash() : 'N/A');
-            console.log('Campo litri DOM:', litersInput);
-            console.log('Valore campo litri:', litersInput ? litersInput.value : 'NON TROVATO');
-            console.log('Titolo DOM:', mainTitle);
-            console.log('Valore titolo:', mainTitle ? mainTitle.textContent : 'NON TROVATO');
             
             // Test connessione GitHub
             if (GITHUB_CONFIG.token && typeof validateGitHubToken === 'function') {
                 validateGitHubToken().then(valid => {
-                    console.log('Token GitHub valido:', valid);
                 });
             }
             
             // Forza l'aggiornamento dell'UI
             if (litersInput && dataManager.data.settings) {
                 litersInput.value = dataManager.data.settings.liters || '';
-                console.log('Campo litri aggiornato a:', litersInput.value);
             }
             if (mainTitle && dataManager.data.settings) {
                 mainTitle.textContent = dataManager.data.settings.title || '🌱 Paludario';
-                console.log('Titolo aggiornato a:', mainTitle.textContent);
             }
             
             // Aggiorna il sottotitolo
             const mainSubtitle = document.getElementById('main-subtitle');
             if (mainSubtitle && dataManager.data.settings) {
                 mainSubtitle.textContent = dataManager.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale';
-                console.log('Sottotitolo aggiornato a:', mainSubtitle.textContent);
             }
             
             // Aggiorna l'icona
             const mainIcon = document.getElementById('main-icon');
             if (mainIcon && dataManager.data.settings) {
                 mainIcon.textContent = dataManager.data.settings.icon || '🌱';
-                console.log('Icona aggiornata a:', mainIcon.textContent);
             }
         };
     }
@@ -537,8 +520,6 @@ function setupEventListeners() {
 
 /* ==================== VALORI ACQUA ==================== */
 function addWaterValue() {
-    console.log('🔍 addWaterValue - INIZIO');
-    console.log('📊 water array prima:', water.length, water);
     
     const ts = waterDt.value;
     if (!ts) return alert('Inserisci data/ora');
@@ -556,31 +537,24 @@ function addWaterValue() {
         cond: nonNeg(cond.value),
     };
     
-    console.log('📝 Record creato:', rec);
     
     // Aggiungi il record all'array globale
     water.push(rec);
-    console.log('📊 water array dopo push:', water.length, water);
     
     // Renderizza IMMEDIATAMENTE la tabella e i grafici con i dati aggiornati
-    console.log('🎨 Chiamando renderWaterTable...');
     renderWaterTable();
-    console.log('📈 Chiamando drawWaterChart...');
     if (typeof drawWaterChart === 'function') {
         drawWaterChart();
     }
     
     // Poi aggiorna il dataManager con l'array completo (in background)
     if (dataManager && dataManager.updateWater) {
-        console.log('💾 Chiamando dataManager.updateWater...');
         dataManager.updateWater(water);
-        console.log('📊 water array dopo dataManager:', water.length, water);
     } else {
         console.error('DataManager non disponibile per salvare i valori acqua');
     }
     
     clearWaterInputs();
-    console.log('✅ addWaterValue - FINE');
 }
 
 function clearWaterInputs() {
@@ -653,9 +627,6 @@ function getVariationDirection(field, currentValue, previousValue, variation) {
 }
 
 function renderWaterTable() {
-    console.log('🎨 renderWaterTable - INIZIO');
-    console.log('🔍 waterTableBody:', waterTableBody);
-    console.log('📊 water array in renderWaterTable:', water.length, water);
     
     if (!waterTableBody) {
         console.error('❌ waterTableBody non trovato!');
@@ -670,8 +641,6 @@ function renderWaterTable() {
     // Ordinamento per visualizzazione (dal più recente al più vecchio)
     const sortedForDisplay = [...water].sort((a, b) => new Date(b.ts) - new Date(a.ts));
     
-    console.log('📊 Dati ordinati per calcolo:', sortedForCalculation.length, sortedForCalculation);
-    console.log('📊 Dati ordinati per visualizzazione:', sortedForDisplay.length, sortedForDisplay);
     
     // Crea un mapping per trovare l'indice cronologico di ogni record
     const chronologicalIndexMap = new Map();
@@ -765,7 +734,6 @@ function renderWaterTable() {
                 drawWaterChart();
                 
                 // RICARICA LA TABELLA per aggiornare i delta
-                console.log('🔄 Ricalcolo delta dopo modifica manuale');
                 renderWaterTable();
             }
             
@@ -1492,7 +1460,6 @@ function saveThresholds() {
     // Aggiorna la tabella per mostrare le nuove soglie
     renderWaterTable();
     
-    console.log('Soglie salvate:', waterThresholds);
 }
 
 function resetThresholds() {
@@ -1508,7 +1475,6 @@ function resetThresholds() {
     };
     
     generateThresholdSettings();
-    console.log('Soglie resettate ai valori predefiniti');
 }
 
 function isValueOutOfThreshold(param, value) {
