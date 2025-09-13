@@ -1,15 +1,40 @@
 {
-  "title": "🌱 Paludario",
+  "title": "Paludario",
   "liters": "",
   "darkMode": false,
+  "mobileMode": false,
   "waterThresholds": {
-    "ph": { "min": 6.0, "max": 8.0 },
-    "kh": { "min": 2.0, "max": 15.0 },
-    "gh": { "min": 3.0, "max": 20.0 },
-    "no2": { "min": 0.0, "max": 0.5 },
-    "no3": { "min": 0.0, "max": 50.0 },
-    "nh4": { "min": 0.0, "max": 0.5 },
-    "temp": { "min": 20.0, "max": 30.0 },
-    "cond": { "min": 100, "max": 1000 }
+    "ph": {
+      "min": 6,
+      "max": 8
+    },
+    "kh": {
+      "min": 2,
+      "max": 15
+    },
+    "gh": {
+      "min": 3,
+      "max": 20
+    },
+    "no2": {
+      "min": 0,
+      "max": 0.5
+    },
+    "no3": {
+      "min": 0,
+      "max": 50
+    },
+    "nh4": {
+      "min": 0,
+      "max": 0.5
+    },
+    "temp": {
+      "min": 20,
+      "max": 30
+    },
+    "cond": {
+      "min": 100,
+      "max": 1000
+    }
   }
 }
