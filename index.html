@@ -1271,9 +1271,9 @@
 		display: block !important;
 	}
 	
-	/* In modalità mobile locked, mostra le sezioni toggle semivisibili */
+	/* In modalità mobile locked, nasconde le sezioni toggle */
 	.mobile-mode.locked-mode .toggle-section {
-		display: block !important;
+		display: none !important;
 		opacity: 0.3 !important;
 		pointer-events: none !important;
 		user-select: none !important;
@@ -1624,7 +1624,7 @@
 	}
 	
 	.locked-mode .toggle-section {
-		display: block !important;
+		display: none !important;
 		opacity: 0.3 !important;
 		pointer-events: none !important;
 		user-select: none !important;
@@ -2390,6 +2390,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Funzione per gestire il toggle
             function handleToggle() {
+                // Se siamo in modalità locked, non permettere l'apertura dei menù
+                if (document.body.classList.contains('locked-mode')) {
+                    return;
+                }
+                
                 const isVisible = targetSection.classList.contains('visible');
                 
                 if (isVisible) {
@@ -2635,16 +2640,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (mainSubtitle) mainSubtitle.contentEditable = 'false';
                 if (mainIcon) mainIcon.contentEditable = 'false';
                 
-                // Apri tutte le sezioni toggle per renderle visibili ma non interattive
+                // Chiudi tutte le sezioni toggle per nascondere i menù
                 const allToggleSections = document.querySelectorAll('.toggle-section');
                 const allToggleButtons = document.querySelectorAll('.toggle-btn');
                 
                 allToggleSections.forEach(section => {
-                    section.classList.add('visible');
+                    section.classList.remove('visible');
                 });
                 
                 allToggleButtons.forEach(button => {
-                    button.classList.remove('collapsed');
+                    button.classList.add('collapsed');
                 });
                 
             } else {
