@@ -1169,6 +1169,45 @@
 		background: #888 !important;
 	}
 	
+	/* Toggle sections - nasconde le sezioni di inserimento dati */
+	.toggle-section {
+		display: none !important;
+	}
+	
+	.toggle-section.visible {
+		display: block !important;
+	}
+	
+	/* Forza le regole toggle anche in modalità mobile */
+	.mobile-mode .toggle-section {
+		display: none !important;
+	}
+	
+	.mobile-mode .toggle-section.visible {
+		display: block !important;
+	}
+	
+	/* Stili per i pulsanti toggle */
+	.toggle-btn {
+		cursor: pointer !important;
+		user-select: none !important;
+		transition: all 0.3s ease !important;
+	}
+	
+	.toggle-btn:hover {
+		opacity: 0.8 !important;
+	}
+	
+	.toggle-btn::after {
+		content: " ▼" !important;
+		font-size: 12px !important;
+		opacity: 0.7 !important;
+	}
+	
+	.toggle-btn.collapsed::after {
+		content: " ▶" !important;
+	}
+	
 	/* Console mobile */
 	.mobile-mode #control-console {
 		width: 100% !important;
@@ -1659,8 +1698,8 @@ h2 .animated-icon {
 <h2 style="margin: 0 0 16px 0;"><span class="animated-icon bounce">🐾</span> Gestione Animali</h2>
 
 <fieldset>
-	<legend>🐾 Nuovo Animale</legend>
-	<div class="row">
+	<legend class="toggle-btn" data-target="animal-form">🐾 Nuovo Animale</legend>
+	<div class="row toggle-section" id="animal-form">
 		<div class="field">
 			<label for="animal-species">🐟 Specie/Razza</label>
 			<input id="animal-species" type="text" placeholder="es. Carassius auratus" />
@@ -1726,26 +1765,28 @@ h2 .animated-icon {
 	<button id="water-settings-btn" style="background: #ff9800; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 36px;">⚙️ Soglie</button>
 </div>
 <fieldset>
-	<legend>➕ Nuovo valore</legend>
-	<div class="row">
-		<div class="field">
-			<label for="water-dt">📅 Data/Ora</label>
-			<input id="water-dt" type="datetime-local" />
-			<button class="tiny ok-btn" data-for="water-dt">OK</button>
-			<button class="tiny clear-btn" data-for="water-dt">Pulisci</button>
+	<legend class="toggle-btn" data-target="water-form">➕ Nuovo valore</legend>
+	<div class="toggle-section" id="water-form">
+		<div class="row">
+			<div class="field">
+				<label for="water-dt">📅 Data/Ora</label>
+				<input id="water-dt" type="datetime-local" />
+				<button class="tiny ok-btn" data-for="water-dt">OK</button>
+				<button class="tiny clear-btn" data-for="water-dt">Pulisci</button>
+			</div>
 		</div>
-	</div>
-	<div class="row">
-		<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.01" min="0" /></div>
-		<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="0.1" min="0" /><span class="unit">dKH</span></div>
-		<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="0.1" min="0" /><span class="unit">dGH</span></div>
-		<div class="field"><label for="no2">⚠️ NO2</label><input id="no2" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
-		<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="0.1" min="0" /><span class="unit">mg/L</span></div>
-		<div class="field"><label for="nh4">☠️ NH4</label><input id="nh4" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
-		<div class="field"><label for="temp">🌡️ Temperatura</label><input id="temp" type="number" step="0.1" min="0" /><span class="unit">°C</span></div>
-		<div class="field"><label for="cond">⚡ Conducibilità</label><input id="cond" type="number" step="1" min="0" /><span class="unit">µS/cm</span></div>
-		<button id="add-water">➕ Aggiungi</button>
-		<button id="clear-water">🧹 Pulisci</button>
+		<div class="row">
+			<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.01" min="0" /></div>
+			<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="0.1" min="0" /><span class="unit">dKH</span></div>
+			<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="0.1" min="0" /><span class="unit">dGH</span></div>
+			<div class="field"><label for="no2">⚠️ NO2</label><input id="no2" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+			<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="0.1" min="0" /><span class="unit">mg/L</span></div>
+			<div class="field"><label for="nh4">☠️ NH4</label><input id="nh4" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
+			<div class="field"><label for="temp">🌡️ Temperatura</label><input id="temp" type="number" step="0.1" min="0" /><span class="unit">°C</span></div>
+			<div class="field"><label for="cond">⚡ Conducibilità</label><input id="cond" type="number" step="1" min="0" /><span class="unit">µS/cm</span></div>
+			<button id="add-water">➕ Aggiungi</button>
+			<button id="clear-water">🧹 Pulisci</button>
+		</div>
 	</div>
 </fieldset>
 
@@ -1814,9 +1855,9 @@ h2 .animated-icon {
 <h2><span class="animated-icon clock">⏰</span> Profilo tipico giornaliero (0–24)</h2>
 
 <div class="grid grid-2">
-	<fieldset>
-		<legend><span class="animated-icon spray">💦</span> Spray Pioggia (intervalli ON)</legend>
-		<div class="row">
+<fieldset>
+	<legend class="toggle-btn" data-target="spray-form"><span class="animated-icon spray">💦</span> Spray Pioggia (intervalli ON)</legend>
+	<div class="row toggle-section" id="spray-form">
 			<div class="field">
 				<label>🕐 Inizio</label><input id="spray-start" type="time" step="60" />
 				<button class="tiny ok-btn" data-for="spray-start">OK</button>
@@ -1836,9 +1877,9 @@ h2 .animated-icon {
 		</div>
 	</fieldset>
 
-	<fieldset>
-		<legend><span class="animated-icon fan">💨</span> Ventola Deumidificante (intervalli ON)</legend>
-		<div class="row">
+<fieldset>
+	<legend class="toggle-btn" data-target="fan-form"><span class="animated-icon fan">💨</span> Ventola Deumidificante (intervalli ON)</legend>
+	<div class="row toggle-section" id="fan-form">
 			<div class="field">
 				<label>🕐 Inizio</label><input id="fan-start" type="time" step="60" />
 				<button class="tiny ok-btn" data-for="fan-start">OK</button>
@@ -1859,41 +1900,41 @@ h2 .animated-icon {
 	</fieldset>
 </div>
 
-<h2 style="margin: 32px 0 16px 0;"><span class="animated-icon pulse">🌡️</span> Monitoraggio Aria</h2>
-
 <fieldset>
-	<legend>🌡️ Nuovo Rilevamento Aria</legend>
-	<div class="row">
-		<div class="field">
-			<label for="air-datetime">📅 Data/Ora</label>
-			<input id="air-datetime" type="datetime-local" />
-			<button class="tiny ok-btn" data-for="air-datetime">OK</button>
-			<button class="tiny clear-btn" data-for="air-datetime">Pulisci</button>
+	<legend class="toggle-btn" data-target="air-form">🌡️ Valori Aria</legend>
+	<div class="toggle-section" id="air-form">
+		<div class="row">
+			<div class="field">
+				<label for="air-datetime">📅 Data/Ora</label>
+				<input id="air-datetime" type="datetime-local" />
+				<button class="tiny ok-btn" data-for="air-datetime">OK</button>
+				<button class="tiny clear-btn" data-for="air-datetime">Pulisci</button>
+			</div>
 		</div>
-	</div>
-	<div class="row">
-		<div class="field">
-			<label for="air-temp-min">🌡️ Temp. Min</label>
-			<input id="air-temp-min" type="number" step="0.1" min="-50" max="60" />
-			<span class="unit">°C</span>
+		<div class="row">
+			<div class="field">
+				<label for="air-temp-min">🌡️ Temp. Min</label>
+				<input id="air-temp-min" type="number" step="0.1" min="-50" max="60" />
+				<span class="unit">°C</span>
+			</div>
+			<div class="field">
+				<label for="air-temp-max">🌡️ Temp. Max</label>
+				<input id="air-temp-max" type="number" step="0.1" min="-50" max="60" />
+				<span class="unit">°C</span>
+			</div>
+			<div class="field">
+				<label for="air-humidity-min">💧 Umidità Min</label>
+				<input id="air-humidity-min" type="number" step="1" min="0" max="100" />
+				<span class="unit">%</span>
+			</div>
+			<div class="field">
+				<label for="air-humidity-max">💧 Umidità Max</label>
+				<input id="air-humidity-max" type="number" step="1" min="0" max="100" />
+				<span class="unit">%</span>
+			</div>
+			<button id="add-air">➕ Aggiungi</button>
+			<button id="clear-air">🧹 Pulisci</button>
 		</div>
-		<div class="field">
-			<label for="air-temp-max">🌡️ Temp. Max</label>
-			<input id="air-temp-max" type="number" step="0.1" min="-50" max="60" />
-			<span class="unit">°C</span>
-		</div>
-		<div class="field">
-			<label for="air-humidity-min">💧 Umidità Min</label>
-			<input id="air-humidity-min" type="number" step="1" min="0" max="100" />
-			<span class="unit">%</span>
-		</div>
-		<div class="field">
-			<label for="air-humidity-max">💧 Umidità Max</label>
-			<input id="air-humidity-max" type="number" step="1" min="0" max="100" />
-			<span class="unit">%</span>
-		</div>
-		<button id="add-air">➕ Aggiungi</button>
-		<button id="clear-air">🧹 Pulisci</button>
 	</div>
 </fieldset>
 
@@ -1914,8 +1955,8 @@ h2 .animated-icon {
 </div>
 
 <fieldset>
-	<legend><span class="animated-icon lights">💡</span> Luci RGBW + Plafoniera (0–100%)</legend>
-	<div class="row">
+	<legend class="toggle-btn" data-target="lights-form"><span class="animated-icon lights">💡</span> Luci RGBW + Plafoniera (0–100%)</legend>
+	<div class="row toggle-section" id="lights-form">
 		<div class="field">
 			<label>🕐 Ora</label><input id="light-time" type="time" step="60" />
 			<button class="tiny ok-btn" data-for="light-time">OK</button>
@@ -1960,5 +2001,39 @@ h2 .animated-icon {
 <script src="paludario-app.js"></script>
 <script src="paludario-functions.js"></script>
 <script src="paludario-charts.js"></script>
+
+<script>
+// Gestione toggle sections
+document.addEventListener('DOMContentLoaded', function() {
+    // Trova tutti i pulsanti toggle
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    
+    toggleButtons.forEach(button => {
+        const targetId = button.getAttribute('data-target');
+        const targetSection = document.getElementById(targetId);
+        
+        if (targetSection) {
+            // Inizializza tutte le sezioni come nascoste
+            targetSection.classList.remove('visible');
+            button.classList.add('collapsed');
+            
+            // Aggiungi event listener per il click
+            button.addEventListener('click', function() {
+                const isVisible = targetSection.classList.contains('visible');
+                
+                if (isVisible) {
+                    // Nascondi la sezione
+                    targetSection.classList.remove('visible');
+                    button.classList.add('collapsed');
+                } else {
+                    // Mostra la sezione
+                    targetSection.classList.add('visible');
+                    button.classList.remove('collapsed');
+                }
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>
