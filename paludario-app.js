@@ -102,12 +102,26 @@ class DataManager {
             // Inizializza UI con i dati finali (GitHub o locali)
             this.initializeUI();
             
+            // Emetti evento per notificare che i dati sono stati caricati
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('dataUpdated', { 
+                    detail: { type: 'loadData', source: 'github' } 
+                }));
+            }
+            
         } catch (error) {
             console.error('Errore nel caricamento dati:', error);
             this.updateStatus('❌ Errore caricamento', 'error');
             // Fallback ai dati locali
             this.loadFromLocalStorage();
             this.initializeUI();
+            
+            // Emetti evento anche in caso di errore (dati locali)
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('dataUpdated', { 
+                    detail: { type: 'loadData', source: 'local' } 
+                }));
+            }
         }
     }
 
@@ -382,6 +396,13 @@ class DataManager {
     updateSettings(settings) {
         this.data.settings = { ...this.data.settings, ...settings };
         this.saveData();
+        
+        // Emetti evento per notificare che i dati sono stati aggiornati
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('dataUpdated', { 
+                detail: { type: 'settings', data: settings } 
+            }));
+        }
     }
 
     async syncToGitHub() {
