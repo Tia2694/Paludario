@@ -110,7 +110,13 @@ function drawWaterChart() {
         return;
     }
 
-    const minX = data[0].t, maxX = data[data.length - 1].t || (minX + 1);
+    const minX = data[0].t;
+    let maxX = data[data.length - 1].t;
+    
+    // Se c'è un solo dato, crea un range temporale di 24 ore per una migliore visualizzazione
+    if (data.length === 1) {
+        maxX = minX + 24 * 60 * 60 * 1000; // 24 ore dopo
+    }
 
     let maxY = Math.max(...data.map(d => d.v));
     const padY = Math.max(1, (maxY || 1) * 0.1);
@@ -144,9 +150,19 @@ function drawWaterChart() {
     drawTicksX(ctx, x0, y1, xScale, labels);
 
     const pts = data.map(d => ({ x: xScale(d.t), y: yScale(d.v) }));
-    line(ctx, pts, '#1976d2', 2);
+    
+    // Disegna la linea solo se ci sono almeno 2 punti
+    if (pts.length > 1) {
+        line(ctx, pts, '#1976d2', 2);
+    }
+    
+    // Disegna sempre i pallini su tutti i punti (anche se è solo uno)
     ctx.fillStyle = '#1976d2';
-    pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); ctx.fill(); });
+    pts.forEach(p => { 
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
+        ctx.fill(); 
+    });
 }
 
 /* ==================== CALCOLO ALBA E TRAMONTO ==================== */
@@ -487,6 +503,14 @@ function drawStepped(ctx, pts, color, width = 2, baseY) {
         ctx.lineTo(pts[i].x, pts[i].y);
     }
     ctx.stroke();
+    
+    // Aggiungi pallini sui punti di giunzione
+    ctx.fillStyle = color;
+    pts.forEach(p => { 
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
+        ctx.fill(); 
+    });
 }
 
 function genStepSeriesFromIntervals(intervals, high = 1) {
