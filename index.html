@@ -2125,23 +2125,39 @@ document.addEventListener('DOMContentLoaded', function() {
         // Funzione per rimuovere lo sfondo
         function removeBackground() {
             headerSection.style.removeProperty('--custom-background');
-            localStorage.removeItem('paludario.backgroundImage');
+            
+            // Rimuovi anche dai settings sincronizzati
+            if (typeof dataManager !== 'undefined' && dataManager.updateSettings) {
+                dataManager.updateSettings({ backgroundImage: null });
+            }
+            
             updateButtonState(false);
-            console.log('Sfondo rimosso!');
+            console.log('Sfondo rimosso e sincronizzato!');
         }
         
-        // Carica sfondo salvato dal localStorage
-        const savedBackground = localStorage.getItem('paludario.backgroundImage');
-        if (savedBackground) {
-            headerSection.style.setProperty('--custom-background', `url(${savedBackground})`);
-            updateButtonState(true);
-        } else {
+        // Carica sfondo salvato dai settings sincronizzati
+        function loadBackgroundFromSettings() {
+            if (typeof dataManager !== 'undefined' && dataManager.data && dataManager.data.settings) {
+                const savedBackground = dataManager.data.settings.backgroundImage;
+                if (savedBackground) {
+                    headerSection.style.setProperty('--custom-background', `url(${savedBackground})`);
+                    updateButtonState(true);
+                    return;
+                }
+            }
             updateButtonState(false);
         }
+        
+        // Carica sfondo all'avvio
+        loadBackgroundFromSettings();
         
         // Click sul pulsante
         backgroundUploadBtn.addEventListener('click', function() {
-            const hasBackground = localStorage.getItem('paludario.backgroundImage');
+            // Controlla se c'è uno sfondo nei settings sincronizzati
+            const hasBackground = (typeof dataManager !== 'undefined' && 
+                                 dataManager.data && 
+                                 dataManager.data.settings && 
+                                 dataManager.data.settings.backgroundImage);
             
             if (hasBackground) {
                 // Se c'è già uno sfondo, rimuovilo
@@ -2211,13 +2227,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Applica lo sfondo
                         headerSection.style.setProperty('--custom-background', `url(${resizedDataUrl})`);
                         
-                        // Salva nel localStorage
-                        localStorage.setItem('paludario.backgroundImage', resizedDataUrl);
+                        // Salva nei settings sincronizzati su GitHub
+                        if (typeof dataManager !== 'undefined' && dataManager.updateSettings) {
+                            dataManager.updateSettings({ backgroundImage: resizedDataUrl });
+                        }
                         
                         // Aggiorna lo stato del pulsante
                         updateButtonState(true);
                         
-                        console.log('Sfondo aggiornato con successo!');
+                        console.log('Sfondo aggiornato e sincronizzato con successo!');
                     })
                     .catch(error => {
                         console.error('Errore nel caricamento dell\'immagine:', error);
@@ -2226,7 +2244,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     .finally(() => {
                         // Ripristina il pulsante
                         backgroundUploadBtn.disabled = false;
-                        if (localStorage.getItem('paludario.backgroundImage')) {
+                        if (typeof dataManager !== 'undefined' && 
+                            dataManager.data && 
+                            dataManager.data.settings && 
+                            dataManager.data.settings.backgroundImage) {
                             backgroundUploadBtn.innerHTML = '🗑️';
                         } else {
                             backgroundUploadBtn.innerHTML = originalText;
