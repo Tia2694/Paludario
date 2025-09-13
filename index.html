@@ -1208,6 +1208,73 @@
 		content: " ▶" !important;
 	}
 	
+	/* Sfondo personalizzato per il blocco titolo */
+	.header-decorative {
+		position: relative !important;
+		overflow: hidden !important;
+	}
+	
+	.header-decorative::before {
+		content: '' !important;
+		position: absolute !important;
+		top: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 0 !important;
+		background-size: cover !important;
+		background-position: center !important;
+		background-repeat: no-repeat !important;
+		z-index: 0 !important;
+		opacity: 0.3 !important;
+	}
+	
+	.header-decorative > * {
+		position: relative !important;
+		z-index: 1 !important;
+	}
+	
+	/* Pulsante per cambiare/rimuovere sfondo */
+	.background-upload-btn {
+		position: absolute !important;
+		top: 8px !important;
+		right: 8px !important;
+		background: rgba(255, 255, 255, 0.9) !important;
+		border: 1px solid rgba(46, 125, 50, 0.3) !important;
+		border-radius: 50% !important;
+		width: 32px !important;
+		height: 32px !important;
+		cursor: pointer !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
+		font-size: 16px !important;
+		z-index: 2 !important;
+		transition: all 0.3s ease !important;
+	}
+	
+	.background-upload-btn:hover {
+		background: rgba(255, 255, 255, 1) !important;
+		border-color: var(--primary-green) !important;
+		transform: scale(1.1) !important;
+	}
+	
+	/* Stato quando c'è uno sfondo personalizzato */
+	.background-upload-btn.has-background {
+		background: rgba(220, 53, 69, 0.9) !important;
+		border-color: rgba(220, 53, 69, 0.5) !important;
+		color: white !important;
+	}
+	
+	.background-upload-btn.has-background:hover {
+		background: rgba(220, 53, 69, 1) !important;
+		border-color: #dc3545 !important;
+	}
+	
+	/* Input file nascosto */
+	.background-upload-input {
+		display: none !important;
+	}
+	
 	/* Console mobile */
 	.mobile-mode #control-console {
 		width: 100% !important;
@@ -1488,7 +1555,9 @@
 <div style="height: 100px; margin-right: 280px;"></div>
 
 <!-- Header decorativo -->
-<div class="header-decorative" style="text-align: center; margin-bottom: 32px; padding: 24px; background: linear-gradient(135deg, rgba(46,125,50,0.05) 0%, rgba(0,105,92,0.05) 100%); border-radius: 20px; border: 1px solid rgba(46,125,50,0.1);">
+<div class="header-decorative" id="header-section" style="text-align: center; margin-bottom: 32px; padding: 24px; background: linear-gradient(135deg, rgba(46,125,50,0.05) 0%, rgba(0,105,92,0.05) 100%); border-radius: 20px; border: 1px solid rgba(46,125,50,0.1);">
+	<button class="background-upload-btn" id="background-upload-btn" title="Cambia sfondo">🖼️</button>
+	<input type="file" id="background-upload-input" class="background-upload-input" accept="image/*" />
 	<div style="display: inline-block; font-size: 48px; margin-bottom: 8px; animation: float 3s ease-in-out infinite;">🌱</div>
 	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 12px 20px; border-radius: 16px; transition: all 0.3s ease; margin: 0 0 8px 0; font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Paludario</h1>
 	<p style="margin: 0; color: #666; font-size: 16px; font-weight: 500;">Sistema di monitoraggio e controllo ambientale</p>
@@ -2033,6 +2102,151 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    
+    // Gestione upload sfondo personalizzato
+    const backgroundUploadBtn = document.getElementById('background-upload-btn');
+    const backgroundUploadInput = document.getElementById('background-upload-input');
+    const headerSection = document.getElementById('header-section');
+    
+    if (backgroundUploadBtn && backgroundUploadInput && headerSection) {
+        // Funzione per aggiornare lo stato del pulsante
+        function updateButtonState(hasBackground) {
+            if (hasBackground) {
+                backgroundUploadBtn.classList.add('has-background');
+                backgroundUploadBtn.innerHTML = '🗑️';
+                backgroundUploadBtn.title = 'Rimuovi sfondo';
+            } else {
+                backgroundUploadBtn.classList.remove('has-background');
+                backgroundUploadBtn.innerHTML = '🖼️';
+                backgroundUploadBtn.title = 'Cambia sfondo';
+            }
+        }
+        
+        // Funzione per rimuovere lo sfondo
+        function removeBackground() {
+            headerSection.style.removeProperty('--custom-background');
+            localStorage.removeItem('paludario.backgroundImage');
+            updateButtonState(false);
+            console.log('Sfondo rimosso!');
+        }
+        
+        // Carica sfondo salvato dal localStorage
+        const savedBackground = localStorage.getItem('paludario.backgroundImage');
+        if (savedBackground) {
+            headerSection.style.setProperty('--custom-background', `url(${savedBackground})`);
+            updateButtonState(true);
+        } else {
+            updateButtonState(false);
+        }
+        
+        // Click sul pulsante
+        backgroundUploadBtn.addEventListener('click', function() {
+            const hasBackground = localStorage.getItem('paludario.backgroundImage');
+            
+            if (hasBackground) {
+                // Se c'è già uno sfondo, rimuovilo
+                removeBackground();
+            } else {
+                // Se non c'è sfondo, apri il file picker
+                backgroundUploadInput.click();
+            }
+        });
+        
+        // Funzione per ridimensionare l'immagine
+        function resizeImage(file, maxWidth = 1200, maxHeight = 800, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                img.onload = function() {
+                    // Calcola le nuove dimensioni mantenendo le proporzioni
+                    let { width, height } = img;
+                    
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    // Imposta le dimensioni del canvas
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Ridisegna l'immagine
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Converti in base64 con compressione
+                    const resizedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(resizedDataUrl);
+                };
+                
+                img.onerror = function() {
+                    reject(new Error('Errore nel caricamento dell\'immagine'));
+                };
+                
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        
+        // Gestione selezione file
+        backgroundUploadInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                // Controlla la dimensione del file (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('L\'immagine è troppo grande! Dimensioni massime: 10MB');
+                    event.target.value = '';
+                    return;
+                }
+                
+                // Mostra un messaggio di caricamento
+                const originalText = backgroundUploadBtn.innerHTML;
+                backgroundUploadBtn.innerHTML = '⏳';
+                backgroundUploadBtn.disabled = true;
+                
+                // Ridimensiona e comprimi l'immagine
+                resizeImage(file)
+                    .then(resizedDataUrl => {
+                        // Applica lo sfondo
+                        headerSection.style.setProperty('--custom-background', `url(${resizedDataUrl})`);
+                        
+                        // Salva nel localStorage
+                        localStorage.setItem('paludario.backgroundImage', resizedDataUrl);
+                        
+                        // Aggiorna lo stato del pulsante
+                        updateButtonState(true);
+                        
+                        console.log('Sfondo aggiornato con successo!');
+                    })
+                    .catch(error => {
+                        console.error('Errore nel caricamento dell\'immagine:', error);
+                        alert('Errore nel caricamento dell\'immagine. Prova con un\'immagine più piccola o in formato diverso.');
+                    })
+                    .finally(() => {
+                        // Ripristina il pulsante
+                        backgroundUploadBtn.disabled = false;
+                        if (localStorage.getItem('paludario.backgroundImage')) {
+                            backgroundUploadBtn.innerHTML = '🗑️';
+                        } else {
+                            backgroundUploadBtn.innerHTML = originalText;
+                        }
+                    });
+            }
+            
+            // Reset del file input per permettere di selezionare lo stesso file
+            event.target.value = '';
+        });
+        
+        // Aggiungi CSS per lo sfondo personalizzato
+        const style = document.createElement('style');
+        style.textContent = `
+            .header-decorative::before {
+                background-image: var(--custom-background, none) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 });
 </script>
 </body>
