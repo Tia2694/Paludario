@@ -1,0 +1,39 @@
+{
+  "title": "🌱 Paludario",
+  "liters": "3",
+  "darkMode": false,
+  "waterThresholds": {
+    "ph": {
+      "min": 6,
+      "max": 8
+    },
+    "kh": {
+      "min": 2,
+      "max": 15
+    },
+    "gh": {
+      "min": 3,
+      "max": 20
+    },
+    "no2": {
+      "min": 0,
+      "max": 0.5
+    },
+    "no3": {
+      "min": 0,
+      "max": 50
+    },
+    "nh4": {
+      "min": 0,
+      "max": 0.5
+    },
+    "temp": {
+      "min": 20,
+      "max": 30
+    },
+    "cond": {
+      "min": 100,
+      "max": 1000
+    }
+  }
+}
