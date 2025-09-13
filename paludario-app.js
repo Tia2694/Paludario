@@ -75,6 +75,11 @@ class DataManager {
                 // Carica sempre i settings da GitHub se disponibili (anche se title è vuoto)
                 if (settingsData && typeof settingsData === 'object') {
                     console.log('Settings caricati da GitHub:', settingsData);
+                    // Valida e correggi l'emoji se presente
+                    if (settingsData.icon) {
+                        console.log('🌐 Caricamento emoji da GitHub:', settingsData.icon, 'Tipo:', typeof settingsData.icon);
+                        settingsData.icon = this.validateAndFixEmoji(settingsData.icon);
+                    }
                     this.data.settings = { ...this.data.settings, ...settingsData };
                     updated = true;
                 }
@@ -135,6 +140,12 @@ class DataManager {
             // Prima salva localmente (sempre)
             this.saveToLocalStorage();
             
+            // Valida e correggi l'emoji prima di salvare
+            if (this.data.settings.icon) {
+                console.log('💾 Salvataggio emoji su GitHub:', this.data.settings.icon, 'Tipo:', typeof this.data.settings.icon);
+                this.data.settings.icon = this.validateAndFixEmoji(this.data.settings.icon);
+            }
+            
             // Poi prova a salvare su GitHub
             try {
                 await Promise.all([
@@ -171,7 +182,15 @@ class DataManager {
             
             if (response.ok) {
                 const data = await response.json();
-                return JSON.parse(atob(data.content));
+                // Decodifica sicura per caratteri Unicode (incluso emoji)
+                const binaryString = atob(data.content);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decoder = new TextDecoder();
+                const jsonString = decoder.decode(bytes);
+                return JSON.parse(jsonString);
             } else {
                 console.log(`File ${filePath} non trovato, uso valori di default`);
                 return defaultValue;
@@ -182,7 +201,7 @@ class DataManager {
         }
     }
 
-    async saveToGitHub(filePath, data) {
+    async saveToGitHub(filePath, data, retryCount = 0) {
         try {
             // Prima ottieni il SHA del file esistente
             let sha = null;
@@ -204,9 +223,13 @@ class DataManager {
                 console.log(`File ${filePath} non esiste, creazione nuovo file`);
             }
 
-            // Codifica sicura per caratteri Unicode
+            // Codifica sicura per caratteri Unicode (incluso emoji)
             const jsonString = JSON.stringify(data, null, 2);
-            const content = btoa(unescape(encodeURIComponent(jsonString)));
+            // Usa TextEncoder per una codifica UTF-8 corretta
+            const encoder = new TextEncoder();
+            const utf8Bytes = encoder.encode(jsonString);
+            const binaryString = Array.from(utf8Bytes).map(byte => String.fromCharCode(byte)).join('');
+            const content = btoa(binaryString);
             
             // Prepara il body della richiesta
             const requestBody = {
@@ -232,6 +255,35 @@ class DataManager {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                
+                // Gestisci errore 409 (Conflict) con retry
+                if (response.status === 409 && retryCount < 2) {
+                    console.warn(`Conflitto 409 per ${filePath}, retry ${retryCount + 1}/2. SHA attuale: ${errorData.message}`);
+                    
+                    // Aspetta un po' prima del retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 + (retryCount * 500)));
+                    
+                    // Ricarica i dati da GitHub per ottenere la versione più recente
+                    try {
+                        const latestResponse = await fetch(`${API_BASE}/contents/${filePath}`, {
+                            headers: {
+                                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        
+                        if (latestResponse.ok) {
+                            const latestFileData = await latestResponse.json();
+                            console.log(`Ricaricate ultime modifiche per ${filePath}, riprovo con SHA: ${latestFileData.sha.substring(0, 8)}...`);
+                            
+                            // Prova di nuovo con i dati aggiornati
+                            return await this.saveToGitHub(filePath, data, retryCount + 1);
+                        }
+                    } catch (fetchError) {
+                        console.error(`Errore nel fetch della versione più recente di ${filePath}:`, fetchError);
+                    }
+                }
+                
                 throw new Error(`Errore ${response.status}: ${errorData.message || response.statusText}`);
             }
             
@@ -240,6 +292,36 @@ class DataManager {
             console.error(`Errore nel salvataggio di ${filePath}:`, error);
             throw error;
         }
+    }
+
+    validateAndFixEmoji(emojiText) {
+        console.log('🔍 Validazione emoji - Input:', emojiText, 'Tipo:', typeof emojiText, 'Lunghezza:', emojiText?.length);
+        
+        if (!emojiText || typeof emojiText !== 'string') {
+            console.log('❌ Emoji non valida (null/undefined/non-string) -> Default 🌱');
+            return '🌱';
+        }
+        
+        // Regex per emoji valide
+        const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{1F018}-\u{1F0F5}]|[\u{1F200}-\u{1F2FF}]/u;
+        
+        // Cerca la prima emoji valida
+        const matches = emojiText.match(emojiRegex);
+        if (matches && matches.length > 0) {
+            console.log('✅ Emoji valida trovata:', matches[0], '-> Mantenuta');
+            return matches[0];
+        }
+        
+        // Se non trova emoji valide, controlla se è un carattere corrotto
+        // e prova a ripristinare l'emoji di default
+        if (emojiText.includes('?') || emojiText.includes('') || emojiText.length === 0) {
+            console.log('❌ Emoji corrotta (contiene ? o ) -> Default 🌱');
+            return '🌱';
+        }
+        
+        // Se il testo non è vuoto ma non è un'emoji valida, mantieni il default
+        console.log('❌ Emoji non riconosciuta:', emojiText, '-> Default 🌱');
+        return '🌱';
     }
 
     loadFromLocalStorage() {
@@ -261,7 +343,11 @@ class DataManager {
         this.data.settings = {
             title: localStorage.getItem('paludario.title') || '🌱 Paludario',
             subtitle: localStorage.getItem('paludario.subtitle') || 'Sistema di monitoraggio e controllo ambientale',
-            icon: localStorage.getItem('paludario.icon') || '🌱',
+            icon: (() => {
+                const loadedIcon = localStorage.getItem('paludario.icon');
+                console.log('📥 Caricamento emoji da localStorage:', loadedIcon, 'Tipo:', typeof loadedIcon);
+                return this.validateAndFixEmoji(loadedIcon) || '🌱';
+            })(),
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
             mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
@@ -279,7 +365,9 @@ class DataManager {
         localStorage.setItem('paludario.dayPlanTemplate', JSON.stringify(this.data.dayTemplate));
         localStorage.setItem('paludario.title', this.data.settings.title);
         localStorage.setItem('paludario.subtitle', this.data.settings.subtitle || 'Sistema di monitoraggio e controllo ambientale');
-        localStorage.setItem('paludario.icon', this.data.settings.icon || '🌱');
+        const iconToSave = this.data.settings.icon || '🌱';
+        console.log('💾 Salvataggio emoji in localStorage:', iconToSave, 'Tipo:', typeof iconToSave);
+        localStorage.setItem('paludario.icon', iconToSave);
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
         localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
@@ -332,7 +420,15 @@ class DataManager {
         // Inizializza icona
         const mainIcon = document.getElementById('main-icon');
         if (mainIcon) {
-            mainIcon.textContent = this.data.settings.icon || '🌱';
+            const iconText = this.data.settings.icon || '🌱';
+            console.log('🎨 Inizializzazione emoji nell\'UI:', iconText, 'Tipo:', typeof iconText);
+            const validIcon = this.validateAndFixEmoji(iconText);
+            mainIcon.textContent = validIcon;
+            // Aggiorna anche i dati se l'icona è stata corretta
+            if (validIcon !== iconText) {
+                console.log('🔄 Emoji corretta durante inizializzazione UI:', iconText, '->', validIcon);
+                this.data.settings.icon = validIcon;
+            }
         }
         
         // Inizializza stato locked
@@ -552,7 +648,23 @@ class DataManager {
             dayTemplate: this.data.dayTemplate,
             settings: this.data.settings
         });
-        return btoa(dataString).slice(0, 16); // Hash semplice
+        
+        // Converte la stringa Unicode in base64 in modo sicuro
+        try {
+            // Metodo sicuro per stringhe Unicode (evita spread operator per array grandi)
+            const utf8Bytes = new TextEncoder().encode(dataString);
+            let binaryString = '';
+            for (let i = 0; i < utf8Bytes.length; i++) {
+                binaryString += String.fromCharCode(utf8Bytes[i]);
+            }
+            const base64String = btoa(binaryString);
+            return base64String.slice(0, 16); // Hash semplice
+        } catch (error) {
+            console.error('Errore nel calcolo hash:', error);
+            // Fallback: usa solo caratteri ASCII
+            const asciiString = dataString.replace(/[^\x00-\x7F]/g, '?');
+            return btoa(asciiString).slice(0, 16);
+        }
     }
 
     // Forza sincronizzazione completa
