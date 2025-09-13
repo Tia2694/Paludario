@@ -1271,8 +1271,9 @@
 		display: block !important;
 	}
 	
-	/* In modalità mobile locked, le sezioni toggle rimangono nascoste ma i tasti sono semivisibili */
+	/* In modalità mobile locked, mostra le sezioni toggle semivisibili */
 	.mobile-mode.locked-mode .toggle-section {
+		display: block !important;
 		opacity: 0.3 !important;
 		pointer-events: none !important;
 		user-select: none !important;
@@ -1623,6 +1624,7 @@
 	}
 	
 	.locked-mode .toggle-section {
+		display: block !important;
 		opacity: 0.3 !important;
 		pointer-events: none !important;
 		user-select: none !important;
@@ -2633,16 +2635,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (mainSubtitle) mainSubtitle.contentEditable = 'false';
                 if (mainIcon) mainIcon.contentEditable = 'false';
                 
-                // Chiudi tutti i menu aperti quando si attiva il lock
-                const toggleSections = document.querySelectorAll('.toggle-section.visible');
-                const toggleButtons = document.querySelectorAll('.toggle-btn:not(.collapsed)');
+                // Apri tutte le sezioni toggle per renderle visibili ma non interattive
+                const allToggleSections = document.querySelectorAll('.toggle-section');
+                const allToggleButtons = document.querySelectorAll('.toggle-btn');
                 
-                toggleSections.forEach(section => {
-                    section.classList.remove('visible');
+                allToggleSections.forEach(section => {
+                    section.classList.add('visible');
                 });
                 
-                toggleButtons.forEach(button => {
-                    button.classList.add('collapsed');
+                allToggleButtons.forEach(button => {
+                    button.classList.remove('collapsed');
                 });
                 
             } else {
