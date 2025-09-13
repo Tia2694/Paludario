@@ -37,5 +37,6 @@
       "max": 500.1
     }
   },
-  "animals": []
+  "animals": [],
+  "airReadings": []
 }
