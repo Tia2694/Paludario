@@ -227,6 +227,52 @@ function setupEventListeners() {
         };
     }
 
+    // Toggle modalità mobile
+    const mobileToggle = document.getElementById('mobile-toggle');
+    if (mobileToggle) {
+        // Carica stato mobile dal localStorage
+        const isMobileMode = localStorage.getItem('paludario.mobileMode') === 'true';
+        if (isMobileMode) {
+            document.body.classList.add('mobile-mode');
+            mobileToggle.textContent = '💻 Desktop';
+            mobileToggle.style.background = '#4caf50';
+        }
+
+        mobileToggle.onclick = () => {
+            const isCurrentlyMobile = document.body.classList.contains('mobile-mode');
+            
+            if (isCurrentlyMobile) {
+                // Passa a desktop
+                document.body.classList.remove('mobile-mode');
+                mobileToggle.textContent = '📱 Mobile';
+                mobileToggle.style.background = '#9c27b0';
+                localStorage.setItem('paludario.mobileMode', 'false');
+                
+                // Salva nel data manager
+                if (dataManager && dataManager.updateSettings) {
+                    dataManager.updateSettings({ mobileMode: false });
+                }
+            } else {
+                // Passa a mobile
+                document.body.classList.add('mobile-mode');
+                mobileToggle.textContent = '💻 Desktop';
+                mobileToggle.style.background = '#4caf50';
+                localStorage.setItem('paludario.mobileMode', 'true');
+                
+                // Salva nel data manager
+                if (dataManager && dataManager.updateSettings) {
+                    dataManager.updateSettings({ mobileMode: true });
+                }
+            }
+            
+            // Ridisegna i grafici per adattarsi al nuovo layout
+            setTimeout(() => {
+                if (typeof drawWaterChart === 'function') drawWaterChart();
+                if (typeof drawDayChart === 'function') drawDayChart();
+            }, 100);
+        };
+    }
+
     if (syncDataBtn) {
         syncDataBtn.onclick = () => {
             if (dataManager && dataManager.forceSync) {
@@ -409,6 +455,64 @@ function nonNeg(v) {
     return Math.max(0, n);
 }
 
+// Calcola la variazione percentuale rispetto al valore precedente (non vuoto)
+function calculateVariation(sortedData, currentIndex, field) {
+    // Se è il primo elemento o il valore corrente è null/vuoto, non c'è variazione
+    if (currentIndex === 0 || sortedData[currentIndex][field] === null || sortedData[currentIndex][field] === undefined) {
+        return null;
+    }
+    
+    const currentValue = sortedData[currentIndex][field];
+    
+    // Trova il valore precedente non vuoto
+    let previousValue = null;
+    for (let i = currentIndex - 1; i >= 0; i--) {
+        const value = sortedData[i][field];
+        if (value !== null && value !== undefined) {
+            previousValue = value;
+            break;
+        }
+    }
+    
+    // Se non c'è valore precedente, non c'è variazione
+    if (previousValue === null || previousValue === undefined) {
+        return null;
+    }
+    
+    // Calcola la variazione percentuale
+    const variation = ((currentValue - previousValue) / previousValue) * 100;
+    
+    // Arrotonda a 1 decimale
+    return Math.round(variation * 10) / 10;
+}
+
+// Determina se la variazione è positiva o negativa per la salute dell'acqua
+function getVariationDirection(field, currentValue, previousValue, variation) {
+    if (variation === null || variation === 0) return 'neutral';
+    
+    const threshold = waterThresholds[field];
+    if (!threshold) return variation > 0 ? 'positive' : 'negative';
+    
+    // Calcola se il valore corrente è più vicino o più lontano dalle soglie rispetto al precedente
+    const currentDistanceFromMin = Math.abs(currentValue - threshold.min);
+    const currentDistanceFromMax = Math.abs(currentValue - threshold.max);
+    const currentMinDistance = Math.min(currentDistanceFromMin, currentDistanceFromMax);
+    
+    const previousDistanceFromMin = Math.abs(previousValue - threshold.min);
+    const previousDistanceFromMax = Math.abs(previousValue - threshold.max);
+    const previousMinDistance = Math.min(previousDistanceFromMin, previousDistanceFromMax);
+    
+    // Se il valore corrente è più lontano dalle soglie = buono (verde)
+    // Se il valore corrente è più vicino alle soglie = cattivo (rosso)
+    if (currentMinDistance > previousMinDistance) {
+        return 'positive'; // Migliora: si allontana dalle soglie
+    } else if (currentMinDistance < previousMinDistance) {
+        return 'negative'; // Peggiora: si avvicina alle soglie
+    } else {
+        return variation > 0 ? 'positive' : 'negative'; // Fallback al segno della variazione
+    }
+}
+
 function renderWaterTable() {
     console.log('🎨 renderWaterTable - INIZIO');
     console.log('🔍 waterTableBody:', waterTableBody);
@@ -420,11 +524,28 @@ function renderWaterTable() {
     }
     
     waterTableBody.innerHTML = '';
-    const sorted = [...water].sort((a, b) => new Date(b.ts) - new Date(a.ts));
-    console.log('📊 Dati ordinati per tabella:', sorted.length, sorted);
     
-    for (const row of sorted) {
+    // Ordinamento cronologico per calcolo variazioni (dal più vecchio al più recente)
+    const sortedForCalculation = [...water].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    
+    // Ordinamento per visualizzazione (dal più recente al più vecchio)
+    const sortedForDisplay = [...water].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+    
+    console.log('📊 Dati ordinati per calcolo:', sortedForCalculation.length, sortedForCalculation);
+    console.log('📊 Dati ordinati per visualizzazione:', sortedForDisplay.length, sortedForDisplay);
+    
+    // Crea un mapping per trovare l'indice cronologico di ogni record
+    const chronologicalIndexMap = new Map();
+    sortedForCalculation.forEach((record, index) => {
+        chronologicalIndexMap.set(record.id, index);
+    });
+    
+    for (let i = 0; i < sortedForDisplay.length; i++) {
+        const row = sortedForDisplay[i];
         const tr = document.createElement('tr');
+        
+        // Trova l'indice cronologico di questo record
+        const chronologicalIndex = chronologicalIndexMap.get(row.id);
         
         // Genera le celle con colorazione basata sulle soglie
         const cells = [
@@ -444,6 +565,30 @@ function renderWaterTable() {
             const isOutOfThreshold = isValueOutOfThreshold(cell.field, cell.value);
             const style = isOutOfThreshold ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
             cellsHtml += `<td><input type="number" step="${cell.step}" min="0" value="${cell.value ?? ''}" data-id="${row.id}" data-field="${cell.field}" class="table-input" style="${style}"></td>`;
+            
+            // Aggiungi colonna con variazione percentuale usando l'indice cronologico
+            const variation = chronologicalIndex !== undefined ? calculateVariation(sortedForCalculation, chronologicalIndex, cell.field) : null;
+            if (variation !== null) {
+                // Trova il valore precedente per determinare la direzione
+                let previousValue = null;
+                if (chronologicalIndex > 0) {
+                    for (let i = chronologicalIndex - 1; i >= 0; i--) {
+                        const value = sortedForCalculation[i][cell.field];
+                        if (value !== null && value !== undefined) {
+                            previousValue = value;
+                            break;
+                        }
+                    }
+                }
+                
+                // Determina se la variazione è buona o cattiva per la salute dell'acqua
+                const direction = previousValue !== null ? getVariationDirection(cell.field, cell.value, previousValue, variation) : 'neutral';
+                const cssClass = direction === 'positive' ? 'variation-positive' : direction === 'negative' ? 'variation-negative' : 'variation-neutral';
+                const symbol = variation > 0 ? '+' : '';
+                cellsHtml += `<td class="variation-column ${cssClass}">${symbol}${variation.toFixed(1)}%</td>`;
+            } else {
+                cellsHtml += `<td class="variation-column variation-neutral">-</td>`;
+            }
         });
         
         cellsHtml += `<td><button data-id="${row.id}" class="del-water">🗑️ Elimina</button></td>`;
@@ -479,6 +624,10 @@ function renderWaterTable() {
                     dataManager.updateWater(water);
                 }
                 drawWaterChart();
+                
+                // RICARICA LA TABELLA per aggiornare i delta
+                console.log('🔄 Ricalcolo delta dopo modifica manuale');
+                renderWaterTable();
             }
             
             // Aggiorna la colorazione della casella in base alle soglie

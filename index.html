@@ -248,6 +248,307 @@
 		background: #64b5f6 !important;
 		color: #000 !important;
 	}
+	
+	/* Stili per le colonne delle variazioni percentuali */
+	.variation-column {
+		font-size: 11px !important;
+		font-weight: bold !important;
+		text-align: center !important;
+		min-width: 60px !important;
+		padding: 4px !important;
+	}
+	
+	.variation-positive {
+		background: #e8f5e8 !important;
+		color: #2e7d32 !important;
+	}
+	
+	.variation-negative {
+		background: #ffebee !important;
+		color: #d32f2f !important;
+	}
+	
+	.variation-neutral {
+		background: #f5f5f5 !important;
+		color: #666 !important;
+	}
+	
+	.dark-mode .variation-positive {
+		background: #1b5e20 !important;
+		color: #81c784 !important;
+	}
+	
+	.dark-mode .variation-negative {
+		background: #b71c1c !important;
+		color: #ef5350 !important;
+	}
+	
+	.dark-mode .variation-neutral {
+		background: #424242 !important;
+		color: #bdbdbd !important;
+	}
+	
+	/* Stili per la console di controllo */
+	#control-console {
+		position: fixed !important;
+		top: 0 !important;
+		right: 0 !important;
+		z-index: 9999 !important;
+		transition: all 0.3s ease;
+		pointer-events: auto;
+	}
+	
+	#control-console:hover {
+		background: rgba(255,255,255,0.98) !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+	}
+	
+	.dark-mode #control-console {
+		background: rgba(26, 26, 26, 0.95) !important;
+		backdrop-filter: blur(10px) !important;
+	}
+	
+	.dark-mode #control-console:hover {
+		background: rgba(26, 26, 26, 0.98) !important;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+	}
+	
+	.dark-mode #control-console button {
+		background: #444 !important;
+		color: #ffffff !important;
+		border-color: #666 !important;
+	}
+	
+	.dark-mode #control-console button:hover {
+		background: #555 !important;
+	}
+	
+	.dark-mode #control-console #sync-data {
+		background: #1976d2 !important;
+		color: white !important;
+	}
+	
+	.dark-mode #control-console #debug-sync {
+		background: #ff9800 !important;
+		color: white !important;
+	}
+	
+	.dark-mode #control-console #dark-mode-toggle {
+		background: #666 !important;
+		color: white !important;
+	}
+	
+	.dark-mode #control-console #mobile-toggle {
+		background: #7b1fa2 !important;
+		color: white !important;
+	}
+	
+	.dark-mode #last-sync {
+		color: #cccccc !important;
+	}
+	
+	/* Assicura che la console sia sempre inchiodata */
+	body {
+		margin: 0;
+		padding: 0;
+	}
+	
+	/* Previene scroll orizzontale */
+	html, body {
+		overflow-x: hidden;
+	}
+	
+	/* Modalità Mobile */
+	.mobile-mode {
+		font-size: 16px !important;
+	}
+	
+	.mobile-mode body {
+		margin: 0;
+		padding: 8px;
+		font-size: 16px;
+	}
+	
+	.mobile-mode button {
+		min-height: 48px !important;
+		padding: 12px 16px !important;
+		font-size: 16px !important;
+		margin: 4px 0 !important;
+		width: 100% !important;
+		box-sizing: border-box !important;
+	}
+	
+	.mobile-mode input, .mobile-mode select {
+		min-height: 48px !important;
+		font-size: 16px !important;
+		padding: 12px !important;
+	}
+	
+	.mobile-mode table {
+		font-size: 14px !important;
+		width: auto !important;
+		min-width: 100% !important;
+	}
+	
+	.mobile-mode th, .mobile-mode td {
+		padding: 8px 4px !important;
+		font-size: 12px !important;
+	}
+	
+	.mobile-mode .field {
+		margin: 12px 0 !important;
+	}
+	
+	.mobile-mode .field label {
+		font-size: 16px !important;
+		margin-bottom: 8px !important;
+		display: block !important;
+	}
+	
+	.mobile-mode fieldset {
+		margin: 16px 0 !important;
+		padding: 12px !important;
+	}
+	
+	.mobile-mode legend {
+		font-size: 18px !important;
+		padding: 0 8px !important;
+	}
+	
+	.mobile-mode h1, .mobile-mode h2 {
+		font-size: 24px !important;
+		margin: 16px 0 12px 0 !important;
+	}
+	
+	.mobile-mode canvas {
+		max-width: 100% !important;
+		height: auto !important;
+	}
+	
+	/* Container scrollabile per tabelle */
+	.table-container {
+		overflow-x: auto;
+		overflow-y: visible;
+		-webkit-overflow-scrolling: touch;
+		margin: 0;
+		padding: 0;
+	}
+	
+	/* Container scrollabile per tabelle mobile */
+	.mobile-mode .table-container {
+		overflow-x: auto !important;
+		overflow-y: visible !important;
+		-webkit-overflow-scrolling: touch !important;
+		margin: 0 -8px !important; /* Estende fino ai bordi dello schermo */
+		padding: 0 8px !important;
+	}
+	
+	/* Scrollbar per container tabelle */
+	.table-container::-webkit-scrollbar {
+		height: 6px;
+	}
+	
+	.table-container::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 3px;
+	}
+	
+	.table-container::-webkit-scrollbar-thumb {
+		background: #888;
+		border-radius: 3px;
+	}
+	
+	.table-container::-webkit-scrollbar-thumb:hover {
+		background: #555;
+	}
+	
+	.dark-mode .table-container::-webkit-scrollbar-track {
+		background: #333;
+	}
+	
+	.dark-mode .table-container::-webkit-scrollbar-thumb {
+		background: #666;
+	}
+	
+	.dark-mode .table-container::-webkit-scrollbar-thumb:hover {
+		background: #888;
+	}
+	
+	.mobile-mode .table-container::-webkit-scrollbar {
+		height: 8px !important;
+	}
+	
+	.mobile-mode .table-container::-webkit-scrollbar-track {
+		background: #f1f1f1 !important;
+		border-radius: 4px !important;
+	}
+	
+	.mobile-mode .table-container::-webkit-scrollbar-thumb {
+		background: #888 !important;
+		border-radius: 4px !important;
+	}
+	
+	.mobile-mode .table-container::-webkit-scrollbar-thumb:hover {
+		background: #555 !important;
+	}
+	
+	/* Dark mode scrollbar */
+	.dark-mode.mobile-mode .table-container::-webkit-scrollbar-track {
+		background: #333 !important;
+	}
+	
+	.dark-mode.mobile-mode .table-container::-webkit-scrollbar-thumb {
+		background: #666 !important;
+	}
+	
+	.dark-mode.mobile-mode .table-container::-webkit-scrollbar-thumb:hover {
+		background: #888 !important;
+	}
+	
+	/* Console mobile */
+	.mobile-mode #control-console {
+		width: 100% !important;
+		position: fixed !important;
+		top: 0 !important;
+		left: 0 !important;
+		right: 0 !important;
+		z-index: 9999 !important;
+		border-radius: 0 !important;
+		flex-direction: row !important;
+		align-items: center !important;
+		justify-content: space-between !important;
+		padding: 8px 12px !important;
+	}
+	
+	.mobile-mode #control-console > div:first-child {
+		display: none !important; /* Nasconde status in mobile */
+	}
+	
+	.mobile-mode #control-console > div:last-child {
+		display: none !important; /* Nasconde last-sync in mobile */
+	}
+	
+	.mobile-mode #control-console > div:nth-child(2),
+	.mobile-mode #control-console > div:nth-child(3) {
+		display: flex !important;
+		gap: 8px !important;
+		flex: 1 !important;
+		justify-content: center !important;
+	}
+	
+	.mobile-mode #control-console button {
+		min-height: 40px !important;
+		padding: 8px 12px !important;
+		font-size: 12px !important;
+		width: auto !important;
+		flex: 1 !important;
+		max-width: 80px !important;
+	}
+	
+	/* Spazio per console mobile */
+	.mobile-mode body {
+		padding-top: 60px !important;
+	}
 	.dark-mode #sync-data:hover {
 		background: #90caf9 !important;
 	}
@@ -324,15 +625,27 @@
 </head>
 <body>
 
-<div style="position: fixed; top: 10px; right: 10px; z-index: 1000; background: rgba(255,255,255,0.9); padding: 8px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-	<div id="status-indicator" class="status-indicator" style="position: static; background: #4caf50; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; box-shadow: none; margin: 0;">🔄 Sincronizzazione...</div>
-	<div style="display: flex; gap: 8px; align-items: center;">
-		<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🔄 GitHub</button>
-		<button id="debug-sync" style="background: #ff9800; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🐛 Debug</button>
-		<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 44px;">🌙 Dark Mode</button>
+<!-- Console di controllo inchiodata in alto a destra -->
+<div id="control-console" style="position: fixed; top: 0; right: 0; z-index: 9999; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 8px 12px; border-radius: 0 0 0 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 4px; align-items: flex-end; width: 260px; box-sizing: border-box;">
+	<!-- Status indicator compatto -->
+	<div id="status-indicator" class="status-indicator" style="background: #4caf50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin: 0; white-space: nowrap;">🔄 Sincronizzazione...</div>
+	
+	<!-- Pulsanti compatti in due righe -->
+	<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+		<button id="sync-data" style="background: #1976d2; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🔄 Sync</button>
+		<button id="debug-sync" style="background: #ff9800; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🐛 Debug</button>
 	</div>
-	<div id="last-sync" style="font-size: 11px; color: #666; text-align: right; max-width: 200px; line-height: 1.3;"></div>
+	<div style="display: flex; gap: 6px; align-items: center; justify-content: center;">
+		<button id="mobile-toggle" style="background: #9c27b0; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">📱 Mobile</button>
+		<button id="dark-mode-toggle" style="background: #333; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; min-height: 32px; white-space: nowrap;">🌙 Dark</button>
+	</div>
+	
+	<!-- Ultima sincronizzazione compatta -->
+	<div id="last-sync" style="font-size: 10px; color: #666; text-align: right; line-height: 1.2; max-width: 280px; word-wrap: break-word;"></div>
 </div>
+
+<!-- Spazio per evitare che il contenuto vada sotto la console -->
+<div style="height: 90px; margin-right: 260px;"></div>
 
 <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;">
 	<h1 id="main-title" contenteditable="true" style="cursor: pointer; border: 2px solid transparent; padding: 8px; border-radius: 8px; transition: border-color 0.2s; margin: 0; font-size: 28px;">🌱 Paludario</h1>
@@ -413,18 +726,25 @@
 	</div>
 </div>
 
+<div class="table-container">
 <table id="water-table">
 	<thead>
 		<tr>
 			<th>📅 Data/Ora</th>
-			<th>🧪 pH</th><th>⚗️ KH</th><th>🔬 GH</th>
-			<th>⚠️ NO2</th><th>⚠️ NO3</th><th>☠️ NH4</th>
-			<th>🌡️ Temperatura °C</th><th>⚡ Conducibilità µS/cm</th>
+			<th>🧪 pH</th><th>📊 ΔpH%</th>
+			<th>⚗️ KH</th><th>📊 ΔKH%</th>
+			<th>🔬 GH</th><th>📊 ΔGH%</th>
+			<th>⚠️ NO2</th><th>📊 ΔNO2%</th>
+			<th>⚠️ NO3</th><th>📊 ΔNO3%</th>
+			<th>☠️ NH4</th><th>📊 ΔNH4%</th>
+			<th>🌡️ Temp °C</th><th>📊 ΔTemp%</th>
+			<th>⚡ Cond µS/cm</th><th>📊 ΔCond%</th>
 			<th>⚙️ Azioni</th>
 		</tr>
 	</thead>
 	<tbody></tbody>
 </table>
+</div>
 
 <h2>⏰ Profilo tipico giornaliero (0–24)</h2>
 
@@ -443,10 +763,12 @@
 			<button id="add-spray">➕ Aggiungi</button>
 			<button id="clear-spray">🧹 Pulisci</button>
 		</div>
+		<div class="table-container">
 		<table id="spray-table">
 			<thead><tr><th>🕐 Inizio</th><th>🕐 Fine</th><th>⚙️ Azioni</th></tr></thead>
 			<tbody></tbody>
 		</table>
+		</div>
 	</fieldset>
 
 	<fieldset>
@@ -463,10 +785,12 @@
 			<button id="add-fan">➕ Aggiungi</button>
 			<button id="clear-fan">🧹 Pulisci</button>
 		</div>
+		<div class="table-container">
 		<table id="fan-table">
 			<thead><tr><th>🕐 Inizio</th><th>🕐 Fine</th><th>⚙️ Azioni</th></tr></thead>
 			<tbody></tbody>
 		</table>
+		</div>
 	</fieldset>
 </div>
 
@@ -495,12 +819,14 @@
 		<button id="add-light">➕ Aggiungi</button>
 		<button id="clear-lights">🧹 Pulisci</button>
 	</div>
+	<div class="table-container">
 	<table id="light-table">
 		<thead>
 			<tr><th>🕐 Ora</th><th><span class="color-dot red"></span>R</th><th><span class="color-dot green"></span>G</th><th><span class="color-dot blue"></span>B</th><th><span class="color-dot white"></span>W</th><th><span class="color-dot orange"></span>Plafoniera</th><th>⚙️ Azioni</th></tr>
 		</thead>
 		<tbody></tbody>
 	</table>
+	</div>
 </fieldset>
 
 <div class="row">

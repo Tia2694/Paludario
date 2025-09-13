@@ -18,6 +18,7 @@ class DataManager {
                 title: '🌱 Paludario', 
                 liters: '', 
                 darkMode: false,
+                mobileMode: false,
                 waterThresholds: {
                     ph: { min: 6.0, max: 8.0 },
                     kh: { min: 2.0, max: 15.0 },
@@ -247,6 +248,7 @@ class DataManager {
             title: localStorage.getItem('paludario.title') || '🌱 Paludario',
             liters: localStorage.getItem('paludario.liters') || '',
             darkMode: localStorage.getItem('paludario.darkMode') === 'true',
+            mobileMode: localStorage.getItem('paludario.mobileMode') === 'true',
             waterThresholds: savedThresholds ? JSON.parse(savedThresholds) : defaultThresholds
         };
         // Aggiorna i dati globali
@@ -259,6 +261,7 @@ class DataManager {
         localStorage.setItem('paludario.title', this.data.settings.title);
         localStorage.setItem('paludario.liters', this.data.settings.liters);
         localStorage.setItem('paludario.darkMode', this.data.settings.darkMode);
+        localStorage.setItem('paludario.mobileMode', this.data.settings.mobileMode);
         localStorage.setItem('paludario.waterThresholds', JSON.stringify(this.data.settings.waterThresholds));
     }
 
@@ -312,6 +315,16 @@ class DataManager {
             if (darkModeToggle) {
                 darkModeToggle.textContent = '☀️ Light Mode';
                 darkModeToggle.style.background = '#555';
+            }
+        }
+
+        // Inizializza mobile mode
+        if (this.data.settings.mobileMode) {
+            document.body.classList.add('mobile-mode');
+            const mobileToggle = document.getElementById('mobile-toggle');
+            if (mobileToggle) {
+                mobileToggle.textContent = '💻 Desktop';
+                mobileToggle.style.background = '#4caf50';
             }
         }
 

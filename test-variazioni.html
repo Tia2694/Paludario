@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Variazioni Percentuali</title>
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { color: #2e7d32; background: #e8f5e8; }
+        .error { color: #d32f2f; background: #ffebee; }
+        .info { color: #1976d2; background: #e3f2fd; }
+        button { padding: 10px 15px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        
+        /* Stili per la tabella di test */
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f5f5f5; font-weight: bold; }
+        
+        .variation-column {
+            font-size: 11px !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            min-width: 60px !important;
+            padding: 4px !important;
+        }
+        
+        .variation-positive {
+            background: #e8f5e8 !important;
+            color: #2e7d32 !important;
+        }
+        
+        .variation-negative {
+            background: #ffebee !important;
+            color: #d32f2f !important;
+        }
+        
+        .variation-neutral {
+            background: #f5f5f5 !important;
+            color: #666 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Test Variazioni Percentuali</h1>
+    
+    <div class="test-section">
+        <h3>🧪 Dati di Test</h3>
+        <p>Questo test mostra come funzionano le variazioni percentuali:</p>
+        <ul>
+            <li><strong>10/11</strong>: pH = 6.0 (primo valore, nessuna variazione)</li>
+            <li><strong>11/11</strong>: pH = null (campo vuoto, nessuna variazione)</li>
+            <li><strong>12/11</strong>: pH = 8.0 (variazione: +33.3% rispetto a 6.0)</li>
+            <li><strong>13/11</strong>: pH = 7.5 (variazione: -6.3% rispetto a 8.0)</li>
+        </ul>
+        <p><strong>🎨 Logica Colori:</strong></p>
+        <ul>
+            <li><span style="color: #2e7d32; font-weight: bold;">🟢 Verde</span>: Migliora (si allontana dalle soglie limite)</li>
+            <li><span style="color: #d32f2f; font-weight: bold;">🔴 Rosso</span>: Peggiora (si avvicina alle soglie limite)</li>
+            <li><span style="color: #666; font-weight: bold;">⚪ Grigio</span>: Nessuna variazione</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h3>📈 Tabella con Variazioni</h3>
+        <table id="test-table">
+            <thead>
+                <tr>
+                    <th>📅 Data</th>
+                    <th>🧪 pH</th><th>📊 ΔpH%</th>
+                    <th>⚗️ KH</th><th>📊 ΔKH%</th>
+                    <th>🔬 GH</th><th>📊 ΔGH%</th>
+                </tr>
+            </thead>
+            <tbody id="test-tbody"></tbody>
+        </table>
+        <button onclick="generateTestData()">Genera Dati di Test</button>
+        <button onclick="clearTestData()">Pulisci Tabella</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>🔧 Test Funzione calculateVariation</h3>
+        <div id="function-test"></div>
+        <button onclick="testCalculateVariation()">Test Funzione</button>
+    </div>
+
+    <!-- Carica solo le funzioni necessarie -->
+    <script>
+        // Dati di test
+        let testData = [];
+        
+        // Funzione per calcolare la variazione percentuale (copiata da paludario-functions.js)
+        function calculateVariation(sortedData, currentIndex, field) {
+            // Se è il primo elemento o il valore corrente è null/vuoto, non c'è variazione
+            if (currentIndex === 0 || sortedData[currentIndex][field] === null || sortedData[currentIndex][field] === undefined) {
+                return null;
+            }
+            
+            const currentValue = sortedData[currentIndex][field];
+            
+            // Trova il valore precedente non vuoto
+            let previousValue = null;
+            for (let i = currentIndex - 1; i >= 0; i--) {
+                const value = sortedData[i][field];
+                if (value !== null && value !== undefined) {
+                    previousValue = value;
+                    break;
+                }
+            }
+            
+            // Se non c'è valore precedente, non c'è variazione
+            if (previousValue === null || previousValue === undefined) {
+                return null;
+            }
+            
+            // Calcola la variazione percentuale
+            const variation = ((currentValue - previousValue) / previousValue) * 100;
+            
+            // Arrotonda a 1 decimale
+            return Math.round(variation * 10) / 10;
+        }
+        
+        function generateTestData() {
+            // Genera dati di test realistici
+            testData = [
+                {
+                    id: '1',
+                    date: '2024-11-10',
+                    ph: 6.0,
+                    kh: 8.0,
+                    gh: 12.0
+                },
+                {
+                    id: '2', 
+                    date: '2024-11-11',
+                    ph: null, // Campo vuoto
+                    kh: 8.5,
+                    gh: null // Campo vuoto
+                },
+                {
+                    id: '3',
+                    date: '2024-11-12', 
+                    ph: 8.0, // +33.3% rispetto a 6.0
+                    kh: 7.0, // -17.6% rispetto a 8.5
+                    gh: 15.0 // +25.0% rispetto a 12.0
+                },
+                {
+                    id: '4',
+                    date: '2024-11-13',
+                    ph: 7.5, // -6.3% rispetto a 8.0
+                    kh: 9.0, // +28.6% rispetto a 7.0
+                    gh: 14.0 // -6.7% rispetto a 15.0
+                }
+            ];
+            
+            renderTestTable();
+        }
+        
+        function renderTestTable() {
+            const tbody = document.getElementById('test-tbody');
+            tbody.innerHTML = '';
+            
+            // Ordinamento cronologico per calcolo variazioni
+            const sortedForCalculation = [...testData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Ordinamento per visualizzazione (dal più recente al più vecchio)
+            const sortedForDisplay = [...testData].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Crea mapping per indici cronologici
+            const chronologicalIndexMap = new Map();
+            sortedForCalculation.forEach((record, index) => {
+                chronologicalIndexMap.set(record.id, index);
+            });
+            
+            sortedForDisplay.forEach(row => {
+                const tr = document.createElement('tr');
+                const chronologicalIndex = chronologicalIndexMap.get(row.id);
+                
+                const cells = [
+                    { value: row.ph, field: 'ph' },
+                    { value: row.kh, field: 'kh' },
+                    { value: row.gh, field: 'gh' }
+                ];
+                
+                let cellsHtml = `<td>${row.date}</td>`;
+                
+                cells.forEach(cell => {
+                    // Valore
+                    cellsHtml += `<td>${cell.value !== null ? cell.value : '-'}</td>`;
+                    
+                    // Variazione
+                    const variation = chronologicalIndex !== undefined ? calculateVariation(sortedForCalculation, chronologicalIndex, cell.field) : null;
+                    if (variation !== null) {
+                        // Logica semplificata per il test: verde se migliora, rosso se peggiora
+                        const cssClass = variation > 0 ? 'variation-positive' : variation < 0 ? 'variation-negative' : 'variation-neutral';
+                        const symbol = variation > 0 ? '+' : '';
+                        cellsHtml += `<td class="variation-column ${cssClass}">${symbol}${variation.toFixed(1)}%</td>`;
+                    } else {
+                        cellsHtml += `<td class="variation-column variation-neutral">-</td>`;
+                    }
+                });
+                
+                tr.innerHTML = cellsHtml;
+                tbody.appendChild(tr);
+            });
+        }
+        
+        function clearTestData() {
+            testData = [];
+            document.getElementById('test-tbody').innerHTML = '';
+        }
+        
+        function testCalculateVariation() {
+            const container = document.getElementById('function-test');
+            let html = '<div class="info">🧪 Test della funzione calculateVariation:</div>';
+            html += '<pre>';
+            
+            // Test con dati di esempio
+            const testArray = [
+                { ph: 6.0 },
+                { ph: null }, // Campo vuoto
+                { ph: 8.0 },  // Dovrebbe essere +33.3%
+                { ph: 7.5 }   // Dovrebbe essere -6.3%
+            ];
+            
+            html += 'Array di test:\n';
+            testArray.forEach((item, index) => {
+                html += `  [${index}]: pH = ${item.ph !== null ? item.ph : 'null'}\n`;
+            });
+            html += '\n';
+            
+            html += 'Calcoli delle variazioni:\n';
+            for (let i = 0; i < testArray.length; i++) {
+                const variation = calculateVariation(testArray, i, 'ph');
+                const value = testArray[i].ph;
+                html += `  [${i}]: pH = ${value !== null ? value : 'null'} → Δ = ${variation !== null ? variation.toFixed(1) + '%' : 'N/A'}\n`;
+            }
+            
+            html += '</pre>';
+            
+            // Verifica risultati attesi
+            const expectedResults = [null, null, 33.3, -6.3];
+            let allCorrect = true;
+            
+            html += '<div class="info">✅ Verifica risultati attesi:</div>';
+            html += '<pre>';
+            for (let i = 0; i < testArray.length; i++) {
+                const actual = calculateVariation(testArray, i, 'ph');
+                const expected = expectedResults[i];
+                const isCorrect = Math.abs((actual || 0) - (expected || 0)) < 0.1;
+                
+                if (!isCorrect) allCorrect = false;
+                
+                const status = isCorrect ? '✅' : '❌';
+                html += `${status} [${i}]: Atteso ${expected || 'null'}, Ottenuto ${actual !== null ? actual.toFixed(1) : 'null'}\n`;
+            }
+            html += '</pre>';
+            
+            if (allCorrect) {
+                html += '<div class="success">🎉 Tutti i test sono passati!</div>';
+            } else {
+                html += '<div class="error">⚠️ Alcuni test sono falliti</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // Genera automaticamente i dati di test all'avvio
+        window.addEventListener('load', () => {
+            generateTestData();
+            testCalculateVariation();
+        });
+    </script>
+</body>
+</html>
