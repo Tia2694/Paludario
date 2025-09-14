@@ -236,10 +236,92 @@
 		overflow: hidden;
 	}
 	
-	/* Tabella luci RGB - usa le stesse regole delle altre tabelle */
-	#light-table {
-		/* Usa width: 100% come le altre tabelle in desktop */
-		table-layout: fixed !important;
+	/* Tabelle canali luci - layout a griglia */
+	.channel-table-container {
+		background: #f8f9fa;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 16px;
+		margin-bottom: 16px;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	}
+	
+	.channel-table-container h4 {
+		margin: 0 0 12px 0;
+		font-size: 16px;
+		font-weight: 600;
+		color: #333;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	
+	.channel-table {
+		width: 100%;
+		border-collapse: collapse;
+		background: white;
+		border-radius: 6px;
+		overflow: hidden;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+	}
+	
+	.channel-table th {
+		background: #f5f5f5;
+		padding: 8px 12px;
+		text-align: left;
+		font-weight: 600;
+		font-size: 14px;
+		border-bottom: 2px solid #e0e0e0;
+	}
+	
+	.channel-table td {
+		padding: 8px 12px;
+		border-bottom: 1px solid #f0f0f0;
+	}
+	
+	.channel-table input {
+		width: 100%;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 6px 8px;
+		font-size: 14px;
+	}
+	
+	.channel-table input:focus {
+		outline: none;
+		border-color: #4caf50;
+		box-shadow: 0 0 0 2px rgba(76,175,80,0.2);
+	}
+	
+	.add-row-btn {
+		background: #4caf50;
+		color: white;
+		border: none;
+		padding: 8px 16px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: 600;
+		margin-top: 8px;
+		transition: background 0.2s;
+	}
+	
+	.add-row-btn:hover {
+		background: #45a049;
+	}
+	
+	.remove-row-btn {
+		background: #f44336;
+		color: white;
+		border: none;
+		padding: 4px 8px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 12px;
+	}
+	
+	.remove-row-btn:hover {
+		background: #d32f2f;
 	}
 	
 	/* Tabella valori acqua - usa le stesse regole delle altre tabelle */
@@ -2494,89 +2576,73 @@ h2 .animated-icon {
 <fieldset>
 	<legend class="toggle-btn" data-target="lights-form"><span class="animated-icon lights">💡</span> Luci RGBW + Plafoniera (0–100%)</legend>
 	<div class="row toggle-section" id="lights-form">
-		<div class="field">
-			<label>🕐 Ora</label><input id="light-time" type="time" step="60" />
-			<button class="tiny ok-btn" data-for="light-time">OK</button>
+		<!-- Tabella Canale 1 (R) -->
+		<div class="channel-table-container">
+			<h4><span class="color-dot red"></span> Canale R (ch1)</h4>
+			<table class="channel-table" id="ch1-table">
+				<thead>
+					<tr><th>🕐 Ora</th><th>%</th><th>⚙️</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button class="add-row-btn" data-channel="ch1">➕ Aggiungi Riga</button>
 		</div>
-		<div class="field">
-			<label><span class="color-dot red"></span>R</label><input id="ch1" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+
+		<!-- Tabella Canale 2 (G) -->
+		<div class="channel-table-container">
+			<h4><span class="color-dot green"></span> Canale G (ch2)</h4>
+			<table class="channel-table" id="ch2-table">
+				<thead>
+					<tr><th>🕐 Ora</th><th>%</th><th>⚙️</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button class="add-row-btn" data-channel="ch2">➕ Aggiungi Riga</button>
 		</div>
-		<div class="field">
-			<label><span class="color-dot green"></span>G</label><input id="ch2" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+
+		<!-- Tabella Canale 3 (B) -->
+		<div class="channel-table-container">
+			<h4><span class="color-dot blue"></span> Canale B (ch3)</h4>
+			<table class="channel-table" id="ch3-table">
+				<thead>
+					<tr><th>🕐 Ora</th><th>%</th><th>⚙️</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button class="add-row-btn" data-channel="ch3">➕ Aggiungi Riga</button>
 		</div>
-		<div class="field">
-			<label><span class="color-dot blue"></span>B</label><input id="ch3" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+
+		<!-- Tabella Canale 4 (W) -->
+		<div class="channel-table-container">
+			<h4><span class="color-dot white"></span> Canale W (ch4)</h4>
+			<table class="channel-table" id="ch4-table">
+				<thead>
+					<tr><th>🕐 Ora</th><th>%</th><th>⚙️</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button class="add-row-btn" data-channel="ch4">➕ Aggiungi Riga</button>
 		</div>
-		<div class="field">
-			<label><span class="color-dot white"></span>W</label><input id="ch4" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
+
+		<!-- Tabella Canale 5 (Plafoniera) -->
+		<div class="channel-table-container">
+			<h4><span class="color-dot orange"></span> Canale Plafoniera (ch5)</h4>
+			<table class="channel-table" id="ch5-table">
+				<thead>
+					<tr><th>🕐 Ora</th><th>%</th><th>⚙️</th></tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			<button class="add-row-btn" data-channel="ch5">➕ Aggiungi Riga</button>
 		</div>
-		<div class="field">
-			<label><span class="color-dot orange"></span>Plafoniera</label><input id="ch5" type="number" min="0" max="100" step="1" /><span class="unit">%</span>
-		</div>
-		<button id="add-light">➕ Aggiungi</button>
-		<button id="clear-lights">🧹 Pulisci</button>
 	</div>
 </fieldset>
 
-<div class="table-container">
-<table id="light-table">
-	<thead>
-		<tr><th>🕐 Ora</th><th><span class="color-dot red"></span>R</th><th><span class="color-dot green"></span>G</th><th><span class="color-dot blue"></span>B</th><th><span class="color-dot white"></span>W</th><th><span class="color-dot orange"></span>Plafoniera</th><th>⚙️ Azioni</th></tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td>08:00</td>
-			<td>100</td>
-			<td>50</td>
-			<td>25</td>
-			<td>75</td>
-			<td>80</td>
-			<td>Test</td>
-		</tr>
-		<tr>
-			<td>12:00</td>
-			<td>80</td>
-			<td>60</td>
-			<td>40</td>
-			<td>90</td>
-			<td>70</td>
-			<td>Test</td>
-		</tr>
-		<tr>
-			<td>18:00</td>
-			<td>60</td>
-			<td>70</td>
-			<td>55</td>
-			<td>85</td>
-			<td>60</td>
-			<td>Test</td>
-		</tr>
-		<tr>
-			<td>20:00</td>
-			<td>90</td>
-			<td>45</td>
-			<td>30</td>
-			<td>95</td>
-			<td>85</td>
-			<td>Test</td>
-		</tr>
-		<tr>
-			<td>22:00</td>
-			<td>70</td>
-			<td>80</td>
-			<td>65</td>
-			<td>70</td>
-			<td>75</td>
-			<td>Test</td>
-		</tr>
-	</tbody>
-</table>
-</div>
 
 <div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center;">
 	<button id="refresh-day-chart">🔄 Aggiorna grafico</button>
 	<button id="toggle-backgrounds">🎨 Mostra Sfondi</button>
-	<button id="toggle-fill">📊 Grafico Pieno</button>
+	<button id="toggle-fill">📊 Grafico Vuoto</button>
 </div>
 <canvas id="dayChart"></canvas>
 <div class="legend" id="dayLegend"></div>

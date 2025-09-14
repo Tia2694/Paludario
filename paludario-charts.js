@@ -542,13 +542,32 @@ function drawDayChart() {
     const baseY = yLScale(0);
 
     const toPts = (arr, yscale) => arr.map(p => ({ x: xScale(p.x), y: yscale(p.y) }));
+    
+    // Disegna ogni canale direttamente dai dati delle tabelle
     [{ key: 'ch1', color: COLORS.R }, { key: 'ch2', color: COLORS.G }, { key: 'ch3', color: COLORS.B }, { key: 'ch4', color: COLORS.W }, { key: 'ch5', color: COLORS.Plaf }]
         .forEach(ch => {
             if (visibleChannels[ch.key]) {
-                const result = genLinearSeriesFromKeyframes(plan.lights, ch.key);
-                if (result.points.length > 0) {
-                    const keyframesScaled = toPts(result.keyframes, yLScale);
-                    drawLinearWithFill(ctx, toPts(result.points, yLScale), ch.color, 2, baseY, keyframesScaled);
+                // Raccogli i dati per questo canale specifico
+                const channelData = [];
+                if (plan.lights) {
+                    plan.lights.forEach(item => {
+                        if (item[ch.key] !== undefined && item[ch.key] !== null) {
+                            channelData.push({
+                                x: toMinutes(item.t),
+                                y: item[ch.key]
+                            });
+                        }
+                    });
+                }
+                
+                // Ordina per ora
+                channelData.sort((a, b) => a.x - b.x);
+                
+                // Disegna solo se ci sono dati
+                if (channelData.length > 0) {
+                    const points = toPts(channelData, yLScale);
+                    const keyframes = toPts(channelData, yLScale);
+                    drawLinearWithFill(ctx, points, ch.color, 2, baseY, keyframes);
                 }
             }
         });

@@ -66,15 +66,17 @@ const addFanBtn = document.getElementById('add-fan');
 const clearFanBtn = document.getElementById('clear-fan');
 let fanTableBody;
 
-const lightTime = document.getElementById('light-time');
-const ch1 = document.getElementById('ch1');
-const ch2 = document.getElementById('ch2');
-const ch3 = document.getElementById('ch3');
-const ch4 = document.getElementById('ch4');
-const ch5 = document.getElementById('ch5');
-const addLightBtn = document.getElementById('add-light');
-const clearLightsBtn = document.getElementById('clear-lights');
-let lightTableBody;
+// Riferimenti alle nuove tabelle canali
+const channelTables = {
+    ch1: document.getElementById('ch1-table'),
+    ch2: document.getElementById('ch2-table'),
+    ch3: document.getElementById('ch3-table'),
+    ch4: document.getElementById('ch4-table'),
+    ch5: document.getElementById('ch5-table')
+};
+
+// Riferimenti ai pulsanti aggiungi riga
+const addRowBtns = document.querySelectorAll('.add-row-btn');
 
 const refreshDayChartBtn = document.getElementById('refresh-day-chart');
 const toggleBackgroundsBtn = document.getElementById('toggle-backgrounds');
@@ -248,13 +250,10 @@ function setupEventListeners() {
         clearFanBtn.onclick = clearFanInputs;
     }
 
-    // Luci
-    if (addLightBtn) {
-        addLightBtn.onclick = addLightValue;
-    }
-    if (clearLightsBtn) {
-        clearLightsBtn.onclick = clearLightInputs;
-    }
+    // Luci - nuove tabelle separate
+    addRowBtns.forEach(btn => {
+        btn.onclick = () => addChannelRow(btn.dataset.channel);
+    });
 
     // Animali
     if (addAnimalBtn) {
@@ -284,7 +283,7 @@ function setupEventListeners() {
     if (toggleFillBtn) {
         toggleFillBtn.onclick = () => {
             showFill = !showFill;
-            toggleFillBtn.textContent = showFill ? '📊 Grafico Pieno' : '📊 Grafico Vuoto';
+            toggleFillBtn.textContent = showFill ? '📊 Grafico Vuoto' : '📊 Grafico Pieno';
             drawDayChart();
         };
     }
@@ -1122,29 +1121,7 @@ function addFanInterval() {
     clearFanInputs();
 }
 
-function addLightValue() {
-    if (!lightTime.value) return alert('Inserisci l\'ora');
-    const val = v => Math.max(0, Math.min(100, Number(v || 0)));
-    
-    plan.lights.push({
-        t: lightTime.value,
-        ch1: val(ch1.value),
-        ch2: val(ch2.value),
-        ch3: val(ch3.value),
-        ch4: val(ch4.value),
-        ch5: val(ch5.value)
-    });
-    
-    if (dataManager && dataManager.updateDayTemplate) {
-        dataManager.updateDayTemplate(plan);
-    } else {
-        console.error('DataManager non disponibile per salvare la programmazione luci');
-    }
-    updateGlobalData();
-    renderDayTables();
-    drawDayChart();
-    clearLightInputs();
-}
+// Funzione rimossa - sostituita dalle nuove funzioni per tabelle separate
 
 function clearSprayInputs() {
     sprayStart.value = '';
@@ -1158,16 +1135,153 @@ function clearFanInputs() {
     fanStart.focus();
 }
 
-function clearLightInputs() {
-    lightTime.value = '';
-    [ch1, ch2, ch3, ch4, ch5].forEach(i => i.value = '');
-    lightTime.focus();
+// ==================== GESTIONE TABELLE CANALI SEPARATE ====================
+
+function addChannelRow(channelKey) {
+    const table = channelTables[channelKey];
+    if (!table) return;
+    
+    const tbody = table.querySelector('tbody');
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
+        <td><input type="time" class="channel-time-input" placeholder="HH:MM"></td>
+        <td><input type="number" min="0" max="100" class="channel-value-input" placeholder="0-100"></td>
+        <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️</button></td>
+    `;
+    
+    tbody.appendChild(row);
+    
+    // Focus sul campo ora
+    const timeInput = row.querySelector('.channel-time-input');
+    timeInput.focus();
+    
+    // Event listeners per salvataggio automatico
+    timeInput.addEventListener('change', () => saveChannelData(channelKey));
+    row.querySelector('.channel-value-input').addEventListener('change', () => saveChannelData(channelKey));
+}
+
+function removeChannelRow(button) {
+    const row = button.closest('tr');
+    row.remove();
+    
+    // Trova il canale dalla tabella
+    const table = row.closest('table');
+    const channelKey = Object.keys(channelTables).find(key => channelTables[key] === table);
+    if (channelKey) {
+        // Salva solo i dati di questo canale specifico
+        saveChannelData(channelKey);
+    }
+}
+
+function saveChannelData(channelKey) {
+    const table = channelTables[channelKey];
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr');
+    const channelData = [];
+    
+    rows.forEach(row => {
+        const timeInput = row.querySelector('.channel-time-input');
+        const valueInput = row.querySelector('.channel-value-input');
+        
+        if (timeInput.value && valueInput.value !== '') {
+            channelData.push({
+                t: timeInput.value,
+                value: Math.max(0, Math.min(100, Number(valueInput.value) || 0))
+            });
+        }
+    });
+    
+    // Ordina per ora
+    channelData.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    
+    // Aggiorna i dati del piano
+    if (!plan.lights) plan.lights = [];
+    
+    // Rimuovi SOLO i dati esistenti per questo canale specifico
+    plan.lights.forEach(item => {
+        delete item[channelKey];
+    });
+    
+    // Aggiungi i nuovi dati
+    channelData.forEach(data => {
+        const existingItem = plan.lights.find(item => item.t === data.t);
+        if (existingItem) {
+            existingItem[channelKey] = data.value;
+        } else {
+            const newItem = { t: data.t };
+            newItem[channelKey] = data.value;
+            plan.lights.push(newItem);
+        }
+    });
+    
+    // Salva i dati
+    if (dataManager && dataManager.updateDayTemplate) {
+        dataManager.updateDayTemplate(plan);
+    }
+    
+    // Ridisegna solo il grafico
+    drawDayChart();
+}
+
+function loadChannelData(channelKey) {
+    const table = channelTables[channelKey];
+    if (!table || !plan.lights) return;
+    
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+    
+    // Raccogli SOLO i dati per questo canale specifico
+    const channelData = [];
+    plan.lights.forEach(item => {
+        if (item[channelKey] !== undefined && item[channelKey] !== null) {
+            channelData.push({
+                t: item.t,
+                value: item[channelKey]
+            });
+        }
+    });
+    
+    // Ordina per ora
+    channelData.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    
+    // Crea le righe
+    channelData.forEach(data => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="time" class="channel-time-input" value="${data.t}"></td>
+            <td><input type="number" min="0" max="100" class="channel-value-input" value="${data.value}"></td>
+            <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️</button></td>
+        `;
+        tbody.appendChild(row);
+        
+        // Event listeners
+        row.querySelector('.channel-time-input').addEventListener('change', () => saveChannelData(channelKey));
+        row.querySelector('.channel-value-input').addEventListener('change', () => saveChannelData(channelKey));
+    });
+}
+
+function loadAllChannelData() {
+    // Verifica che plan.lights sia definito
+    if (typeof plan === 'undefined' || !plan.lights) {
+        if (typeof plan === 'undefined') {
+            window.plan = { lights: [], spray: [], fan: [] };
+        } else {
+            plan.lights = [];
+        }
+    }
+    
+    // Carica ogni canale indipendentemente
+    Object.keys(channelTables).forEach(channelKey => {
+        loadChannelData(channelKey);
+    });
 }
 
 function renderDayTables() {
     renderSprayTable();
     renderFanTable();
-    renderLightTable();
+    loadAllChannelData(); // Carica i dati nelle nuove tabelle separate
 }
 
 function renderSprayTable() {
@@ -1250,49 +1364,7 @@ function renderFanTable() {
     });
 }
 
-function renderLightTable() {
-    if (!lightTableBody) return;
-    
-    lightTableBody.innerHTML = '';
-    const sortedLights = plan.lights.map((item, originalIndex) => ({ ...item, originalIndex }))
-        .sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    
-    sortedLights.forEach((it, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><input type="time" value="${it.t}" data-original-i="${it.originalIndex}" data-field="t" class="table-input"></td>
-            <td><input type="number" min="0" max="100" value="${it.ch1}" data-original-i="${it.originalIndex}" data-field="ch1" class="table-input"></td>
-            <td><input type="number" min="0" max="100" value="${it.ch2}" data-original-i="${it.originalIndex}" data-field="ch2" class="table-input"></td>
-            <td><input type="number" min="0" max="100" value="${it.ch3}" data-original-i="${it.originalIndex}" data-field="ch3" class="table-input"></td>
-            <td><input type="number" min="0" max="100" value="${it.ch4}" data-original-i="${it.originalIndex}" data-field="ch4" class="table-input"></td>
-            <td><input type="number" min="0" max="100" value="${it.ch5}" data-original-i="${it.originalIndex}" data-field="ch5" class="table-input"></td>
-            <td><button data-original-i="${it.originalIndex}" class="del-light">🗑️ Elimina</button></td>
-        `;
-        lightTableBody.appendChild(tr);
-    });
-    
-    lightTableBody.querySelectorAll('.del-light').forEach(btn => {
-        btn.onclick = () => {
-            const i = Number(btn.getAttribute('data-original-i'));
-            plan.lights.splice(i, 1);
-            dataManager.updateDayTemplate(plan);
-            updateGlobalData();
-            renderDayTables();
-            drawDayChart();
-        };
-    });
-    
-    lightTableBody.querySelectorAll('.table-input').forEach(input => {
-        input.addEventListener('change', () => {
-            const i = Number(input.getAttribute('data-original-i'));
-            const field = input.getAttribute('data-field');
-            plan.lights[i][field] = field === 't' ? input.value : Number(input.value);
-            dataManager.updateDayTemplate(plan);
-            updateGlobalData();
-            drawDayChart();
-        });
-    });
-}
+// Funzione rimossa - sostituita dalle nuove funzioni per tabelle separate
 
 function hookOkCancelButtons() {
     // Gestione pulsanti OK
@@ -1362,6 +1434,9 @@ function updateGlobalData() {
     if (dataManager && dataManager.updateGlobalData) {
         dataManager.updateGlobalData();
     }
+    
+    // Carica i dati nelle nuove tabelle separate
+    loadAllChannelData();
 }
 
 /* ==================== GESTIONE SOGLIE ACQUA ==================== */
