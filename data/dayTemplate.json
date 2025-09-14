@@ -14,17 +14,17 @@
     }
   ],
   "fan": [],
-  "lights": [
+  "lights": [],
+  "lightsCh1": [
     {
       "t": "05:00",
-      "ch1": 0
+      "value": 0
     },
     {
       "t": "12:00",
-      "ch1": 56
+      "value": "50"
     }
   ],
-  "lightsCh1": [],
   "lightsCh2": [],
   "lightsCh3": [],
   "lightsCh4": [],
