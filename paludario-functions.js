@@ -657,11 +657,11 @@ function renderWaterTable() {
         
         // Genera le celle con colorazione basata sulle soglie
         const cells = [
-            { value: row.ph, field: 'ph', step: '0.01' },
-            { value: row.kh, field: 'kh', step: '0.1' },
-            { value: row.gh, field: 'gh', step: '0.1' },
+            { value: row.ph, field: 'ph', step: '0.5' },
+            { value: row.kh, field: 'kh', step: '1' },
+            { value: row.gh, field: 'gh', step: '1' },
             { value: row.no2, field: 'no2', step: '0.01' },
-            { value: row.no3, field: 'no3', step: '0.1' },
+            { value: row.no3, field: 'no3', step: '1' },
             { value: row.nh4, field: 'nh4', step: '0.01' },
             { value: row.temp, field: 'temp', step: '0.1' },
             { value: row.cond, field: 'cond', step: '1' }

@@ -42,11 +42,19 @@ function formatTickValue(value) {
         return value.toString();
     }
     
-    // Per numeri decimali, usa massimo 2 cifre decimali
-    const formatted = value.toFixed(2);
-    
-    // Rimuovi gli zeri finali inutili
-    return formatted.replace(/\.?0+$/, '');
+    // Per il pH, mostra sempre .0 o .5 (nessun altro decimale)
+    const decimal = value % 1;
+    if (Math.abs(decimal) < 0.25) {
+        // Valore più vicino a .0
+        return Math.floor(value).toString() + '.0';
+    } else if (Math.abs(decimal - 0.5) < 0.25) {
+        // Valore più vicino a .5
+        return Math.floor(value).toString() + '.5';
+    } else {
+        // Per altri valori decimali, usa massimo 2 cifre decimali
+        const formatted = value.toFixed(2);
+        return formatted.replace(/\.?0+$/, '');
+    }
 }
 
 function drawTicksY(ctx, x0, y0, y1, yScale, values, right = false) {
@@ -134,14 +142,14 @@ function drawWaterChart() {
 
     // Scale predefinite per ogni parametro dell'acqua
     const parameterRanges = {
-        'ph': { min: 0, max: 14, step: 1 },
-        'kh': { min: 0, max: 20, step: 2 },
-        'gh': { min: 0, max: 25, step: 2.5 },
+        'ph': { min: 0, max: 14, step: 0.5 },
+        'kh': { min: 0, max: 20, step: 1 },
+        'gh': { min: 0, max: 25, step: 1 },
         'no2': { min: 0, max: 0.5, step: 0.05 },
-        'no3': { min: 0, max: 50, step: 5 },
+        'no3': { min: 0, max: 50, step: 1 },
         'nh4': { min: 0, max: 0.5, step: 0.05 },
         'temp': { min: 15, max: 35, step: 2 },
-        'cond': { min: 0, max: 1000, step: 100 }
+        'cond': { min: 0, max: 1000, step: 1 }
     };
     
     // Ottieni il range per il parametro corrente

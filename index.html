@@ -238,10 +238,16 @@
 	
 	/* Tabella luci RGB - usa le stesse regole delle altre tabelle */
 	#light-table {
-		width: 1200px !important;
-		min-width: 1200px !important;
+		/* Usa width: 100% come le altre tabelle in desktop */
 		table-layout: fixed !important;
 	}
+	
+	/* Tabella valori acqua - usa le stesse regole delle altre tabelle */
+	#water-table {
+		/* Usa width: 100% come le altre tabelle in desktop */
+		table-layout: fixed !important;
+	}
+	
 	
 	fieldset::before {
 		content: '';
@@ -833,10 +839,10 @@
 		table-layout: fixed !important;
 	}
 	
-	/* Regola molto specifica per sovrascrivere qualsiasi conflitto */
+	/* Regola molto specifica per sovrascrivere qualsiasi conflitto - tabella acqua responsive */
 	body.mobile-mode .table-container table#water-table {
-		width: 1360px !important;
-		min-width: 1360px !important;
+		width: auto !important;
+		min-width: 100% !important;
 		max-width: none !important;
 		table-layout: fixed !important;
 	}
@@ -925,58 +931,42 @@
 		font-size: 12px !important;
 	}
 	
-	/* Colonne specifiche SOLO per la tabella valori acqua */
-	.mobile-mode #water-table th:nth-child(1), .mobile-mode #water-table td:nth-child(1) {
-		width: 280px !important; /* DATA/ORA - più spazio per date complete */
+	/* Colonne specifiche per la tabella valori acqua - larghezze proporzionali e flessibili */
+	#water-table th:nth-child(1), #water-table td:nth-child(1) {
+		width: 18% !important; /* DATA/ORA - spazio proporzionale */
+		min-width: 180px !important;
 	}
-	.mobile-mode #water-table th:nth-child(2), .mobile-mode #water-table td:nth-child(2) {
-		width: 80px !important; /* PH */
+	#water-table th:nth-child(2), #water-table td:nth-child(2),
+	#water-table th:nth-child(3), #water-table td:nth-child(3),
+	#water-table th:nth-child(4), #water-table td:nth-child(4),
+	#water-table th:nth-child(5), #water-table td:nth-child(5),
+	#water-table th:nth-child(6), #water-table td:nth-child(6),
+	#water-table th:nth-child(7), #water-table td:nth-child(7),
+	#water-table th:nth-child(8), #water-table td:nth-child(8),
+	#water-table th:nth-child(9), #water-table td:nth-child(9),
+	#water-table th:nth-child(10), #water-table td:nth-child(10),
+	#water-table th:nth-child(11), #water-table td:nth-child(11),
+	#water-table th:nth-child(12), #water-table td:nth-child(12),
+	#water-table th:nth-child(13), #water-table td:nth-child(13),
+	#water-table th:nth-child(14), #water-table td:nth-child(14),
+	#water-table th:nth-child(15), #water-table td:nth-child(15),
+	#water-table th:nth-child(16), #water-table td:nth-child(16),
+	#water-table th:nth-child(17), #water-table td:nth-child(17) {
+		width: 4.8% !important; /* Tutte le altre colonne - larghezza proporzionale */
+		min-width: 60px !important;
 	}
-	.mobile-mode #water-table th:nth-child(3), .mobile-mode #water-table td:nth-child(3) {
-		width: 80px !important; /* ΔPH% */
+	#water-table th:nth-child(18), #water-table td:nth-child(18) {
+		width: 8% !important; /* Azioni - spazio per i pulsanti */
+		min-width: 80px !important;
 	}
-	.mobile-mode #water-table th:nth-child(4), .mobile-mode #water-table td:nth-child(4) {
-		width: 80px !important; /* KH */
+	
+	/* Regole specifiche per desktop mode - rimuove larghezze fisse per adattamento responsive */
+	body:not(.mobile-mode) #water-table {
+		/* Lascia che la tabella si adatti naturalmente come le altre */
+		table-layout: fixed !important;
 	}
-	.mobile-mode #water-table th:nth-child(5), .mobile-mode #water-table td:nth-child(5) {
-		width: 80px !important; /* ΔKH% */
-	}
-	.mobile-mode #water-table th:nth-child(6), .mobile-mode #water-table td:nth-child(6) {
-		width: 80px !important; /* GH */
-	}
-	.mobile-mode #water-table th:nth-child(7), .mobile-mode #water-table td:nth-child(7) {
-		width: 80px !important; /* ΔGH% */
-	}
-	.mobile-mode #water-table th:nth-child(8), .mobile-mode #water-table td:nth-child(8) {
-		width: 80px !important; /* NO2 */
-	}
-	.mobile-mode #water-table th:nth-child(9), .mobile-mode #water-table td:nth-child(9) {
-		width: 80px !important; /* ΔNO2% */
-	}
-	.mobile-mode #water-table th:nth-child(10), .mobile-mode #water-table td:nth-child(10) {
-		width: 80px !important; /* NO3 */
-	}
-	.mobile-mode #water-table th:nth-child(11), .mobile-mode #water-table td:nth-child(11) {
-		width: 80px !important; /* ΔNO3% */
-	}
-	.mobile-mode #water-table th:nth-child(12), .mobile-mode #water-table td:nth-child(12) {
-		width: 80px !important; /* NH4 */
-	}
-	.mobile-mode #water-table th:nth-child(13), .mobile-mode #water-table td:nth-child(13) {
-		width: 80px !important; /* ΔNH4% */
-	}
-	.mobile-mode #water-table th:nth-child(14), .mobile-mode #water-table td:nth-child(14) {
-		width: 80px !important; /* Temp °C */
-	}
-	.mobile-mode #water-table th:nth-child(15), .mobile-mode #water-table td:nth-child(15) {
-		width: 80px !important; /* ΔTemp% */
-	}
-	.mobile-mode #water-table th:nth-child(16), .mobile-mode #water-table td:nth-child(16) {
-		width: 80px !important; /* Cond µS/cm */
-	}
-	.mobile-mode #water-table th:nth-child(17), .mobile-mode #water-table td:nth-child(17) {
-		width: 80px !important; /* ΔCond% */
-	}
+	
+	/* Rimuove regole specifiche per celle tabella valori acqua - usa le regole generali */
 	
 	/* Input nelle celle SOLO per la tabella valori acqua - dimensioni compatte */
 	.mobile-mode #water-table td input {
@@ -1006,6 +996,80 @@
 	.dark-mode .mobile-mode #water-table td input:focus {
 		border-color: var(--accent-teal) !important;
 		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+	}
+	
+	/* Stili per input nella tabella acqua - prevengono sovrapposizioni */
+	.table-input {
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		box-sizing: border-box !important;
+		padding: 4px 6px !important;
+		font-size: 12px !important;
+		border: 1px solid #ddd !important;
+		border-radius: 4px !important;
+		background: white !important;
+		text-align: center !important;
+	}
+	
+	.table-input:focus {
+		outline: none !important;
+		border-color: var(--primary-green) !important;
+		box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2) !important;
+	}
+	
+	/* Dark mode per input tabella */
+	.dark-mode .table-input {
+		background: #333 !important;
+		border-color: #555 !important;
+		color: white !important;
+	}
+	
+	.dark-mode .table-input:focus {
+		border-color: var(--accent-teal) !important;
+		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+	}
+	
+	/* Stili per colonne di variazione - larghezze fisse per evitare compressione */
+	.variation-column {
+		width: 60px !important;
+		min-width: 60px !important;
+		max-width: 60px !important;
+		text-align: center !important;
+		font-size: 11px !important;
+		font-weight: bold !important;
+		padding: 4px 2px !important;
+		white-space: nowrap !important;
+		overflow: hidden !important;
+	}
+	
+	.variation-positive {
+		color: #2e7d32 !important;
+		background: rgba(46, 125, 50, 0.1) !important;
+	}
+	
+	.variation-negative {
+		color: #d32f2f !important;
+		background: rgba(211, 47, 47, 0.1) !important;
+	}
+	
+	.variation-neutral {
+		color: #666 !important;
+	}
+	
+	/* Dark mode per colonne variazione */
+	.dark-mode .variation-positive {
+		color: #4caf50 !important;
+		background: rgba(76, 175, 80, 0.1) !important;
+	}
+	
+	.dark-mode .variation-negative {
+		color: #f44336 !important;
+		background: rgba(244, 67, 54, 0.1) !important;
+	}
+	
+	.dark-mode .variation-neutral {
+		color: #999 !important;
 	}
 	
 	/* Rimuove regole specifiche per celle tabella valori acqua - usa le regole generali */
@@ -1096,6 +1160,42 @@
 		padding: 10px 8px !important;
 		min-height: 44px !important;
 		box-sizing: border-box !important;
+	}
+	
+	/* Stili specifici per il campo litri in mobile */
+	.mobile-mode .field:has(#liters) {
+		width: auto !important;
+		max-width: 200px !important;
+		margin: 12px auto !important;
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		justify-content: center !important;
+	}
+	
+	.mobile-mode .field:has(#liters) label {
+		text-align: center !important;
+		margin-bottom: 8px !important;
+		font-size: 16px !important;
+		font-weight: 600 !important;
+	}
+	
+	.mobile-mode .field:has(#liters) input {
+		width: 120px !important;
+		text-align: center !important;
+		font-size: 18px !important;
+		font-weight: 600 !important;
+		padding: 12px !important;
+	}
+	
+	.mobile-mode .field:has(#liters) .unit {
+		position: absolute !important;
+		right: 8px !important;
+		top: 50% !important;
+		transform: translateY(-50%) !important;
+		pointer-events: none !important;
+		font-size: 14px !important;
+		margin: 0 !important;
 	}
 	
 	/* Ottimizzazioni specifiche per la sezione "Nuovo valore" */
@@ -2212,11 +2312,11 @@ h2 .animated-icon {
 			</div>
 		</div>
 		<div class="row">
-			<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.01" min="0" /></div>
-			<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="0.1" min="0" /><span class="unit">dKH</span></div>
-			<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="0.1" min="0" /><span class="unit">dGH</span></div>
+			<div class="field"><label for="ph">🧪 pH</label><input id="ph" type="number" step="0.5" min="0" /></div>
+			<div class="field"><label for="kh">⚗️ KH</label><input id="kh" type="number" step="1" min="0" /><span class="unit">dKH</span></div>
+			<div class="field"><label for="gh">🔬 GH</label><input id="gh" type="number" step="1" min="0" /><span class="unit">dGH</span></div>
 			<div class="field"><label for="no2">⚠️ NO2</label><input id="no2" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
-			<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="0.1" min="0" /><span class="unit">mg/L</span></div>
+			<div class="field"><label for="no3">⚠️ NO3</label><input id="no3" type="number" step="1" min="0" /><span class="unit">mg/L</span></div>
 			<div class="field"><label for="nh4">☠️ NH4</label><input id="nh4" type="number" step="0.01" min="0" /><span class="unit">mg/L</span></div>
 			<div class="field"><label for="temp">🌡️ Temperatura</label><input id="temp" type="number" step="0.1" min="0" /><span class="unit">°C</span></div>
 			<div class="field"><label for="cond">⚡ Conducibilità</label><input id="cond" type="number" step="1" min="0" /><span class="unit">µS/cm</span></div>
