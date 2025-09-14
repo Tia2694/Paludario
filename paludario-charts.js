@@ -1,3 +1,15 @@
+/* ==================== VARIABILI GLOBALI ==================== */
+// Stato visibilità canali
+let visibleChannels = {
+    ch1: true,
+    ch2: true,
+    ch3: true,
+    ch4: true,
+    ch5: true,
+    spray: true,
+    fan: true
+};
+
 /* ==================== UTILITÀ CANVAS ==================== */
 function setCanvasHiDPI(canvas) {
     const ratio = window.devicePixelRatio || 1;
@@ -245,12 +257,26 @@ function drawWaterChart() {
 /* ==================== CALCOLO ALBA E TRAMONTO ==================== */
 function calculateSunrise() {
     const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    for (const light of sortedLights) {
+    
+    // Trova il primo punto con luce > 0
+    let firstLightOnIndex = -1;
+    for (let i = 0; i < sortedLights.length; i++) {
+        const light = sortedLights[i];
         const totalLight = (light.ch1 || 0) + (light.ch2 || 0) + (light.ch3 || 0) + (light.ch4 || 0) + (light.ch5 || 0);
         if (totalLight > 0) {
-            return toMinutes(light.t);
+            firstLightOnIndex = i;
+            break;
         }
     }
+    
+    // Se c'è un punto precedente, usa quello (valore 0)
+    if (firstLightOnIndex > 0) {
+        return toMinutes(sortedLights[firstLightOnIndex - 1].t);
+    } else if (firstLightOnIndex === 0) {
+        // Se il primo punto è già con luce > 0, usa quello
+        return toMinutes(sortedLights[0].t);
+    }
+    
     return null;
 }
 
@@ -518,19 +544,22 @@ function drawDayChart() {
     const toPts = (arr, yscale) => arr.map(p => ({ x: xScale(p.x), y: yscale(p.y) }));
     [{ key: 'ch1', color: COLORS.R }, { key: 'ch2', color: COLORS.G }, { key: 'ch3', color: COLORS.B }, { key: 'ch4', color: COLORS.W }, { key: 'ch5', color: COLORS.Plaf }]
         .forEach(ch => {
-            const pts = genStepSeriesFromKeyframes(plan.lights, ch.key);
-            if (pts.length > 0) {
-                drawStepped(ctx, toPts(pts, yLScale), ch.color, 2, baseY);
+            if (visibleChannels[ch.key]) {
+                const result = genLinearSeriesFromKeyframes(plan.lights, ch.key);
+                if (result.points.length > 0) {
+                    const keyframesScaled = toPts(result.keyframes, yLScale);
+                    drawLinearWithFill(ctx, toPts(result.points, yLScale), ch.color, 2, baseY, keyframesScaled);
+                }
             }
         });
     
     const sprayPts = genStepSeriesFromIntervals(plan.spray, 1);
-    if (sprayPts.length > 0) {
+    if (sprayPts.length > 0 && visibleChannels.spray) {
         drawStepped(ctx, toPts(sprayPts, yRScale), COLORS.Spray, 2, baseY);
     }
     
     const fanPts = genStepSeriesFromIntervals(plan.fan, 1);
-    if (fanPts.length > 0) {
+    if (fanPts.length > 0 && visibleChannels.fan) {
         drawStepped(ctx, toPts(fanPts, yRScale), COLORS.Ventola, 2, baseY);
     }
 
@@ -542,14 +571,37 @@ function drawDayChart() {
 
     if (dayLegend) {
         dayLegend.innerHTML = '';
-        [{ label: 'R', color: COLORS.R }, { label: 'G', color: COLORS.G }, { label: 'B', color: COLORS.B }, { label: 'W', color: COLORS.W }, { label: 'Plafoniera', color: COLORS.Plaf }, { label: 'Spray Pioggia', color: COLORS.Spray }, { label: 'Ventola', color: COLORS.Ventola }]
+        [{ label: 'R', color: COLORS.R, key: 'ch1' }, { label: 'G', color: COLORS.G, key: 'ch2' }, { label: 'B', color: COLORS.B, key: 'ch3' }, { label: 'W', color: COLORS.W, key: 'ch4' }, { label: 'Plafoniera', color: COLORS.Plaf, key: 'ch5' }, { label: 'Spray Pioggia', color: COLORS.Spray, key: 'spray' }, { label: 'Ventola', color: COLORS.Ventola, key: 'fan' }]
             .forEach(it => {
                 const s = document.createElement('span');
+                s.style.cursor = 'pointer';
+                s.style.userSelect = 'none';
+                s.style.padding = '4px 8px';
+                s.style.margin = '2px';
+                s.style.borderRadius = '4px';
+                s.style.display = 'inline-block';
+                s.style.transition = 'opacity 0.3s';
+                s.dataset.channel = it.key;
+                
                 const i = document.createElement('i');
                 i.style.background = it.color;
+                i.style.width = '12px';
+                i.style.height = '12px';
+                i.style.display = 'inline-block';
+                i.style.marginRight = '6px';
+                i.style.borderRadius = '2px';
+                
                 s.appendChild(i);
                 s.appendChild(document.createTextNode(it.label));
                 dayLegend.appendChild(s);
+                
+                // Event listener per toggle
+                s.addEventListener('click', () => {
+                    toggleChannel(it.key);
+                });
+                
+                // Imposta lo stato iniziale
+                s.style.opacity = visibleChannels[it.key] ? '1' : '0.3';
             });
     }
 }
@@ -616,7 +668,9 @@ function genStepSeriesFromKeyframes(keys, key) {
     const sorted = [...keys].sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
     const pts = [];
     let cur = 0;
-    pts.push({ x: 0, y: cur });
+    
+    // Inizia sempre da 0 alle 00:00 per coerenza con la fine del grafico
+    pts.push({ x: 0, y: 0 });
     
     for (const k of sorted) {
         const t = toMinutes(k.t);
@@ -633,3 +687,170 @@ function genStepSeriesFromKeyframes(keys, key) {
     
     return pts;
 }
+
+function genLinearSeriesFromKeyframes(keys, key) {
+    const sorted = [...keys].sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    const pts = [];
+    
+    // Trova il primo punto definito
+    const firstKeyframe = sorted[0];
+    const firstValue = firstKeyframe ? Math.max(0, Math.min(100, Number(firstKeyframe[key] || 0))) : 0;
+    
+    // Prima passata: raccogli tutti i punti chiave
+    const keyframes = [];
+    let cur = null;
+    
+    for (const k of sorted) {
+        const t = toMinutes(k.t);
+        const newValue = Math.max(0, Math.min(100, Number(k[key] || 0)));
+        
+        // Se è il primo punto o il valore è diverso dal precedente, aggiungi il keyframe
+        if (cur === null || newValue !== cur) {
+            cur = newValue;
+            keyframes.push({ x: t, y: cur });
+        }
+    }
+    
+    // Se non ci sono punti definiti, non restituire nulla
+    if (keyframes.length === 0) {
+        return { points: [], keyframes: [] };
+    }
+    
+    // Trova l'ultimo 0 che precede il primo valore > 0 per questo canale
+    let firstZeroTime = 0; // Default alle 00:00
+    
+    // Cerca il primo valore > 0 per questo canale
+    for (let i = 0; i < keyframes.length; i++) {
+        if (keyframes[i].y > 0) {
+            // Trovato il primo valore > 0, ora cerca l'ultimo 0 che lo precede
+            let lastZeroTime = 0;
+            for (let j = i - 1; j >= 0; j--) {
+                if (keyframes[j].y === 0) {
+                    lastZeroTime = keyframes[j].x;
+                    // Non fare break, continua a cercare per trovare l'ultimo 0
+                }
+            }
+            
+            // Se abbiamo trovato un 0 precedente, usalo
+            if (lastZeroTime > 0) {
+                firstZeroTime = lastZeroTime;
+            } else {
+                // Se non abbiamo trovato un 0 precedente, calcola il momento della transizione
+                const prevKeyframe = keyframes[i - 1];
+                const currentKeyframe = keyframes[i];
+                
+                // Interpola linearmente per trovare quando il valore diventa 0
+                const timeDiff = currentKeyframe.x - prevKeyframe.x;
+                const valueDiff = currentKeyframe.y - prevKeyframe.y;
+                const ratio = (0 - prevKeyframe.y) / valueDiff;
+                firstZeroTime = prevKeyframe.x + (timeDiff * ratio);
+            }
+            break;
+        }
+    }
+    
+    // Inizia dal primo 0 di questo canale specifico
+    pts.push({ x: firstZeroTime, y: 0 });
+    
+    // Seconda passata: crea interpolazione lineare tra i keyframes
+    for (let i = 0; i < keyframes.length; i++) {
+        const current = keyframes[i];
+        const next = keyframes[i + 1];
+        
+        // Aggiungi il punto corrente
+        pts.push({ x: current.x, y: current.y });
+        
+        // Se c'è un punto successivo, crea interpolazione lineare
+        if (next) {
+            const timeDiff = next.x - current.x;
+            const valueDiff = next.y - current.y;
+            const steps = Math.max(1, Math.floor(timeDiff / 30)); // Un punto ogni 30 minuti per transizioni fluide
+            
+            for (let step = 1; step < steps; step++) {
+                const progress = step / steps;
+                const interpolatedTime = current.x + (timeDiff * progress);
+                const interpolatedValue = current.y + (valueDiff * progress);
+                pts.push({ x: interpolatedTime, y: interpolatedValue });
+            }
+        }
+    }
+    
+    // Trova l'ultimo 0 che segue l'ultimo valore > 0 per questo canale
+    let endTime = 24 * 60; // Default alle 24:00
+    
+    // Cerca l'ultimo valore > 0 per questo canale
+    for (let i = keyframes.length - 1; i >= 0; i--) {
+        if (keyframes[i].y > 0) {
+            // Trovato l'ultimo valore > 0, ora cerca il primo 0 che lo segue
+            for (let j = i + 1; j < keyframes.length; j++) {
+                if (keyframes[j].y === 0) {
+                    endTime = keyframes[j].x;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    
+    // Aggiungi punto finale al primo 0 successivo con l'ultimo valore
+    const lastKeyframe = keyframes[keyframes.length - 1];
+    pts.push({ x: endTime, y: lastKeyframe.y });
+    
+    const hasNonZeroValues = pts.some(p => p.y > 0);
+    if (!hasNonZeroValues) {
+        return { points: [], keyframes: [] };
+    }
+    
+    return { points: pts, keyframes: keyframes };
+}
+
+function drawLinearWithFill(ctx, pts, color, width = 2, baseY, keyframes = null) {
+    if (!pts.length) return;
+    
+    if (showFill) {
+        ctx.fillStyle = color + '40';
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) {
+            ctx.lineTo(pts[i].x, pts[i].y);
+        }
+        ctx.lineTo(pts[pts.length - 1].x, baseY);
+        ctx.lineTo(pts[0].x, baseY);
+        ctx.closePath();
+        ctx.fill();
+    }
+    
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+    }
+    ctx.stroke();
+    
+    // Aggiungi pallini solo sui punti definiti dall'utente (keyframes)
+    if (keyframes && keyframes.length > 0) {
+        ctx.fillStyle = color;
+        keyframes.forEach(kf => { 
+            ctx.beginPath(); 
+            ctx.arc(kf.x, kf.y, 2.8, 0, Math.PI * 2); 
+            ctx.fill(); 
+        });
+    }
+}
+
+/* ==================== GESTIONE VISIBILITÀ CANALI ==================== */
+function toggleChannel(channelKey) {
+    visibleChannels[channelKey] = !visibleChannels[channelKey];
+    
+    // Aggiorna lo stile della legenda
+    const legendItem = document.querySelector(`[data-channel="${channelKey}"]`);
+    if (legendItem) {
+        legendItem.style.opacity = visibleChannels[channelKey] ? '1' : '0.3';
+    }
+    
+    // Ridisegna il grafico
+    drawDayChart();
+}
+
