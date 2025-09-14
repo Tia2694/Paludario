@@ -827,16 +827,16 @@
 	
 	/* Forza la larghezza della tabella anche se ci sono conflitti */
 	.mobile-mode #water-table {
-		width: 1200px !important;
-		min-width: 1200px !important;
+		width: 1360px !important;
+		min-width: 1360px !important;
 		max-width: none !important;
 		table-layout: fixed !important;
 	}
 	
 	/* Regola molto specifica per sovrascrivere qualsiasi conflitto */
 	body.mobile-mode .table-container table#water-table {
-		width: 1200px !important;
-		min-width: 1200px !important;
+		width: 1360px !important;
+		min-width: 1360px !important;
 		max-width: none !important;
 		table-layout: fixed !important;
 	}
@@ -970,6 +970,12 @@
 	}
 	.mobile-mode #water-table th:nth-child(15), .mobile-mode #water-table td:nth-child(15) {
 		width: 80px !important; /* ΔTemp% */
+	}
+	.mobile-mode #water-table th:nth-child(16), .mobile-mode #water-table td:nth-child(16) {
+		width: 80px !important; /* Cond µS/cm */
+	}
+	.mobile-mode #water-table th:nth-child(17), .mobile-mode #water-table td:nth-child(17) {
+		width: 80px !important; /* ΔCond% */
 	}
 	
 	/* Input nelle celle SOLO per la tabella valori acqua - dimensioni compatte */

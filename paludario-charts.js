@@ -35,6 +35,20 @@ function drawTicksX(ctx, x0, y1, xScale, labels) {
     }
 }
 
+// Funzione per formattare i valori Y in modo pulito
+function formatTickValue(value) {
+    // Se è un numero intero, mostralo senza decimali
+    if (Number.isInteger(value)) {
+        return value.toString();
+    }
+    
+    // Per numeri decimali, usa massimo 2 cifre decimali
+    const formatted = value.toFixed(2);
+    
+    // Rimuovi gli zeri finali inutili
+    return formatted.replace(/\.?0+$/, '');
+}
+
 function drawTicksY(ctx, x0, y0, y1, yScale, values, right = false) {
     ctx.fillStyle = COLORS.Axis;
     ctx.font = '12px system-ui';
@@ -46,7 +60,7 @@ function drawTicksY(ctx, x0, y0, y1, yScale, values, right = false) {
         ctx.moveTo(x0, y);
         ctx.lineTo(x0 + (right ? -4 : 4), y);
         ctx.stroke();
-        ctx.fillText(String(v), right ? x0 - 8 : x0 + 8, y - 2);
+        ctx.fillText(formatTickValue(v), right ? x0 - 8 : x0 + 8, y - 2);
     }
     ctx.textAlign = 'left';
 }
@@ -72,7 +86,7 @@ function drawTicksYDayChart(ctx, x0, y0, y1, yScale, values, right = false) {
             }
         }
         
-        ctx.fillText(String(v), right ? x0 - 8 : x0 + 8, y - 2);
+        ctx.fillText(formatTickValue(v), right ? x0 - 8 : x0 + 8, y - 2);
     }
     ctx.textAlign = 'left';
 }
@@ -118,18 +132,73 @@ function drawWaterChart() {
         maxX = minX + 24 * 60 * 60 * 1000; // 24 ore dopo
     }
 
-    let maxY = Math.max(...data.map(d => d.v));
-    const padY = Math.max(1, (maxY || 1) * 0.1);
-    let minY = 0;
-    maxY = maxY + padY;
-    if (maxY === minY) maxY = minY + 1;
+    // Scale predefinite per ogni parametro dell'acqua
+    const parameterRanges = {
+        'ph': { min: 0, max: 14, step: 1 },
+        'kh': { min: 0, max: 20, step: 2 },
+        'gh': { min: 0, max: 25, step: 2.5 },
+        'no2': { min: 0, max: 0.5, step: 0.05 },
+        'no3': { min: 0, max: 50, step: 5 },
+        'nh4': { min: 0, max: 0.5, step: 0.05 },
+        'temp': { min: 15, max: 35, step: 2 },
+        'cond': { min: 0, max: 1000, step: 100 }
+    };
+    
+    // Ottieni il range per il parametro corrente
+    const range = parameterRanges[param] || { min: 0, max: 10, step: 1 };
+    let minY = range.min;
+    let maxY = range.max;
+    
+    // Se ci sono dati, adatta il range per mostrare meglio i valori effettivi
+    if (data.length > 0) {
+        const values = data.map(d => d.v);
+        const dataMin = Math.min(...values);
+        const dataMax = Math.max(...values);
+        
+        // Se tutti i valori sono uguali, crea un range simmetrico
+        if (dataMin === dataMax) {
+            const center = dataMin;
+            const padding = Math.max(range.step, Math.abs(center) * 0.1);
+            minY = Math.max(range.min, center - padding);
+            maxY = Math.min(range.max, center + padding);
+        } else {
+            // Calcola il range dei dati con padding
+            const dataRange = dataMax - dataMin;
+            const padding = Math.max(range.step * 0.5, dataRange * 0.1);
+            
+            minY = Math.max(range.min, dataMin - padding);
+            maxY = Math.min(range.max, dataMax + padding);
+        }
+    }
 
     const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
     const yScale = v => y1 - (v - minY) / (maxY - minY) * (y1 - y0);
 
-    const steps = 5, yTicks = [];
-    for (let i = 0; i <= steps; i++) { yTicks.push(Math.round(minY + (maxY - minY) * i / steps)); }
-    if (!yTicks.includes(0)) yTicks.push(0);
+    // Genera tick usando lo step specifico del parametro
+    const yTicks = [];
+    const tickStep = range.step;
+    
+    // Genera tick basati sullo step del parametro
+    const startTick = Math.floor(minY / tickStep) * tickStep;
+    const endTick = Math.ceil(maxY / tickStep) * tickStep;
+    
+    for (let tick = startTick; tick <= endTick; tick += tickStep) {
+        if (tick >= minY && tick <= maxY) {
+            yTicks.push(tick);
+        }
+    }
+    
+    // Se non ci sono abbastanza tick, aggiungi tick intermedi
+    if (yTicks.length < 3) {
+        const steps = Math.max(3, Math.ceil((maxY - minY) / tickStep));
+        for (let i = 0; i <= steps; i++) {
+            const tick = minY + (maxY - minY) * i / steps;
+            if (!yTicks.includes(tick)) {
+                yTicks.push(tick);
+            }
+        }
+    }
+    
     yTicks.sort((a, b) => a - b);
     drawTicksY(ctx, x0, y0, y1, yScale, yTicks);
 
