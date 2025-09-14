@@ -14,18 +14,20 @@
     }
   ],
   "fan": [],
-  "lights": [
+  "lights": [],
+  "lightsCh1": [
     {
       "t": "05:00",
-      "ch1": 0
+      "value": 0
     },
     {
       "t": "12:00",
-      "ch1": 100
-    },
-    {
-      "t": "18:00",
-      "ch1": 0
+      "value": "50"
     }
-  ]
+  ],
+  "lightsCh2": [],
+  "lightsCh3": [],
+  "lightsCh4": [],
+  "lightsCh5": [],
+  "lightsMigrated": true
 }
