@@ -14,7 +14,12 @@
     }
   ],
   "fan": [],
-  "lights": [],
+  "lights": [
+    {
+      "t": "06:00",
+      "ch1": 0
+    }
+  ],
   "lightsCh1": [],
   "lightsCh2": [],
   "lightsCh3": [],
