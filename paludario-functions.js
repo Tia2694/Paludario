@@ -1219,6 +1219,14 @@ function saveChannelData(channelKey) {
         }
     });
     
+    // Pulisci gli oggetti vuoti (che hanno solo 't' e nessun canale)
+    plan.lights = plan.lights.filter(item => {
+        const hasAnyChannel = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].some(ch => 
+            item[ch] !== undefined && item[ch] !== null
+        );
+        return hasAnyChannel;
+    });
+    
     // Salva i dati
     if (dataManager && dataManager.updateDayTemplate) {
         dataManager.updateDayTemplate(plan);
