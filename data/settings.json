@@ -40,6 +40,17 @@
       "max": 500.1
     }
   },
-  "animals": [],
+  "animals": [
+    {
+      "id": 1757923336424,
+      "species": "geosesarma dannerle",
+      "type": "crostaceo",
+      "count": 3,
+      "males": 1,
+      "females": 2,
+      "purchaseDate": "2025-10-13",
+      "status": "vivo"
+    }
+  ],
   "airReadings": []
 }
