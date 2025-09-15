@@ -505,7 +505,7 @@ function drawDayChart() {
     ctx.clearRect(0, 0, dayCanvas.width, dayCanvas.height);
     const pad = { l: 50, r: 34, t: 12, b: 28 };
     const x0 = pad.l, x1 = (dayCanvas.clientWidth || 600) - pad.r;
-    const y0 = pad.t, y1 = (dayCanvas.clientHeight || 300) - pad.b;
+    const y0 = pad.t, y1 = (dayCanvas.clientHeight || 500) - pad.b;
     
     const sunriseTime = calculateSunrise();
     const sunsetTime = calculateSunset();
@@ -521,10 +521,10 @@ function drawDayChart() {
     const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
     const yLScale = v => y1 - (v - 0) / (100 - 0) * (y1 - y0);
     const yRScale = v => y1 - (v - 0) / (1 - 0) * (y1 - y0);
-    // Raccogli tutti gli orari specifici dalle tabelle luci RGB
+    // Raccogli tutti gli orari specifici dalle tabelle luci RGB (solo canali visibili)
     const lightTimes = new Set();
     ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channelKey => {
-        if (plan[channelKey] && plan[channelKey].length > 0) {
+        if (visibleChannels[channelKey] && plan[channelKey] && plan[channelKey].length > 0) {
             plan[channelKey].forEach(item => {
                 if (item.t) {
                     const timeInMinutes = toMinutes(item.t);
@@ -536,8 +536,8 @@ function drawDayChart() {
         }
     });
     
-    // Aggiungi orari di inizio per spray e ventola
-    if (plan.spray && plan.spray.length > 0) {
+    // Aggiungi orari di inizio per spray e ventola (solo se visibili)
+    if (visibleChannels.spray && plan.spray && plan.spray.length > 0) {
         plan.spray.forEach(interval => {
             if (interval.s) {
                 const timeInMinutes = toMinutes(interval.s);
@@ -548,7 +548,7 @@ function drawDayChart() {
         });
     }
     
-    if (plan.fan && plan.fan.length > 0) {
+    if (visibleChannels.fan && plan.fan && plan.fan.length > 0) {
         plan.fan.forEach(interval => {
             if (interval.s) {
                 const timeInMinutes = toMinutes(interval.s);
