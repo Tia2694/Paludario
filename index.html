@@ -344,16 +344,17 @@
 		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
 		color: white;
 		border: none;
-		padding: 8px 16px;
+		padding: 12px 8px;
 		border-radius: 8px;
 		cursor: pointer;
-		font-size: 12px;
+		font-size: 14px;
 		font-weight: 600;
 		box-shadow: var(--shadow-light);
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		position: relative;
 		overflow: hidden;
-		min-height: 32px;
+		min-height: 48px;
+		box-sizing: border-box;
 	}
 	
 	.remove-row-btn::before {
@@ -427,17 +428,61 @@
 		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
 		color: white;
 		border: none;
-		padding: 8px 16px;
+		padding: 12px 8px;
 		border-radius: 8px;
 		cursor: pointer;
-		font-size: 12px;
+		font-size: 14px;
 		font-weight: 600;
 		margin-right: 8px;
 		box-shadow: var(--shadow-light);
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		position: relative;
 		overflow: hidden;
-		min-height: 32px;
+		min-height: 48px;
+		box-sizing: border-box;
+	}
+
+	/* Desktop: pulsanti OK e Elimina sulla stessa riga */
+	.channel-table td:last-child {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		justify-content: center;
+	}
+
+	/* Assicura che icona e testo siano allineati sulla stessa riga */
+	.ok-row-btn, .remove-row-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		white-space: nowrap;
+	}
+
+	/* Mobile: pulsanti OK e Elimina uno sotto l'altro */
+	.mobile-mode .channel-table td:last-child {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.mobile-mode .ok-row-btn {
+		margin-right: 0;
+		margin-bottom: 4px;
+		width: 100%;
+		max-width: 120px;
+		padding: 10px 8px;
+		font-size: 14px;
+		min-height: 44px;
+	}
+
+	.mobile-mode .remove-row-btn {
+		width: 100%;
+		max-width: 120px;
+		padding: 10px 8px;
+		font-size: 14px;
+		min-height: 44px;
 	}
 
 	.ok-row-btn::before {
