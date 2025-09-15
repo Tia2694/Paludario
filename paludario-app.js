@@ -475,7 +475,16 @@ class DataManager {
     }
 
     updateDayTemplate(dayData) {
-        this.data.dayTemplate = dayData;
+        // Converte la nuova struttura in quella compatibile con il file JSON
+        this.data.dayTemplate = {
+            spray: dayData.spray || [],
+            fan: dayData.fan || [],
+            ch1: dayData.ch1 || [],
+            ch2: dayData.ch2 || [],
+            ch3: dayData.ch3 || [],
+            ch4: dayData.ch4 || [],
+            ch5: dayData.ch5 || []
+        };
         this.saveData();
     }
 
@@ -504,7 +513,40 @@ class DataManager {
         if (typeof plan !== 'undefined') {
             plan.spray = this.data.dayTemplate?.spray || [];
             plan.fan = this.data.dayTemplate?.fan || [];
-            plan.lights = this.data.dayTemplate?.lights || [];
+            // Migra i dati vecchi se necessario
+            if (this.data.dayTemplate?.lights && this.data.dayTemplate.lights.length > 0) {
+                // Migra dalla struttura vecchia a quella nuova
+                plan.ch1 = [];
+                plan.ch2 = [];
+                plan.ch3 = [];
+                plan.ch4 = [];
+                plan.ch5 = [];
+                
+                this.data.dayTemplate.lights.forEach(light => {
+                    if (light.ch1 !== undefined && light.ch1 !== null) {
+                        plan.ch1.push({ t: light.t, value: light.ch1 });
+                    }
+                    if (light.ch2 !== undefined && light.ch2 !== null) {
+                        plan.ch2.push({ t: light.t, value: light.ch2 });
+                    }
+                    if (light.ch3 !== undefined && light.ch3 !== null) {
+                        plan.ch3.push({ t: light.t, value: light.ch3 });
+                    }
+                    if (light.ch4 !== undefined && light.ch4 !== null) {
+                        plan.ch4.push({ t: light.t, value: light.ch4 });
+                    }
+                    if (light.ch5 !== undefined && light.ch5 !== null) {
+                        plan.ch5.push({ t: light.t, value: light.ch5 });
+                    }
+                });
+            } else {
+                // Usa la nuova struttura
+                plan.ch1 = this.data.dayTemplate?.ch1 || [];
+                plan.ch2 = this.data.dayTemplate?.ch2 || [];
+                plan.ch3 = this.data.dayTemplate?.ch3 || [];
+                plan.ch4 = this.data.dayTemplate?.ch4 || [];
+                plan.ch5 = this.data.dayTemplate?.ch5 || [];
+            }
         }
         if (typeof darkMode !== 'undefined') {
             darkMode = this.data.settings?.darkMode || false;
@@ -650,7 +692,15 @@ class DataManager {
 
 // Variabili globali
 let water = [];
-let plan = { spray: [], fan: [], lights: [] };
+let plan = { 
+    spray: [], 
+    fan: [], 
+    ch1: [], 
+    ch2: [], 
+    ch3: [], 
+    ch4: [], 
+    ch5: [] 
+};
 let darkMode = false;
 
 // Istanza globale del data manager

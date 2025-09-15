@@ -1160,71 +1160,20 @@ function addChannelRow(channelKey) {
     timeInput.focus();
     
     // Event listeners per salvataggio automatico
-    timeInput.addEventListener('change', () => saveChannelData(channelKey));
-    row.querySelector('.channel-value-input').addEventListener('change', () => saveChannelData(channelKey));
+    timeInput.addEventListener('change', () => addChannelValue(channelKey, row));
+    row.querySelector('.channel-value-input').addEventListener('change', () => addChannelValue(channelKey, row));
 }
 
-function removeChannelRow(button) {
-    const row = button.closest('tr');
-    row.remove();
+function addChannelValue(channelKey, row) {
+    const timeInput = row.querySelector('.channel-time-input');
+    const valueInput = row.querySelector('.channel-value-input');
     
-    // Trova il canale dalla tabella
-    const table = row.closest('table');
-    const channelKey = Object.keys(channelTables).find(key => channelTables[key] === table);
-    if (channelKey) {
-        // Salva solo i dati di questo canale specifico
-        saveChannelData(channelKey);
-    }
-}
-
-function saveChannelData(channelKey) {
-    const table = channelTables[channelKey];
-    if (!table) return;
+    if (!timeInput.value || !valueInput.value) return;
     
-    const rows = table.querySelectorAll('tbody tr');
-    const channelData = [];
-    
-    rows.forEach(row => {
-        const timeInput = row.querySelector('.channel-time-input');
-        const valueInput = row.querySelector('.channel-value-input');
-        
-        if (timeInput.value && valueInput.value !== '') {
-            channelData.push({
-                t: timeInput.value,
-                value: Math.max(0, Math.min(100, Number(valueInput.value) || 0))
-            });
-        }
-    });
-    
-    // Ordina per ora
-    channelData.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    
-    // Aggiorna i dati del piano
-    if (!plan.lights) plan.lights = [];
-    
-    // Rimuovi SOLO i dati esistenti per questo canale specifico
-    plan.lights.forEach(item => {
-        delete item[channelKey];
-    });
-    
-    // Aggiungi i nuovi dati
-    channelData.forEach(data => {
-        const existingItem = plan.lights.find(item => item.t === data.t);
-        if (existingItem) {
-            existingItem[channelKey] = data.value;
-        } else {
-            const newItem = { t: data.t };
-            newItem[channelKey] = data.value;
-            plan.lights.push(newItem);
-        }
-    });
-    
-    // Pulisci gli oggetti vuoti (che hanno solo 't' e nessun canale)
-    plan.lights = plan.lights.filter(item => {
-        const hasAnyChannel = ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].some(ch => 
-            item[ch] !== undefined && item[ch] !== null
-        );
-        return hasAnyChannel;
+    // Aggiungi alla struttura dati come spray/ventola
+    plan[channelKey].push({
+        t: timeInput.value,
+        value: Math.max(0, Math.min(100, Number(valueInput.value) || 0))
     });
     
     // Salva i dati
@@ -1232,33 +1181,53 @@ function saveChannelData(channelKey) {
         dataManager.updateDayTemplate(plan);
     }
     
-    // Ridisegna solo il grafico
+    // Ridisegna il grafico
     drawDayChart();
 }
 
+function removeChannelRow(button) {
+    const row = button.closest('tr');
+    const table = row.closest('table');
+    const channelKey = Object.keys(channelTables).find(key => channelTables[key] === table);
+    
+    if (!channelKey) return;
+    
+    // Trova l'indice della riga nella tabella
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const rowIndex = rows.indexOf(row);
+    
+    if (rowIndex !== -1) {
+        // Elimina dall'array come spray/ventola
+        plan[channelKey].splice(rowIndex, 1);
+        
+        // Salva i dati
+        if (dataManager && dataManager.updateDayTemplate) {
+            dataManager.updateDayTemplate(plan);
+        }
+        
+        // Ridisegna il grafico
+        drawDayChart();
+    }
+    
+    // Rimuovi la riga dalla tabella
+    row.remove();
+}
+
+// Funzione rimossa - ora usiamo addChannelValue e updateChannelValue
+
 function loadChannelData(channelKey) {
     const table = channelTables[channelKey];
-    if (!table || !plan.lights) return;
+    if (!table || !plan[channelKey]) return;
     
     const tbody = table.querySelector('tbody');
     tbody.innerHTML = '';
     
-    // Raccogli SOLO i dati per questo canale specifico da plan.lights
-    const channelData = [];
-    plan.lights.forEach(item => {
-        if (item[channelKey] !== undefined && item[channelKey] !== null) {
-            channelData.push({
-                t: item.t,
-                value: item[channelKey]
-            });
-        }
-    });
-    
     // Ordina per ora
-    channelData.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    const sortedData = [...plan[channelKey]].sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
     
     // Crea le righe
-    channelData.forEach(data => {
+    sortedData.forEach(data => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><input type="time" class="channel-time-input" value="${data.t}"></td>
@@ -1268,76 +1237,60 @@ function loadChannelData(channelKey) {
         tbody.appendChild(row);
         
         // Event listeners
-        row.querySelector('.channel-time-input').addEventListener('change', () => saveChannelData(channelKey));
-        row.querySelector('.channel-value-input').addEventListener('change', () => saveChannelData(channelKey));
+        row.querySelector('.channel-time-input').addEventListener('change', () => updateChannelValue(channelKey, row));
+        row.querySelector('.channel-value-input').addEventListener('change', () => updateChannelValue(channelKey, row));
     });
 }
 
-function migrateOldLightData() {
-    // Migra i dati vecchi dalla struttura unificata a quella separata
-    if (!plan.lights || plan.lights.length === 0) return;
+function updateChannelValue(channelKey, row) {
+    const timeInput = row.querySelector('.channel-time-input');
+    const valueInput = row.querySelector('.channel-value-input');
     
-    const hasOldStructure = plan.lights.some(light => 
-        light.ch1 !== undefined && light.ch2 !== undefined && 
-        light.ch3 !== undefined && light.ch4 !== undefined && 
-        light.ch5 !== undefined
-    );
+    if (!timeInput.value || !valueInput.value) return;
     
-    if (hasOldStructure) {
-        console.log('🔄 Migrazione dati luci dalla struttura vecchia a quella nuova...');
+    // Trova l'indice della riga
+    const table = row.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const rowIndex = rows.indexOf(row);
+    
+    if (rowIndex !== -1) {
+        // Aggiorna nell'array
+        plan[channelKey][rowIndex] = {
+            t: timeInput.value,
+            value: Math.max(0, Math.min(100, Number(valueInput.value) || 0))
+        };
         
-        // Crea un nuovo array con la struttura separata
-        const newLights = [];
-        
-        plan.lights.forEach(light => {
-            // Per ogni canale, crea un oggetto separato se ha un valore
-            ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channel => {
-                if (light[channel] !== undefined && light[channel] !== null) {
-                    newLights.push({
-                        t: light.t,
-                        [channel]: light[channel]
-                    });
-                }
-            });
-        });
-        
-        // Sostituisci i dati vecchi
-        plan.lights = newLights;
-        
-        // Salva la migrazione
+        // Salva i dati
         if (dataManager && dataManager.updateDayTemplate) {
             dataManager.updateDayTemplate(plan);
         }
         
-        console.log('✅ Migrazione completata');
+        // Ridisegna il grafico
+        drawDayChart();
     }
 }
 
+// Funzione di migrazione rimossa - ora gestita in paludario-app.js
+
 function loadAllChannelData() {
-    // Verifica che plan.lights sia definito
-    if (typeof plan === 'undefined' || !plan.lights) {
-        if (typeof plan === 'undefined') {
-            window.plan = { lights: [], spray: [], fan: [] };
-        } else {
-            plan.lights = [];
-        }
+    // Verifica che plan sia definito
+    if (typeof plan === 'undefined') {
+        window.plan = { 
+            spray: [], 
+            fan: [], 
+            ch1: [], 
+            ch2: [], 
+            ch3: [], 
+            ch4: [], 
+            ch5: [] 
+        };
     }
     
-    // Migra i dati vecchi se necessario
-    migrateOldLightData();
-    
-    // Carica ogni canale indipendentemente SOLO se i dati sono vuoti
-    // Questo evita di sovrascrivere i dati già salvati
-    if (!plan.lights || plan.lights.length === 0) {
-        Object.keys(channelTables).forEach(channelKey => {
-            loadChannelData(channelKey);
-        });
-    } else {
-        // Se ci sono già dati, aggiorna solo la visualizzazione delle tabelle
-        Object.keys(channelTables).forEach(channelKey => {
-            loadChannelData(channelKey);
-        });
-    }
+    // Carica ogni canale indipendentemente
+    Object.keys(channelTables).forEach(channelKey => {
+        loadChannelData(channelKey);
+    });
 }
 
 function renderDayTables() {

@@ -259,45 +259,57 @@ function drawWaterChart() {
 
 /* ==================== CALCOLO ALBA E TRAMONTO ==================== */
 function calculateSunrise() {
-    const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    
-    // Trova il primo punto con valore 0 in qualsiasi canale RGB
-    for (let i = 0; i < sortedLights.length; i++) {
-        const light = sortedLights[i];
-        // Controlla se almeno un canale RGB ha valore 0
-        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
-            return toMinutes(light.t);
+    const allLights = [];
+    ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channelKey => {
+        if (plan[channelKey] && plan[channelKey].length > 0) {
+            plan[channelKey].forEach(item => {
+                if (item.value === 0) {
+                    allLights.push({ t: item.t, value: item.value });
+                }
+            });
         }
-    }
+    });
     
-    return null;
+    if (allLights.length === 0) return null;
+    
+    const sortedLights = allLights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    return toMinutes(sortedLights[0].t);
 }
 
 function calculateSunset() {
-    const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    
-    // Trova l'ultimo punto con valore 0 in qualsiasi canale RGB
-    for (let i = sortedLights.length - 1; i >= 0; i--) {
-        const light = sortedLights[i];
-        // Controlla se almeno un canale RGB ha valore 0
-        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
-            return toMinutes(light.t);
+    const allLights = [];
+    ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channelKey => {
+        if (plan[channelKey] && plan[channelKey].length > 0) {
+            plan[channelKey].forEach(item => {
+                if (item.value === 0) {
+                    allLights.push({ t: item.t, value: item.value });
+                }
+            });
         }
-    }
+    });
     
-    return null;
+    if (allLights.length === 0) return null;
+    
+    const sortedLights = allLights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    return toMinutes(sortedLights[sortedLights.length - 1].t);
 }
 
 function calculateSunsetAllZero() {
-    const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    let lastLight = 18 * 60;
-    for (const light of sortedLights) {
-        // Controlla se almeno un canale RGB ha valore 0 (stessa logica di calculateSunset)
-        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
-            lastLight = toMinutes(light.t);
+    const allLights = [];
+    ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channelKey => {
+        if (plan[channelKey] && plan[channelKey].length > 0) {
+            plan[channelKey].forEach(item => {
+                if (item.value === 0) {
+                    allLights.push({ t: item.t, value: item.value });
+                }
+            });
         }
-    }
-    return lastLight;
+    });
+    
+    if (allLights.length === 0) return 18 * 60; // Default
+    
+    const sortedLights = allLights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+    return toMinutes(sortedLights[sortedLights.length - 1].t);
 }
 
 /* ==================== FUNZIONI PER GRAFICI GIORNALIERI ==================== */
@@ -511,23 +523,18 @@ function drawDayChart() {
     const yRScale = v => y1 - (v - 0) / (1 - 0) * (y1 - y0);
     // Raccogli tutti gli orari specifici dalle tabelle luci RGB
     const lightTimes = new Set();
-    if (plan.lights && plan.lights.length > 0) {
-        plan.lights.forEach(light => {
-            // Filtra solo i dati che hanno almeno un valore RGB definito
-            const hasRgbValue = (light.ch1 !== undefined && light.ch1 !== null) ||
-                               (light.ch2 !== undefined && light.ch2 !== null) ||
-                               (light.ch3 !== undefined && light.ch3 !== null) ||
-                               (light.ch4 !== undefined && light.ch4 !== null) ||
-                               (light.ch5 !== undefined && light.ch5 !== null);
-            
-            if (hasRgbValue && light.t) {
-                const timeInMinutes = toMinutes(light.t);
-                if (timeInMinutes !== null && timeInMinutes >= 0 && timeInMinutes <= 24 * 60) {
-                    lightTimes.add(timeInMinutes);
+    ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channelKey => {
+        if (plan[channelKey] && plan[channelKey].length > 0) {
+            plan[channelKey].forEach(item => {
+                if (item.t) {
+                    const timeInMinutes = toMinutes(item.t);
+                    if (timeInMinutes !== null && timeInMinutes >= 0 && timeInMinutes <= 24 * 60) {
+                        lightTimes.add(timeInMinutes);
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    });
     
     // Aggiungi orari di inizio per spray e ventola
     if (plan.spray && plan.spray.length > 0) {
@@ -581,19 +588,12 @@ function drawDayChart() {
     // Disegna ogni canale direttamente dai dati delle tabelle
     [{ key: 'ch1', color: COLORS.R }, { key: 'ch2', color: COLORS.G }, { key: 'ch3', color: COLORS.B }, { key: 'ch4', color: COLORS.W }, { key: 'ch5', color: COLORS.Plaf }]
         .forEach(ch => {
-            if (visibleChannels[ch.key]) {
+            if (visibleChannels[ch.key] && plan[ch.key] && plan[ch.key].length > 0) {
                 // Raccogli i dati per questo canale specifico
-                const channelData = [];
-                if (plan.lights) {
-                    plan.lights.forEach(item => {
-                        if (item[ch.key] !== undefined && item[ch.key] !== null) {
-                            channelData.push({
-                                x: toMinutes(item.t),
-                                y: item[ch.key]
-                            });
-                        }
-                    });
-                }
+                const channelData = plan[ch.key].map(item => ({
+                    x: toMinutes(item.t),
+                    y: item.value
+                }));
                 
                 // Ordina per ora
                 channelData.sort((a, b) => a.x - b.x);
