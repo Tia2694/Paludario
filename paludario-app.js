@@ -675,6 +675,11 @@ async function initializeApp() {
         // Carica i dati
         await dataManager.loadData();
         
+        // Carica i dati delle luci RGB nelle tabelle
+        if (typeof loadAllChannelData === 'function') {
+            loadAllChannelData();
+        }
+        
     } catch (error) {
         console.error('Errore inizializzazione app:', error);
     }

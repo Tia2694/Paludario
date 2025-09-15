@@ -1243,7 +1243,7 @@ function loadChannelData(channelKey) {
     const tbody = table.querySelector('tbody');
     tbody.innerHTML = '';
     
-    // Raccogli SOLO i dati per questo canale specifico
+    // Raccogli SOLO i dati per questo canale specifico da plan.lights
     const channelData = [];
     plan.lights.forEach(item => {
         if (item[channelKey] !== undefined && item[channelKey] !== null) {
@@ -1326,16 +1326,25 @@ function loadAllChannelData() {
     // Migra i dati vecchi se necessario
     migrateOldLightData();
     
-    // Carica ogni canale indipendentemente
-    Object.keys(channelTables).forEach(channelKey => {
-        loadChannelData(channelKey);
-    });
+    // Carica ogni canale indipendentemente SOLO se i dati sono vuoti
+    // Questo evita di sovrascrivere i dati già salvati
+    if (!plan.lights || plan.lights.length === 0) {
+        Object.keys(channelTables).forEach(channelKey => {
+            loadChannelData(channelKey);
+        });
+    } else {
+        // Se ci sono già dati, aggiorna solo la visualizzazione delle tabelle
+        Object.keys(channelTables).forEach(channelKey => {
+            loadChannelData(channelKey);
+        });
+    }
 }
 
 function renderDayTables() {
     renderSprayTable();
     renderFanTable();
-    loadAllChannelData(); // Carica i dati nelle nuove tabelle separate
+    // Non chiamare loadAllChannelData() qui per evitare conflitti
+    // I dati delle luci RGB vengono gestiti direttamente da saveChannelData()
 }
 
 function renderSprayTable() {
@@ -1489,8 +1498,8 @@ function updateGlobalData() {
         dataManager.updateGlobalData();
     }
     
-    // Carica i dati nelle nuove tabelle separate
-    loadAllChannelData();
+    // I dati delle luci RGB vengono gestiti direttamente da saveChannelData()
+    // Non chiamare loadAllChannelData() qui per evitare conflitti
 }
 
 /* ==================== GESTIONE SOGLIE ACQUA ==================== */
