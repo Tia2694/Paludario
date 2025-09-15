@@ -373,6 +373,48 @@
 	.remove-row-btn:active {
 		transform: translateY(0);
 	}
+
+	/* Pulsante elimina animali */
+	.remove-animal-btn {
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		color: white;
+		border: none;
+		padding: 8px 16px;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 600;
+		box-shadow: var(--shadow-light);
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		position: relative;
+		overflow: hidden;
+		min-height: 32px;
+	}
+
+	.remove-animal-btn::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+		transition: left 0.5s;
+	}
+
+	.remove-animal-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+	}
+
+	.remove-animal-btn:hover::before {
+		left: 100%;
+	}
+
+	.remove-animal-btn:active {
+		transform: translateY(0);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	}
 	
 	/* Tabella valori acqua - usa le stesse regole delle altre tabelle */
 	#water-table {
@@ -888,6 +930,20 @@
 		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
 		transform: translateY(-2px) !important;
 	}
+
+	/* Pulsante elimina animali per dark mode */
+	body.dark-mode .remove-animal-btn {
+		background: #444 !important;
+		color: #ffffff !important;
+		box-shadow: var(--shadow-dark) !important;
+		border: 1px solid #666 !important;
+	}
+
+	body.dark-mode .remove-animal-btn:hover {
+		background: #555 !important;
+		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+		transform: translateY(-2px) !important;
+	}
 	
 	/* Tabelle canali RGB per dark mode */
 	body.dark-mode .channel-table-container {
@@ -1183,6 +1239,40 @@
 	.dark-mode .mobile-mode #water-table td input:focus {
 		border-color: var(--accent-teal) !important;
 		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+	}
+
+	/* Input nelle celle per la tabella animali - stile compatto come valori acqua */
+	.mobile-mode #animals-table td input {
+		width: 100% !important;
+		height: 24px !important; /* Altezza fissa molto ridotta */
+		font-size: 12px !important; /* Font più piccolo */
+		padding: 2px 4px !important; /* Padding minimo */
+		border: 1px solid #ddd !important;
+		border-radius: 3px !important;
+		box-sizing: border-box !important;
+		line-height: 1.2 !important; /* Line height compatto */
+		background: transparent !important;
+		color: inherit !important;
+	}
+	
+	.mobile-mode #animals-table td input:focus {
+		border-color: var(--primary-green) !important;
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2) !important;
+		background: rgba(46, 125, 50, 0.1) !important;
+	}
+	
+	/* Dark mode per input nelle celle della tabella animali */
+	.dark-mode .mobile-mode #animals-table td input {
+		background: #333 !important;
+		color: #fff !important;
+		border-color: #555 !important;
+	}
+	
+	.dark-mode .mobile-mode #animals-table td input:focus {
+		border-color: var(--accent-teal) !important;
+		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+		background: rgba(0, 105, 92, 0.1) !important;
 	}
 	
 	/* Stili per input nella tabella acqua - prevengono sovrapposizioni */

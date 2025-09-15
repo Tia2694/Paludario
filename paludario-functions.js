@@ -846,6 +846,29 @@ function updateAnimalStatus(id, newStatus) {
     }
 }
 
+// Funzione per aggiornare qualsiasi campo di un animale
+function updateAnimalField(id, field, value) {
+    const animal = animals.find(a => a.id === id);
+    if (animal) {
+        // Validazione per campi numerici
+        if (field === 'count' || field === 'males' || field === 'females') {
+            const numValue = parseInt(value) || 0;
+            if (numValue < 0) {
+                animal[field] = 0;
+            } else {
+                animal[field] = numValue;
+            }
+        } else {
+            animal[field] = value;
+        }
+        
+        // Salva nel localStorage
+        if (dataManager) {
+            dataManager.updateSettings({ animals });
+        }
+    }
+}
+
 // Funzione per rendere la tabella animali
 function renderAnimalsTable() {
     if (!animalsTable) return;
@@ -874,14 +897,30 @@ function renderAnimalsTable() {
         
         return `
             <tr>
-                <td><strong>${animal.species}</strong></td>
-                <td>${typeOptions[animal.type] || '🐟 Pesce'}</td>
-                <td>${animal.count}</td>
-                <td>${animal.males}</td>
-                <td>${animal.females}</td>
-                <td>${animal.purchaseDate}</td>
                 <td>
-                    <select onchange="updateAnimalStatus(${animal.id}, this.value)" style="background: transparent; border: none; color: inherit; font-size: inherit;">
+                    <input type="text" value="${animal.species}" onchange="updateAnimalField(${animal.id}, 'species', this.value)" class="table-input" />
+                </td>
+                <td>
+                    <select onchange="updateAnimalField(${animal.id}, 'type', this.value)" style="background: transparent; border: none; color: inherit; font-size: inherit;">
+                        <option value="pesce" ${animal.type === 'pesce' ? 'selected' : ''}>🐟 Pesce</option>
+                        <option value="mollusco" ${animal.type === 'mollusco' ? 'selected' : ''}>🐚 Mollusco</option>
+                        <option value="crostaceo" ${animal.type === 'crostaceo' ? 'selected' : ''}>🦐 Crostaceo</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" value="${animal.count}" onchange="updateAnimalField(${animal.id}, 'count', this.value)" class="table-input" min="0" />
+                </td>
+                <td>
+                    <input type="number" value="${animal.males}" onchange="updateAnimalField(${animal.id}, 'males', this.value)" class="table-input" min="0" />
+                </td>
+                <td>
+                    <input type="number" value="${animal.females}" onchange="updateAnimalField(${animal.id}, 'females', this.value)" class="table-input" min="0" />
+                </td>
+                <td>
+                    <input type="date" value="${animal.purchaseDate}" onchange="updateAnimalField(${animal.id}, 'purchaseDate', this.value)" class="table-input" />
+                </td>
+                <td>
+                    <select onchange="updateAnimalField(${animal.id}, 'status', this.value)" style="background: transparent; border: none; color: inherit; font-size: inherit;">
                         <option value="vivo" ${animal.status === 'vivo' ? 'selected' : ''}>🟢 Vivo</option>
                         <option value="morto" ${animal.status === 'morto' ? 'selected' : ''}>🔴 Morto</option>
                         <option value="malato" ${animal.status === 'malato' ? 'selected' : ''}>🟡 Malato</option>
@@ -889,7 +928,7 @@ function renderAnimalsTable() {
                     </select>
                 </td>
                 <td>
-                    <button onclick="removeAnimal(${animal.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    <button onclick="removeAnimal(${animal.id})" class="remove-animal-btn">🗑️</button>
                 </td>
             </tr>
         `;
