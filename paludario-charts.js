@@ -222,8 +222,6 @@ function drawWaterChart() {
     yTicks.sort((a, b) => a - b);
     drawTicksY(ctx, x0, y0, y1, yScale, yTicks);
 
-    const rangeMs = maxX - minX;
-    const useTime = rangeMs <= 36 * 60 * 60 * 1000;
     const labels = [];
     let lastX = -Infinity;
     const minGapPx = 54;
@@ -231,7 +229,12 @@ function drawWaterChart() {
         const x = xScale(d.t);
         if (x - lastX >= minGapPx) {
             const dt = new Date(d.t);
-            const label = useTime ? dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : dt.toLocaleDateString();
+            // Mostra sempre la data invece dell'ora
+            const label = dt.toLocaleDateString('it-IT', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: '2-digit' 
+            });
             labels.push({ v: d.t, label });
             lastX = x;
         }
@@ -506,9 +509,40 @@ function drawDayChart() {
     const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
     const yLScale = v => y1 - (v - 0) / (100 - 0) * (y1 - y0);
     const yRScale = v => y1 - (v - 0) / (1 - 0) * (y1 - y0);
-    const xLabels = [];
-    for (let h = 0; h <= 24; h += 2) { xLabels.push({ v: h * 60, label: String(h).padStart(2, '0') + ':00' }); }
-    drawTicksX(ctx, x0, y1, xScale, xLabels);
+    // Raccogli tutti gli orari specifici dalle tabelle luci RGB
+    const lightTimes = new Set();
+    if (plan.lights && plan.lights.length > 0) {
+        plan.lights.forEach(light => {
+            // Filtra solo i dati che hanno almeno un valore RGB definito
+            const hasRgbValue = (light.ch1 !== undefined && light.ch1 !== null) ||
+                               (light.ch2 !== undefined && light.ch2 !== null) ||
+                               (light.ch3 !== undefined && light.ch3 !== null) ||
+                               (light.ch4 !== undefined && light.ch4 !== null) ||
+                               (light.ch5 !== undefined && light.ch5 !== null);
+            
+            if (hasRgbValue && light.t) {
+                const timeInMinutes = toMinutes(light.t);
+                if (timeInMinutes !== null && timeInMinutes >= 0 && timeInMinutes <= 24 * 60) {
+                    lightTimes.add(timeInMinutes);
+                }
+            }
+        });
+        
+        // Converti in array e ordina
+        const sortedTimes = Array.from(lightTimes).sort((a, b) => a - b);
+        
+        // Crea etichette solo per gli orari effettivamente presenti
+        const xLabels = sortedTimes.map(timeInMinutes => {
+            const hours = Math.floor(timeInMinutes / 60);
+            const minutes = timeInMinutes % 60;
+            const label = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+            return { v: timeInMinutes, label };
+        });
+        
+        if (xLabels.length > 0) {
+            drawTicksX(ctx, x0, y1, xScale, xLabels);
+        }
+    }
 
     if (showBackgrounds) {
         drawNightBackground(ctx, x0, y0, x1, y1, sunriseTime, sunsetTime);

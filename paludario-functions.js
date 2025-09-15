@@ -1265,6 +1265,46 @@ function loadChannelData(channelKey) {
     });
 }
 
+function migrateOldLightData() {
+    // Migra i dati vecchi dalla struttura unificata a quella separata
+    if (!plan.lights || plan.lights.length === 0) return;
+    
+    const hasOldStructure = plan.lights.some(light => 
+        light.ch1 !== undefined && light.ch2 !== undefined && 
+        light.ch3 !== undefined && light.ch4 !== undefined && 
+        light.ch5 !== undefined
+    );
+    
+    if (hasOldStructure) {
+        console.log('🔄 Migrazione dati luci dalla struttura vecchia a quella nuova...');
+        
+        // Crea un nuovo array con la struttura separata
+        const newLights = [];
+        
+        plan.lights.forEach(light => {
+            // Per ogni canale, crea un oggetto separato se ha un valore
+            ['ch1', 'ch2', 'ch3', 'ch4', 'ch5'].forEach(channel => {
+                if (light[channel] !== undefined && light[channel] !== null) {
+                    newLights.push({
+                        t: light.t,
+                        [channel]: light[channel]
+                    });
+                }
+            });
+        });
+        
+        // Sostituisci i dati vecchi
+        plan.lights = newLights;
+        
+        // Salva la migrazione
+        if (dataManager && dataManager.updateDayTemplate) {
+            dataManager.updateDayTemplate(plan);
+        }
+        
+        console.log('✅ Migrazione completata');
+    }
+}
+
 function loadAllChannelData() {
     // Verifica che plan.lights sia definito
     if (typeof plan === 'undefined' || !plan.lights) {
@@ -1274,6 +1314,9 @@ function loadAllChannelData() {
             plan.lights = [];
         }
     }
+    
+    // Migra i dati vecchi se necessario
+    migrateOldLightData();
     
     // Carica ogni canale indipendentemente
     Object.keys(channelTables).forEach(channelKey => {
