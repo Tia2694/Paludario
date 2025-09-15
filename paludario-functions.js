@@ -710,6 +710,9 @@ function renderWaterTable() {
     // Event listeners per eliminare
     waterTableBody.querySelectorAll('.del-water').forEach(btn => {
         btn.onclick = () => {
+            if (!confirm('Sei sicuro di voler eliminare questo valore acqua?')) {
+                return;
+            }
             const id = btn.getAttribute('data-id');
             water = water.filter(w => w.id !== id);
             if (dataManager && dataManager.updateWater) {
@@ -823,20 +826,6 @@ function clearAnimalForm() {
 function removeAnimal(id) {
     if (confirm('Sei sicuro di voler rimuovere questo animale?')) {
         animals = animals.filter(animal => animal.id !== id);
-        renderAnimalsTable();
-        
-        // Salva nel localStorage
-        if (dataManager) {
-            dataManager.updateSettings({ animals });
-        }
-    }
-}
-
-// Funzione per aggiornare lo stato di un animale
-function updateAnimalStatus(id, newStatus) {
-    const animal = animals.find(a => a.id === id);
-    if (animal) {
-        animal.status = newStatus;
         renderAnimalsTable();
         
         // Salva nel localStorage
@@ -1189,7 +1178,10 @@ function addChannelRow(channelKey) {
     row.innerHTML = `
         <td><input type="time" class="channel-time-input" placeholder="HH:MM"></td>
         <td><input type="number" min="0" max="100" class="channel-value-input" placeholder="0-100"></td>
-        <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button></td>
+        <td>
+            <button class="ok-row-btn" onclick="confirmChannelValue('${channelKey}', this)" title="Conferma">✅ OK</button>
+            <button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button>
+        </td>
     `;
     
     tbody.appendChild(row);
@@ -1225,6 +1217,10 @@ function addChannelValue(channelKey, row) {
 }
 
 function removeChannelRow(button) {
+    if (!confirm('Sei sicuro di voler eliminare questa riga?')) {
+        return;
+    }
+    
     const row = button.closest('tr');
     const table = row.closest('table');
     const channelKey = Object.keys(channelTables).find(key => channelTables[key] === table);
@@ -1271,7 +1267,10 @@ function loadChannelData(channelKey) {
         row.innerHTML = `
             <td><input type="time" class="channel-time-input" value="${data.t}"></td>
             <td><input type="number" min="0" max="100" class="channel-value-input" value="${data.value}"></td>
-            <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button></td>
+            <td>
+                <button class="ok-row-btn" onclick="confirmChannelValue('${channelKey}', this)" title="Conferma">✅ OK</button>
+                <button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button>
+            </td>
         `;
         tbody.appendChild(row);
         
@@ -1307,6 +1306,47 @@ function updateChannelValue(channelKey, row) {
         
         // Ridisegna il grafico
         drawDayChart();
+    }
+}
+
+function confirmChannelValue(channelKey, button) {
+    const row = button.closest('tr');
+    const timeInput = row.querySelector('.channel-time-input');
+    const valueInput = row.querySelector('.channel-value-input');
+    
+    if (!timeInput.value || !valueInput.value) {
+        alert('Inserisci sia ora che valore prima di confermare');
+        return;
+    }
+    
+    // Trova l'indice della riga
+    const table = row.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const rowIndex = rows.indexOf(row);
+    
+    if (rowIndex !== -1) {
+        // Aggiorna nell'array
+        plan[channelKey][rowIndex] = {
+            t: timeInput.value,
+            value: Math.max(0, Math.min(100, Number(valueInput.value) || 0))
+        };
+        
+        // Salva i dati
+        if (dataManager && dataManager.updateDayTemplate) {
+            dataManager.updateDayTemplate(plan);
+        }
+        
+        // Ridisegna il grafico
+        drawDayChart();
+        
+        // Feedback visivo
+        button.style.background = '#4caf50';
+        button.textContent = '✅';
+        setTimeout(() => {
+            button.style.background = '';
+            button.textContent = '✅ OK';
+        }, 1000);
     }
 }
 
@@ -1358,6 +1398,9 @@ function renderSprayTable() {
     
     sprayTableBody.querySelectorAll('.del-spray').forEach(btn => {
         btn.onclick = () => {
+            if (!confirm('Sei sicuro di voler eliminare questo intervallo spray?')) {
+                return;
+            }
             const i = Number(btn.getAttribute('data-original-i'));
             plan.spray.splice(i, 1);
             dataManager.updateDayTemplate(plan);
@@ -1398,6 +1441,9 @@ function renderFanTable() {
     
     fanTableBody.querySelectorAll('.del-fan').forEach(btn => {
         btn.onclick = () => {
+            if (!confirm('Sei sicuro di voler eliminare questo intervallo ventola?')) {
+                return;
+            }
             const i = Number(btn.getAttribute('data-original-i'));
             plan.fan.splice(i, 1);
             dataManager.updateDayTemplate(plan);

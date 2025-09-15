@@ -376,6 +376,9 @@ function renderWaterTable() {
 }
 
 function deleteWater(id) {
+    if (!confirm('Sei sicuro di voler eliminare questo valore acqua?')) {
+        return;
+    }
     waterData = waterData.filter(w => w.id !== id);
     renderWaterTable();
     saveToLocalStorage();
