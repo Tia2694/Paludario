@@ -278,6 +278,9 @@ function setupEventListeners() {
             toggleBackgroundsBtn.textContent = showBackgrounds ? '🎨 Nascondi Sfondo' : '🎨 Mostra Sfondo';
             drawDayChart();
         };
+        
+        // Imposta il testo iniziale basato sullo stato attuale
+        toggleBackgroundsBtn.textContent = showBackgrounds ? '🎨 Nascondi Sfondo' : '🎨 Mostra Sfondo';
     }
 
     if (toggleFillBtn) {
@@ -1147,7 +1150,7 @@ function addChannelRow(channelKey) {
     row.innerHTML = `
         <td><input type="time" class="channel-time-input" placeholder="HH:MM"></td>
         <td><input type="number" min="0" max="100" class="channel-value-input" placeholder="0-100"></td>
-        <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️</button></td>
+        <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button></td>
     `;
     
     tbody.appendChild(row);
@@ -1252,7 +1255,7 @@ function loadChannelData(channelKey) {
         row.innerHTML = `
             <td><input type="time" class="channel-time-input" value="${data.t}"></td>
             <td><input type="number" min="0" max="100" class="channel-value-input" value="${data.value}"></td>
-            <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️</button></td>
+            <td><button class="remove-row-btn" onclick="removeChannelRow(this)">🗑️ Elimina</button></td>
         `;
         tbody.appendChild(row);
         

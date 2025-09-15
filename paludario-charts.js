@@ -258,23 +258,13 @@ function drawWaterChart() {
 function calculateSunrise() {
     const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
     
-    // Trova il primo punto con luce > 0
-    let firstLightOnIndex = -1;
+    // Trova il primo punto con valore 0 in qualsiasi canale RGB
     for (let i = 0; i < sortedLights.length; i++) {
         const light = sortedLights[i];
-        const totalLight = (light.ch1 || 0) + (light.ch2 || 0) + (light.ch3 || 0) + (light.ch4 || 0) + (light.ch5 || 0);
-        if (totalLight > 0) {
-            firstLightOnIndex = i;
-            break;
+        // Controlla se almeno un canale RGB ha valore 0
+        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
+            return toMinutes(light.t);
         }
-    }
-    
-    // Se c'è un punto precedente, usa quello (valore 0)
-    if (firstLightOnIndex > 0) {
-        return toMinutes(sortedLights[firstLightOnIndex - 1].t);
-    } else if (firstLightOnIndex === 0) {
-        // Se il primo punto è già con luce > 0, usa quello
-        return toMinutes(sortedLights[0].t);
     }
     
     return null;
@@ -282,35 +272,25 @@ function calculateSunrise() {
 
 function calculateSunset() {
     const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
-    let lastLightOn = null;
     
+    // Trova l'ultimo punto con valore 0 in qualsiasi canale RGB
     for (let i = sortedLights.length - 1; i >= 0; i--) {
         const light = sortedLights[i];
-        const totalLight = (light.ch1 || 0) + (light.ch2 || 0) + (light.ch3 || 0) + (light.ch4 || 0) + (light.ch5 || 0);
-        if (totalLight > 0) {
-            lastLightOn = toMinutes(light.t);
-            break;
-        }
-    }
-    
-    if (lastLightOn === null) return null;
-    
-    for (const light of sortedLights) {
-        const totalLight = (light.ch1 || 0) + (light.ch2 || 0) + (light.ch3 || 0) + (light.ch4 || 0) + (light.ch5 || 0);
-        if (totalLight === 0 && toMinutes(light.t) > lastLightOn) {
+        // Controlla se almeno un canale RGB ha valore 0
+        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
             return toMinutes(light.t);
         }
     }
     
-    return lastLightOn + 60;
+    return null;
 }
 
 function calculateSunsetAllZero() {
     const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
     let lastLight = 18 * 60;
     for (const light of sortedLights) {
-        const allZero = (light.ch1 || 0) === 0 && (light.ch2 || 0) === 0 && (light.ch3 || 0) === 0 && (light.ch4 || 0) === 0 && (light.ch5 || 0) === 0;
-        if (allZero) {
+        // Controlla se almeno un canale RGB ha valore 0 (stessa logica di calculateSunset)
+        if ((light.ch1 === 0) || (light.ch2 === 0) || (light.ch3 === 0) || (light.ch4 === 0) || (light.ch5 === 0)) {
             lastLight = toMinutes(light.t);
         }
     }
@@ -346,12 +326,10 @@ function drawSunIcons(ctx, x0, y0, x1, y1, sunriseTime, sunsetTime) {
         const sunsetXAllZero = xScale(sunsetAllZero);
         drawSunIcon(ctx, sunsetXAllZero, sunriseY, 'sunset');
         
-        const sortedLights = plan.lights.sort((a, b) => toMinutes(a.t) - toMinutes(b.t));
+        // Calcola il sole centrale come punto medio tra alba e tramonto
         let sunCenterTime = null;
-        if (sortedLights.length >= 2) {
-            const firstLight = toMinutes(sortedLights[0].t);
-            const lastLight = toMinutes(sortedLights[sortedLights.length - 1].t);
-            sunCenterTime = (firstLight + lastLight) / 2;
+        if (sunriseTime !== null && sunsetTime !== null) {
+            sunCenterTime = (sunriseTime + sunsetTime) / 2;
             const midX = xScale(sunCenterTime);
             const midY = y0 + (y1 - y0) * 0.2;
             drawSunIcon(ctx, midX, midY, 'noon');
@@ -562,6 +540,16 @@ function drawDayChart() {
                 
                 // Ordina per ora
                 channelData.sort((a, b) => a.x - b.x);
+                
+                // Se ci sono dati e il primo valore non è 0, aggiungi un punto a 0 alle 00:00
+                if (channelData.length > 0 && channelData[0].y !== 0) {
+                    channelData.unshift({ x: 0, y: 0 });
+                }
+                
+                // Se ci sono dati e l'ultimo valore non è 0, aggiungi un punto a 0 alle 24:00
+                if (channelData.length > 0 && channelData[channelData.length - 1].y !== 0) {
+                    channelData.push({ x: 24 * 60, y: 0 });
+                }
                 
                 // Disegna solo se ci sono dati
                 if (channelData.length > 0) {
