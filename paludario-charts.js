@@ -493,7 +493,7 @@ function drawDayChart() {
     ctx.clearRect(0, 0, dayCanvas.width, dayCanvas.height);
     const pad = { l: 50, r: 34, t: 12, b: 28 };
     const x0 = pad.l, x1 = (dayCanvas.clientWidth || 600) - pad.r;
-    const y0 = pad.t, y1 = (dayCanvas.clientHeight || 190) - pad.b;
+    const y0 = pad.t, y1 = (dayCanvas.clientHeight || 300) - pad.b;
     
     const sunriseTime = calculateSunrise();
     const sunsetTime = calculateSunset();
@@ -527,21 +527,44 @@ function drawDayChart() {
                 }
             }
         });
-        
-        // Converti in array e ordina
-        const sortedTimes = Array.from(lightTimes).sort((a, b) => a - b);
-        
-        // Crea etichette solo per gli orari effettivamente presenti
-        const xLabels = sortedTimes.map(timeInMinutes => {
-            const hours = Math.floor(timeInMinutes / 60);
-            const minutes = timeInMinutes % 60;
-            const label = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
-            return { v: timeInMinutes, label };
+    }
+    
+    // Aggiungi orari di inizio per spray e ventola
+    if (plan.spray && plan.spray.length > 0) {
+        plan.spray.forEach(interval => {
+            if (interval.s) {
+                const timeInMinutes = toMinutes(interval.s);
+                if (timeInMinutes !== null && timeInMinutes >= 0 && timeInMinutes <= 24 * 60) {
+                    lightTimes.add(timeInMinutes);
+                }
+            }
         });
-        
-        if (xLabels.length > 0) {
-            drawTicksX(ctx, x0, y1, xScale, xLabels);
-        }
+    }
+    
+    if (plan.fan && plan.fan.length > 0) {
+        plan.fan.forEach(interval => {
+            if (interval.s) {
+                const timeInMinutes = toMinutes(interval.s);
+                if (timeInMinutes !== null && timeInMinutes >= 0 && timeInMinutes <= 24 * 60) {
+                    lightTimes.add(timeInMinutes);
+                }
+            }
+        });
+    }
+    
+    // Converti in array e ordina
+    const sortedTimes = Array.from(lightTimes).sort((a, b) => a - b);
+    
+    // Crea etichette solo per gli orari effettivamente presenti
+    const xLabels = sortedTimes.map(timeInMinutes => {
+        const hours = Math.floor(timeInMinutes / 60);
+        const minutes = timeInMinutes % 60;
+        const label = String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0');
+        return { v: timeInMinutes, label };
+    });
+    
+    if (xLabels.length > 0) {
+        drawTicksX(ctx, x0, y1, xScale, xLabels);
     }
 
     if (showBackgrounds) {
