@@ -4,8 +4,8 @@
   "icon": "🦀",
   "liters": "25",
   "darkMode": false,
-  "mobileMode": true,
-  "lockedMode": false,
+  "mobileMode": false,
+  "lockedMode": true,
   "waterThresholds": {
     "ph": {
       "min": 6.4,
