@@ -1276,6 +1276,22 @@
 		table-layout: fixed !important;
 	}
 	
+	/* Regole per tabella aria in mobile - larghezza fissa e scroll orizzontale */
+	.mobile-mode #air-table {
+		width: 1200px !important;
+		min-width: 1200px !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
+	/* Regola molto specifica per sovrascrivere qualsiasi conflitto - tabella aria responsive */
+	body.mobile-mode .table-container table#air-table {
+		width: auto !important;
+		min-width: 100% !important;
+		max-width: none !important;
+		table-layout: fixed !important;
+	}
+	
 	/* Sovrascrivi regole generali per tabella animali */
 	body.mobile-mode table#animals-table {
 		width: 100vw !important;
@@ -1389,6 +1405,25 @@
 		min-width: 80px !important;
 	}
 	
+	/* Colonne specifiche per la tabella valori aria - larghezze proporzionali e flessibili */
+	#air-table th:nth-child(1), #air-table td:nth-child(1) {
+		width: 20% !important; /* DATA/ORA - spazio proporzionale */
+		min-width: 180px !important;
+	}
+	#air-table th:nth-child(2), #air-table td:nth-child(2),
+	#air-table th:nth-child(3), #air-table td:nth-child(3),
+	#air-table th:nth-child(4), #air-table td:nth-child(4),
+	#air-table th:nth-child(5), #air-table td:nth-child(5),
+	#air-table th:nth-child(6), #air-table td:nth-child(6),
+	#air-table th:nth-child(7), #air-table td:nth-child(7) {
+		width: 10% !important; /* Tutte le colonne dati - larghezza proporzionale */
+		min-width: 100px !important;
+	}
+	#air-table th:nth-child(8), #air-table td:nth-child(8) {
+		width: 10% !important; /* Azioni - spazio per i pulsanti */
+		min-width: 100px !important;
+	}
+	
 	/* Regole specifiche per desktop mode - rimuove larghezze fisse per adattamento responsive */
 	body:not(.mobile-mode) #water-table {
 		/* Lascia che la tabella si adatti naturalmente come le altre */
@@ -1423,6 +1458,36 @@
 	}
 	
 	.dark-mode .mobile-mode #water-table td input:focus {
+		border-color: var(--accent-teal) !important;
+		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
+	}
+
+	/* Input nelle celle per la tabella valori aria - stile compatto come valori acqua */
+	.mobile-mode #air-table td input {
+		width: 100% !important;
+		height: 24px !important; /* Altezza fissa molto ridotta */
+		font-size: 12px !important; /* Font più piccolo */
+		padding: 2px 4px !important; /* Padding minimo */
+		border: 1px solid #ddd !important;
+		border-radius: 3px !important;
+		box-sizing: border-box !important;
+		line-height: 1.2 !important; /* Line height compatto */
+	}
+	
+	.mobile-mode #air-table td input:focus {
+		border-color: var(--primary-green) !important;
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2) !important;
+	}
+	
+	/* Dark mode per input nelle celle della tabella valori aria */
+	.dark-mode .mobile-mode #air-table td input {
+		background: #333 !important;
+		color: #fff !important;
+		border-color: #555 !important;
+	}
+	
+	.dark-mode .mobile-mode #air-table td input:focus {
 		border-color: var(--accent-teal) !important;
 		box-shadow: 0 0 0 2px rgba(0, 105, 92, 0.3) !important;
 	}
@@ -2222,7 +2287,7 @@
 	
 	.locked-mode input,
 	.locked-mode select:not(#param-select):not(#air-param-select),
-	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#refresh-water-chart):not(#refresh-air-chart):not(#toggle-backgrounds):not(#toggle-fill),
+	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#toggle-backgrounds):not(#toggle-fill),
 	.locked-mode [contenteditable="true"] {
 		pointer-events: none !important;
 		cursor: not-allowed !important;
@@ -2297,8 +2362,6 @@
 	.locked-mode #mobile-toggle,
 	.locked-mode #dark-mode-toggle,
 	.locked-mode #refresh-day-chart,
-	.locked-mode #refresh-water-chart,
-	.locked-mode #refresh-air-chart,
 	.locked-mode #toggle-backgrounds,
 	.locked-mode #toggle-fill,
 	.locked-mode #param-select,
@@ -2850,7 +2913,6 @@ h2 .animated-icon {
 			<option value="cond">⚡ Conducibilità</option>
 		</select>
 	</div>
-	<button id="refresh-water-chart">🔄 Aggiorna grafico</button>
 </div>
 <canvas id="waterChart"></canvas>
 
@@ -2973,7 +3035,6 @@ h2 .animated-icon {
 			<option value="humidity">💧 Umidità</option>
 		</select>
 	</div>
-	<button id="refresh-air-chart">🔄 Aggiorna grafico</button>
 </div>
 <canvas id="airChart" style="height: 400px;"></canvas>
 <div class="legend" id="airLegend"></div>

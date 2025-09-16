@@ -39,12 +39,12 @@ let waterThresholds = {
 
 // Soglie per i parametri dell'aria
 let airThresholds = {
-    tempMin: { min: 15.0, max: 25.0 },
-    tempMax: { min: 20.0, max: 30.0 },
-    tempDeltaMax: 5.0,
-    humidityMin: { min: 40.0, max: 60.0 },
-    humidityMax: { min: 50.0, max: 80.0 },
-    humidityDeltaMax: 20.0
+    tempMin: 20.0,        // Sotto questa soglia = fuori range
+    tempMax: 30.0,        // Sopra questa soglia = fuori range
+    tempDeltaMax: 5.0,    // Delta massimo consentito
+    humidityMin: 50.0,    // Sotto questa soglia = fuori range
+    humidityMax: 80.0,    // Sopra questa soglia = fuori range
+    humidityDeltaMax: 20.0 // Delta massimo consentito
 };
 
 /* ==================== UI HOOKS ==================== */
@@ -61,12 +61,10 @@ const addWaterBtn = document.getElementById('add-water');
 const clearWaterBtn = document.getElementById('clear-water');
 let waterTableBody;
 const paramSelect = document.getElementById('param-select');
-const refreshWaterChartBtn = document.getElementById('refresh-water-chart');
 const waterCanvas = document.getElementById('waterChart');
 
 // Elementi per il grafico aria
 const airParamSelect = document.getElementById('air-param-select');
-const refreshAirChartBtn = document.getElementById('refresh-air-chart');
 const airCanvas = document.getElementById('airChart');
 
 const sprayStart = document.getElementById('spray-start');
@@ -310,14 +308,8 @@ function setupEventListeners() {
     }
 
     // Grafici
-    if (refreshWaterChartBtn) {
-        refreshWaterChartBtn.onclick = () => drawWaterChart();
-    }
     if (refreshDayChartBtn) {
         refreshDayChartBtn.onclick = () => drawDayChart();
-    }
-    if (refreshAirChartBtn) {
-        refreshAirChartBtn.onclick = () => drawAirChart();
     }
     if (airParamSelect) {
         airParamSelect.onchange = () => drawAirChart();
@@ -1907,47 +1899,24 @@ function generateAirThresholdSettings() {
         item.className = 'threshold-item';
         item.style.cssText = 'background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px;';
         
-        // Controlla se è un Delta Max (valore singolo) o un range (min/max)
+        // Tutti i parametri ora sono valori singoli
         const isDeltaMax = param.includes('DeltaMax');
+        const labelText = isDeltaMax ? 'Valore Massimo' : 'Soglia';
         
-        if (isDeltaMax) {
-            item.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <span style="font-size: 20px;">${config.icon}</span>
-                    <div>
-                        <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
-                        <span style="font-size: 12px; color: #666;">${config.unit}</span>
-                    </div>
-                </div>
+        item.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <span style="font-size: 20px;">${config.icon}</span>
                 <div>
-                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Valore Massimo</label>
-                    <input type="number" step="0.1" min="0" id="air-threshold-${param}" value="${threshold}" 
-                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
+                    <span style="font-size: 12px; color: #666;">${config.unit}</span>
                 </div>
-            `;
-        } else {
-            item.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                    <span style="font-size: 20px;">${config.icon}</span>
-                    <div>
-                        <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
-                        <span style="font-size: 12px; color: #666;">${config.unit}</span>
-                    </div>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Minimo</label>
-                        <input type="number" step="0.1" id="air-threshold-${param}-min" value="${threshold.min}" 
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Massimo</label>
-                        <input type="number" step="0.1" id="air-threshold-${param}-max" value="${threshold.max}" 
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">${labelText}</label>
+                <input type="number" step="0.1" min="0" id="air-threshold-${param}" value="${threshold}" 
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+        `;
         
         airThresholdSettings.appendChild(item);
     });
@@ -1955,21 +1924,9 @@ function generateAirThresholdSettings() {
 
 function saveAirThresholds() {
     Object.keys(airThresholds).forEach(param => {
-        const isDeltaMax = param.includes('DeltaMax');
-        
-        if (isDeltaMax) {
-            const input = document.getElementById(`air-threshold-${param}`);
-            if (input) {
-                airThresholds[param] = parseFloat(input.value) || 0;
-            }
-        } else {
-            const minInput = document.getElementById(`air-threshold-${param}-min`);
-            const maxInput = document.getElementById(`air-threshold-${param}-max`);
-            
-            if (minInput && maxInput) {
-                airThresholds[param].min = parseFloat(minInput.value) || 0;
-                airThresholds[param].max = parseFloat(maxInput.value) || 0;
-            }
+        const input = document.getElementById(`air-threshold-${param}`);
+        if (input) {
+            airThresholds[param] = parseFloat(input.value) || 0;
         }
     });
     
@@ -2002,12 +1959,12 @@ function saveAirThresholds() {
 
 function resetAirThresholds() {
     airThresholds = {
-        tempMin: { min: 15.0, max: 25.0 },
-        tempMax: { min: 20.0, max: 30.0 },
-        tempDeltaMax: 5.0,
-        humidityMin: { min: 40.0, max: 60.0 },
-        humidityMax: { min: 50.0, max: 80.0 },
-        humidityDeltaMax: 20.0
+        tempMin: 20.0,        // Sotto questa soglia = fuori range
+        tempMax: 30.0,        // Sopra questa soglia = fuori range
+        tempDeltaMax: 5.0,    // Delta massimo consentito
+        humidityMin: 50.0,    // Sotto questa soglia = fuori range
+        humidityMax: 80.0,    // Sopra questa soglia = fuori range
+        humidityDeltaMax: 20.0 // Delta massimo consentito
     };
     
     generateAirThresholdSettings();
@@ -2020,7 +1977,18 @@ function isAirValueOutOfThreshold(param, value) {
     if (!threshold) return false;
     
     const numValue = Number(value);
-    return numValue < threshold.min || numValue > threshold.max;
+    
+    // Per tempMin e humidityMin: sotto la soglia = fuori range
+    if (param === 'tempMin' || param === 'humidityMin') {
+        return numValue < threshold;
+    }
+    
+    // Per tempMax e humidityMax: sopra la soglia = fuori range
+    if (param === 'tempMax' || param === 'humidityMax') {
+        return numValue > threshold;
+    }
+    
+    return false;
 }
 
 function isAirDeltaOutOfThreshold(param, deltaValue) {
