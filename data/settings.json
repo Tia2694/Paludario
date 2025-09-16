@@ -58,5 +58,25 @@
       "humidityMin": 60,
       "humidityMax": 99
     }
-  ]
+  ],
+  "airThresholds": {
+    "tempMin": {
+      "min": 15,
+      "max": 25
+    },
+    "tempMax": {
+      "min": 20,
+      "max": 30
+    },
+    "tempDeltaMax": 5,
+    "humidityMin": {
+      "min": 40,
+      "max": 60
+    },
+    "humidityMax": {
+      "min": 60,
+      "max": 80
+    },
+    "humidityDeltaMax": 5
+  }
 }
