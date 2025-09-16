@@ -51,38 +51,6 @@
       "humidityMax": 99
     },
     {
-      "id": 1758018991388,
-      "datetime": "2025-01-17T08:00",
-      "tempMin": 23.2,
-      "tempMax": 28.5,
-      "humidityMin": 52,
-      "humidityMax": 98
-    },
-    {
-      "id": 1758018991389,
-      "datetime": "2025-01-18T08:00",
-      "tempMin": 20.8,
-      "tempMax": 25.9,
-      "humidityMin": 61,
-      "humidityMax": 92
-    },
-    {
-      "id": 1758018991390,
-      "datetime": "2025-01-19T08:00",
-      "tempMin": 24.1,
-      "tempMax": 29.2,
-      "humidityMin": 49,
-      "humidityMax": 97
-    },
-    {
-      "id": 1758018991391,
-      "datetime": "2025-01-20T08:00",
-      "tempMin": 22.7,
-      "tempMax": 27.8,
-      "humidityMin": 55,
-      "humidityMax": 96
-    },
-    {
       "id": 1758018991392,
       "datetime": "2025-01-21T08:00",
       "tempMin": 21.3,
