@@ -43,14 +43,6 @@
   "animals": [],
   "airReadings": [
     {
-      "id": 1758028201042,
-      "datetime": "2025-09-19T15:09",
-      "tempMin": 22,
-      "tempMax": 22,
-      "humidityMin": 55,
-      "humidityMax": 66
-    },
-    {
       "id": 1758028515957,
       "datetime": "2025-09-18T15:15",
       "tempMin": 22,
