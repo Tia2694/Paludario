@@ -37,6 +37,16 @@ let waterThresholds = {
     cond: { min: 100, max: 1000 }
 };
 
+// Soglie per i parametri dell'aria
+let airThresholds = {
+    tempMin: { min: 15.0, max: 25.0 },
+    tempMax: { min: 20.0, max: 30.0 },
+    tempDeltaMax: 5.0,
+    humidityMin: { min: 40.0, max: 60.0 },
+    humidityMax: { min: 50.0, max: 80.0 },
+    humidityDeltaMax: 20.0
+};
+
 /* ==================== UI HOOKS ==================== */
 const waterDt = document.getElementById('water-dt');
 const ph = document.getElementById('ph');
@@ -53,6 +63,11 @@ let waterTableBody;
 const paramSelect = document.getElementById('param-select');
 const refreshWaterChartBtn = document.getElementById('refresh-water-chart');
 const waterCanvas = document.getElementById('waterChart');
+
+// Elementi per il grafico aria
+const airParamSelect = document.getElementById('air-param-select');
+const refreshAirChartBtn = document.getElementById('refresh-air-chart');
+const airCanvas = document.getElementById('airChart');
 
 const sprayStart = document.getElementById('spray-start');
 const sprayEnd = document.getElementById('spray-end');
@@ -97,6 +112,14 @@ const thresholdSettings = document.getElementById('threshold-settings');
 const resetThresholdsBtn = document.getElementById('reset-thresholds');
 const saveThresholdsBtn = document.getElementById('save-thresholds');
 
+// Elementi per le soglie aria
+const airSettingsBtn = document.getElementById('air-settings-btn');
+const airSettingsModal = document.getElementById('air-settings-modal');
+const closeAirSettingsModal = document.getElementById('close-air-settings-modal');
+const airThresholdSettings = document.getElementById('air-threshold-settings');
+const resetAirThresholdsBtn = document.getElementById('reset-air-thresholds');
+const saveAirThresholdsBtn = document.getElementById('save-air-thresholds');
+
 /* ==================== INIZIALIZZAZIONE ==================== */
 function setupAppAfterLoad() {
     // Imposta data/ora corrente
@@ -111,6 +134,29 @@ function setupAppAfterLoad() {
     
     // Carica le soglie dell'acqua
     loadWaterThresholds();
+    
+    // Carica le soglie dell'aria
+    loadAirThresholds();
+    
+    // Carica i dati aria se disponibili
+    if (dataManager && dataManager.data && dataManager.data.settings && dataManager.data.settings.airReadings) {
+        airReadings = dataManager.data.settings.airReadings;
+    }
+    
+    // Disegna il grafico aria all'avvio
+    if (typeof drawAirChart === 'function') {
+        drawAirChart();
+    }
+    
+    // Aggiorna la colorazione dei delta all'avvio
+    setTimeout(() => {
+        updateAirThresholdStyling();
+    }, 500);
+    
+    // Chiamata aggiuntiva per assicurarsi che funzioni
+    setTimeout(() => {
+        updateAirThresholdStyling();
+    }, 2000);
 }
 
 function setupEventListeners() {
@@ -270,6 +316,15 @@ function setupEventListeners() {
     if (refreshDayChartBtn) {
         refreshDayChartBtn.onclick = () => drawDayChart();
     }
+    if (refreshAirChartBtn) {
+        refreshAirChartBtn.onclick = () => drawAirChart();
+    }
+    if (airParamSelect) {
+        airParamSelect.onchange = () => drawAirChart();
+    }
+    if (paramSelect) {
+        paramSelect.onchange = () => drawWaterChart();
+    }
 
     // Toggle buttons
     if (toggleBackgroundsBtn) {
@@ -277,6 +332,9 @@ function setupEventListeners() {
             showBackgrounds = !showBackgrounds;
             toggleBackgroundsBtn.textContent = showBackgrounds ? '🎨 Nascondi Sfondo' : '🎨 Mostra Sfondo';
             drawDayChart();
+            if (typeof drawAirChart === 'function') {
+                drawAirChart();
+            }
         };
         
         // Imposta il testo iniziale basato sullo stato attuale
@@ -288,6 +346,9 @@ function setupEventListeners() {
             showFill = !showFill;
             toggleFillBtn.textContent = showFill ? '📊 Grafico Vuoto' : '📊 Grafico Pieno';
             drawDayChart();
+            if (typeof drawAirChart === 'function') {
+                drawAirChart();
+            }
         };
     }
 
@@ -300,6 +361,9 @@ function setupEventListeners() {
             dataManager.updateSettings({ darkMode });
             drawWaterChart();
             drawDayChart();
+            if (typeof drawAirChart === 'function') {
+                drawAirChart();
+            }
             // Riapplica gli stili per i valori fuori soglia
             updateThresholdStyling();
         };
@@ -347,6 +411,7 @@ function setupEventListeners() {
             setTimeout(() => {
                 if (typeof drawWaterChart === 'function') drawWaterChart();
                 if (typeof drawDayChart === 'function') drawDayChart();
+                if (typeof drawAirChart === 'function') drawAirChart();
             }, 100);
         };
     }
@@ -384,6 +449,7 @@ function setupEventListeners() {
                     if (typeof renderDayTables === 'function') renderDayTables();
                     if (typeof drawWaterChart === 'function') drawWaterChart();
                     if (typeof drawDayChart === 'function') drawDayChart();
+                    if (typeof drawAirChart === 'function') drawAirChart();
                 });
             } else {
                 // Fallback al metodo precedente
@@ -414,6 +480,7 @@ function setupEventListeners() {
                     if (typeof renderDayTables === 'function') renderDayTables();
                     if (typeof drawWaterChart === 'function') drawWaterChart();
                     if (typeof drawDayChart === 'function') drawDayChart();
+                    if (typeof drawAirChart === 'function') drawAirChart();
                 });
             }
         };
@@ -464,11 +531,33 @@ function setupEventListeners() {
         resetThresholdsBtn.onclick = resetThresholds;
     }
     
+    // Event listeners per le soglie aria
+    if (airSettingsBtn) {
+        airSettingsBtn.onclick = openAirSettings;
+    }
+    if (closeAirSettingsModal) {
+        closeAirSettingsModal.onclick = closeAirSettings;
+    }
+    if (saveAirThresholdsBtn) {
+        saveAirThresholdsBtn.onclick = saveAirThresholds;
+    }
+    if (resetAirThresholdsBtn) {
+        resetAirThresholdsBtn.onclick = resetAirThresholds;
+    }
+    
     // Chiudi modal cliccando fuori
     if (waterSettingsModal) {
         waterSettingsModal.onclick = (e) => {
             if (e.target === waterSettingsModal) {
                 closeWaterSettings();
+            }
+        };
+    }
+    
+    if (airSettingsModal) {
+        airSettingsModal.onclick = (e) => {
+            if (e.target === airSettingsModal) {
+                closeAirSettings();
             }
         };
     }
@@ -492,6 +581,9 @@ function setupEventListeners() {
     window.addEventListener('resize', () => {
         drawWaterChart();
         drawDayChart();
+        if (typeof drawAirChart === 'function') {
+            drawAirChart();
+        }
     });
     
     // Event listeners per animali - rimossi da qui, ora sono in setupEventListeners()
@@ -506,6 +598,9 @@ function setupEventListeners() {
     }
     
     // Event listeners per aria
+    if (addAirBtn) {
+        addAirBtn.addEventListener('click', addAirReading);
+    }
     if (clearAirBtn) {
         clearAirBtn.addEventListener('click', clearAirForm);
     }
@@ -952,6 +1047,7 @@ const airTempMin = document.getElementById('air-temp-min');
 const airTempMax = document.getElementById('air-temp-max');
 const airHumidityMin = document.getElementById('air-humidity-min');
 const airHumidityMax = document.getElementById('air-humidity-max');
+const addAirBtn = document.getElementById('add-air');
 const clearAirBtn = document.getElementById('clear-air');
 const airTable = document.getElementById('air-table');
 
@@ -992,8 +1088,16 @@ function addAirReading() {
     };
     
     airReadings.push(airReading);
-    renderAirTable();
+    renderAirTable(); // Questo applicherà automaticamente la colorazione
     clearAirForm();
+    
+    // Aggiorna il grafico aria
+    if (typeof drawAirChart === 'function') {
+        drawAirChart();
+    }
+    
+    // Aggiorna la colorazione dei delta
+    updateAirThresholdStyling();
     
     // Salva nel localStorage
     if (dataManager) {
@@ -1016,10 +1120,66 @@ function removeAirReading(id) {
         airReadings = airReadings.filter(reading => reading.id !== id);
         renderAirTable();
         
+        // Aggiorna il grafico aria
+        if (typeof drawAirChart === 'function') {
+            drawAirChart();
+        }
+        
+        // Aggiorna la colorazione dei delta
+        updateAirThresholdStyling();
+        
         // Salva nel localStorage
         if (dataManager) {
             dataManager.updateSettings({ airReadings });
         }
+    }
+}
+
+// Funzione per aggiornare un campo di un rilevamento aria
+function updateAirField(id, field, value) {
+    const reading = airReadings.find(r => r.id === id);
+    if (reading) {
+        // Validazione per campi numerici
+        if (field === 'tempMin' || field === 'tempMax' || field === 'humidityMin' || field === 'humidityMax') {
+            const numValue = parseFloat(value) || 0;
+            if (numValue < 0) {
+                reading[field] = 0;
+            } else {
+                reading[field] = numValue;
+            }
+        } else {
+            reading[field] = value;
+        }
+        
+        // Validazione logica per temperatura e umidità
+        if (field === 'tempMin' && reading.tempMax && reading.tempMin > reading.tempMax) {
+            reading.tempMin = reading.tempMax;
+        }
+        if (field === 'tempMax' && reading.tempMin && reading.tempMax < reading.tempMin) {
+            reading.tempMax = reading.tempMin;
+        }
+        if (field === 'humidityMin' && reading.humidityMax && reading.humidityMin > reading.humidityMax) {
+            reading.humidityMin = reading.humidityMax;
+        }
+        if (field === 'humidityMax' && reading.humidityMin && reading.humidityMax < reading.humidityMin) {
+            reading.humidityMax = reading.humidityMin;
+        }
+        
+        // Salva nel localStorage
+        if (dataManager) {
+            dataManager.updateSettings({ airReadings });
+        }
+        
+        // Riridisegna la tabella per aggiornare i valori e la colorazione
+        renderAirTable();
+        
+        // Aggiorna il grafico aria
+        if (typeof drawAirChart === 'function') {
+            drawAirChart();
+        }
+        
+        // Aggiorna la colorazione dei delta
+        updateAirThresholdStyling();
     }
 }
 
@@ -1031,20 +1191,61 @@ function renderAirTable() {
     if (!tbody) return;
     
     if (airReadings.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666; padding: 20px;">Nessun rilevamento registrato</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #666; padding: 20px;">Nessun rilevamento registrato</td></tr>';
         return;
     }
     
     tbody.innerHTML = airReadings.map(reading => {
+        // Controlla se i valori sono fuori soglia per la colorazione
+        const tempMinOut = isAirValueOutOfThreshold('tempMin', reading.tempMin);
+        const tempMaxOut = isAirValueOutOfThreshold('tempMax', reading.tempMax);
+        const humidityMinOut = isAirValueOutOfThreshold('humidityMin', reading.humidityMin);
+        const humidityMaxOut = isAirValueOutOfThreshold('humidityMax', reading.humidityMax);
+        
+        // Calcola le differenze (Delta)
+        const tempDelta = (reading.tempMax - reading.tempMin).toFixed(1);
+        const humidityDelta = (reading.humidityMax - reading.humidityMin).toFixed(1);
+        
+        // Controlla se i delta superano la soglia massima
+        const tempDeltaOut = isAirDeltaOutOfThreshold('temp', parseFloat(tempDelta));
+        const humidityDeltaOut = isAirDeltaOutOfThreshold('humidity', parseFloat(humidityDelta));
+        
+        const tempMinStyle = tempMinOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        const tempMaxStyle = tempMaxOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        const humidityMinStyle = humidityMinOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        const humidityMaxStyle = humidityMaxOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        const tempDeltaStyle = tempDeltaOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        const humidityDeltaStyle = humidityDeltaOut ? 'background: #ffebee; border-color: #f44336; color: #d32f2f;' : '';
+        
         return `
             <tr>
-                <td class="mono">${fmtDateTimeLocal(reading.datetime)}</td>
-                <td>${reading.tempMin}°C</td>
-                <td>${reading.tempMax}°C</td>
-                <td>${reading.humidityMin}%</td>
-                <td>${reading.humidityMax}%</td>
+                <td class="mono">
+                    <input type="datetime-local" value="${reading.datetime}" onchange="updateAirField(${reading.id}, 'datetime', this.value)" class="table-input" />
+                </td>
                 <td>
-                    <button onclick="removeAirReading(${reading.id})" style="background: #f44336; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">🗑️</button>
+                    <input type="number" step="0.1" min="0" value="${reading.tempMin}" onchange="updateAirField(${reading.id}, 'tempMin', this.value)" class="table-input" style="${tempMinStyle}" />
+                    <span class="unit">°C</span>
+                </td>
+                <td>
+                    <input type="number" step="0.1" min="0" value="${reading.tempMax}" onchange="updateAirField(${reading.id}, 'tempMax', this.value)" class="table-input" style="${tempMaxStyle}" />
+                    <span class="unit">°C</span>
+                </td>
+                <td class="variation-column variation-neutral" style="${tempDeltaStyle}">
+                    <span class="unit">${tempDelta}°C</span>
+                </td>
+                <td>
+                    <input type="number" step="1" min="0" max="100" value="${reading.humidityMin}" onchange="updateAirField(${reading.id}, 'humidityMin', this.value)" class="table-input" style="${humidityMinStyle}" />
+                    <span class="unit">%</span>
+                </td>
+                <td>
+                    <input type="number" step="1" min="0" max="100" value="${reading.humidityMax}" onchange="updateAirField(${reading.id}, 'humidityMax', this.value)" class="table-input" style="${humidityMaxStyle}" />
+                    <span class="unit">%</span>
+                </td>
+                <td class="variation-column variation-neutral" style="${humidityDeltaStyle}">
+                    <span class="unit">${humidityDelta}%</span>
+                </td>
+                <td>
+                    <button onclick="removeAirReading(${reading.id})" class="del-air">🗑️ Elimina</button>
                 </td>
             </tr>
         `;
@@ -1661,5 +1862,233 @@ function isValueOutOfThreshold(param, value) {
     const numValue = Number(value);
     return numValue < threshold.min || numValue > threshold.max;
 }
+
+/* ==================== GESTIONE SOGLIE ARIA ==================== */
+function loadAirThresholds() {
+    const saved = localStorage.getItem('paludario.airThresholds');
+    if (saved) {
+        try {
+            airThresholds = { ...airThresholds, ...JSON.parse(saved) };
+        } catch (e) {
+            console.warn('Errore nel caricamento delle soglie aria:', e);
+        }
+    }
+}
+
+
+function openAirSettings() {
+    generateAirThresholdSettings();
+    airSettingsModal.style.display = 'block';
+}
+
+function closeAirSettings() {
+    airSettingsModal.style.display = 'none';
+}
+
+function generateAirThresholdSettings() {
+    if (!airThresholdSettings) return;
+    
+    const paramNames = {
+        tempMin: { name: 'Temperatura Minima', unit: '°C', icon: '🌡️' },
+        tempMax: { name: 'Temperatura Massima', unit: '°C', icon: '🌡️' },
+        tempDeltaMax: { name: 'Delta Max Temperatura', unit: '°C', icon: '📊' },
+        humidityMin: { name: 'Umidità Minima', unit: '%', icon: '💧' },
+        humidityMax: { name: 'Umidità Massima', unit: '%', icon: '💧' },
+        humidityDeltaMax: { name: 'Delta Max Umidità', unit: '%', icon: '📊' }
+    };
+    
+    airThresholdSettings.innerHTML = '';
+    
+    Object.keys(airThresholds).forEach(param => {
+        const config = paramNames[param];
+        const threshold = airThresholds[param];
+        
+        const item = document.createElement('div');
+        item.className = 'threshold-item';
+        item.style.cssText = 'background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px;';
+        
+        // Controlla se è un Delta Max (valore singolo) o un range (min/max)
+        const isDeltaMax = param.includes('DeltaMax');
+        
+        if (isDeltaMax) {
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 20px;">${config.icon}</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
+                        <span style="font-size: 12px; color: #666;">${config.unit}</span>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Valore Massimo</label>
+                    <input type="number" step="0.1" min="0" id="air-threshold-${param}" value="${threshold}" 
+                           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+            `;
+        } else {
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 20px;">${config.icon}</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px; color: #333;">${config.name}</h3>
+                        <span style="font-size: 12px; color: #666;">${config.unit}</span>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Minimo</label>
+                        <input type="number" step="0.1" id="air-threshold-${param}-min" value="${threshold.min}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; color: #666; margin-bottom: 4px;">Massimo</label>
+                        <input type="number" step="0.1" id="air-threshold-${param}-max" value="${threshold.max}" 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+            `;
+        }
+        
+        airThresholdSettings.appendChild(item);
+    });
+}
+
+function saveAirThresholds() {
+    Object.keys(airThresholds).forEach(param => {
+        const isDeltaMax = param.includes('DeltaMax');
+        
+        if (isDeltaMax) {
+            const input = document.getElementById(`air-threshold-${param}`);
+            if (input) {
+                airThresholds[param] = parseFloat(input.value) || 0;
+            }
+        } else {
+            const minInput = document.getElementById(`air-threshold-${param}-min`);
+            const maxInput = document.getElementById(`air-threshold-${param}-max`);
+            
+            if (minInput && maxInput) {
+                airThresholds[param].min = parseFloat(minInput.value) || 0;
+                airThresholds[param].max = parseFloat(maxInput.value) || 0;
+            }
+        }
+    });
+    
+    // Salva le soglie
+    localStorage.setItem('paludario.airThresholds', JSON.stringify(airThresholds));
+    if (dataManager && dataManager.updateSettings) {
+        dataManager.updateSettings({ airThresholds });
+    }
+    
+    closeAirSettings();
+    
+    // Aggiorna la tabella per mostrare le nuove soglie
+    renderAirTable();
+    
+    // Aggiorna il grafico aria
+    if (typeof drawAirChart === 'function') {
+        drawAirChart();
+    }
+    
+    // Forza l'aggiornamento della colorazione dei delta
+    setTimeout(() => {
+        updateAirThresholdStyling();
+    }, 200);
+    
+    // Chiamata aggiuntiva per assicurarsi che funzioni
+    setTimeout(() => {
+        updateAirThresholdStyling();
+    }, 1000);
+}
+
+function resetAirThresholds() {
+    airThresholds = {
+        tempMin: { min: 15.0, max: 25.0 },
+        tempMax: { min: 20.0, max: 30.0 },
+        tempDeltaMax: 5.0,
+        humidityMin: { min: 40.0, max: 60.0 },
+        humidityMax: { min: 50.0, max: 80.0 },
+        humidityDeltaMax: 20.0
+    };
+    
+    generateAirThresholdSettings();
+}
+
+function isAirValueOutOfThreshold(param, value) {
+    if (value === null || value === undefined || value === '') return false;
+    
+    const threshold = airThresholds[param];
+    if (!threshold) return false;
+    
+    const numValue = Number(value);
+    return numValue < threshold.min || numValue > threshold.max;
+}
+
+function isAirDeltaOutOfThreshold(param, deltaValue) {
+    if (deltaValue === null || deltaValue === undefined || deltaValue === '') return false;
+    
+    const deltaParam = param === 'temp' ? 'tempDeltaMax' : 'humidityDeltaMax';
+    const threshold = airThresholds[deltaParam];
+    if (!threshold) return false;
+    
+    const numValue = Number(deltaValue);
+    return numValue > threshold;
+}
+
+function updateAirThresholdStyling() {
+    // Aggiorna la colorazione delle celle delta nella tabella aria
+    const airTable = document.getElementById('air-table');
+    if (!airTable) return;
+    
+    const tbody = airTable.querySelector('tbody');
+    if (!tbody) return;
+    
+    const rows = tbody.querySelectorAll('tr');
+    
+    rows.forEach((row, index) => {
+        // Trova le celle delta (terza e sesta colonna) - solo le celle con classe variation-column
+        const tempDeltaCell = row.children[3]; // Delta temperatura
+        const humidityDeltaCell = row.children[6]; // Delta umidità
+        
+        // Verifica che siano effettivamente celle delta (hanno la classe variation-column)
+        if (tempDeltaCell && tempDeltaCell.classList.contains('variation-column')) {
+            // Estrai il valore delta dal testo della cella
+            const tempDeltaText = tempDeltaCell.textContent || tempDeltaCell.innerText;
+            const tempDeltaMatch = tempDeltaText.match(/(\d+\.?\d*)/);
+            if (tempDeltaMatch) {
+                const tempDeltaValue = parseFloat(tempDeltaMatch[1]);
+                const tempDeltaOut = isAirDeltaOutOfThreshold('temp', tempDeltaValue);
+                if (tempDeltaOut) {
+                    tempDeltaCell.style.setProperty('background', '#ffebee', 'important');
+                    tempDeltaCell.style.setProperty('border-color', '#f44336', 'important');
+                    tempDeltaCell.style.setProperty('color', '#d32f2f', 'important');
+                } else {
+                    tempDeltaCell.style.removeProperty('background');
+                    tempDeltaCell.style.removeProperty('border-color');
+                    tempDeltaCell.style.removeProperty('color');
+                }
+            }
+        }
+        
+        if (humidityDeltaCell && humidityDeltaCell.classList.contains('variation-column')) {
+            // Estrai il valore delta dal testo della cella
+            const humidityDeltaText = humidityDeltaCell.textContent || humidityDeltaCell.innerText;
+            const humidityDeltaMatch = humidityDeltaText.match(/(\d+\.?\d*)/);
+            if (humidityDeltaMatch) {
+                const humidityDeltaValue = parseFloat(humidityDeltaMatch[1]);
+                const humidityDeltaOut = isAirDeltaOutOfThreshold('humidity', humidityDeltaValue);
+                if (humidityDeltaOut) {
+                    humidityDeltaCell.style.setProperty('background', '#ffebee', 'important');
+                    humidityDeltaCell.style.setProperty('border-color', '#f44336', 'important');
+                    humidityDeltaCell.style.setProperty('color', '#d32f2f', 'important');
+                } else {
+                    humidityDeltaCell.style.removeProperty('background');
+                    humidityDeltaCell.style.removeProperty('border-color');
+                    humidityDeltaCell.style.removeProperty('color');
+                }
+            }
+        }
+    });
+}
+
 
 // L'inizializzazione è ora gestita da paludario-app.js

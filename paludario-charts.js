@@ -121,6 +121,35 @@ function line(ctx, pts, color, width = 2) {
     ctx.stroke();
 }
 
+function dashedLine(ctx, pts, color, width) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+    ctx.setLineDash([]); // Reset line dash
+}
+
+/* ==================== UTILITÀ GRAFICI ==================== */
+function drawHorizontalReferenceLines(ctx, x0, x1, points) {
+    if (points.length === 0) return;
+    
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]); // Linea tratteggiata
+    
+    points.forEach(point => {
+        ctx.beginPath();
+        ctx.moveTo(x0, point.y);
+        ctx.lineTo(x1, point.y);
+        ctx.stroke();
+    });
+    
+    ctx.setLineDash([]); // Reset line dash
+}
+
 /* ==================== GRAFICO VALORI ACQUA ==================== */
 function drawWaterChart() {
     if (!waterCanvas) return;
@@ -133,7 +162,7 @@ function drawWaterChart() {
         .sort((a, b) => new Date(a.ts) - new Date(b.ts))
         .map(w => ({ t: new Date(w.ts).getTime(), v: Number(w[param]) }));
 
-    const pad = { l: 54, r: 12, t: 12, b: 28 };
+    const pad = { l: 54, r: 50, t: 12, b: 28 };
     const x0 = pad.l, x1 = (waterCanvas.clientWidth || 600) - pad.r;
     const y0 = pad.t, y1 = (waterCanvas.clientHeight || 190) - pad.b;
 
@@ -255,6 +284,218 @@ function drawWaterChart() {
         ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
         ctx.fill(); 
     });
+    
+    // Disegna linee orizzontali di riferimento per facilitare la lettura
+    drawHorizontalReferenceLines(ctx, x0, x1, pts);
+}
+
+/* ==================== GRAFICO VALORI ARIA ==================== */
+function drawAirChart() {
+    if (!airCanvas) return;
+    
+    const ctx = setCanvasHiDPI(airCanvas);
+    ctx.clearRect(0, 0, airCanvas.width, airCanvas.height);
+    
+    const selectedParam = airParamSelect ? airParamSelect.value : 'temp';
+    
+    // Assicurati che airReadings sia definito
+    if (typeof airReadings === 'undefined' || !airReadings) {
+        airReadings = [];
+    }
+    
+    // Prepara i dati in base al parametro selezionato
+    let data = [];
+    if (selectedParam === 'temp') {
+        data = airReadings
+            .filter(r => r.tempMin !== null && r.tempMin !== undefined && r.tempMax !== null && r.tempMax !== undefined)
+            .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
+            .map(r => ({ 
+                t: new Date(r.datetime).getTime(), 
+                vMin: Number(r.tempMin), 
+                vMax: Number(r.tempMax),
+                vDelta: Number(r.tempMax) - Number(r.tempMin)
+            }));
+    } else {
+        data = airReadings
+            .filter(r => r.humidityMin !== null && r.humidityMin !== undefined && r.humidityMax !== null && r.humidityMax !== undefined)
+            .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
+            .map(r => ({ 
+                t: new Date(r.datetime).getTime(), 
+                vMin: Number(r.humidityMin), 
+                vMax: Number(r.humidityMax),
+                vDelta: Number(r.humidityMax) - Number(r.humidityMin)
+            }));
+    }
+
+    const pad = { l: 54, r: 50, t: 12, b: 28 };
+    const x0 = pad.l, x1 = (airCanvas.clientWidth || 600) - pad.r;
+    const y0 = pad.t, y1 = (airCanvas.clientHeight || 400) - pad.b;
+
+    drawAxes(ctx, x0, y0, x1, y1);
+    if (data.length === 0) {
+        ctx.fillStyle = '#888';
+        ctx.fillText('Nessun dato', x0 + 8, (y0 + y1) / 2);
+        return;
+    }
+
+    const minX = data[0].t;
+    let maxX = data[data.length - 1].t;
+    
+    // Se c'è un solo dato, crea un range temporale di 24 ore
+    if (data.length === 1) {
+        maxX = minX + 24 * 60 * 60 * 1000;
+    }
+
+    // Range per i parametri aria
+    const parameterRanges = {
+        'temp': { min: 0, max: 50, step: 2 },
+        'humidity': { min: 0, max: 100, step: 10 }
+    };
+    
+    const range = parameterRanges[selectedParam] || { min: 0, max: 10, step: 1 };
+    let minY = range.min;
+    let maxY = range.max;
+    
+    // Adatta il range per mostrare meglio i valori effettivi
+    if (data.length > 0) {
+        const allValues = data.flatMap(d => [d.vMin, d.vMax, d.vDelta]);
+        const dataMin = Math.min(...allValues);
+        const dataMax = Math.max(...allValues);
+        
+        if (dataMin === dataMax) {
+            const center = dataMin;
+            const padding = Math.max(range.step, Math.abs(center) * 0.1);
+            minY = Math.max(range.min, center - padding);
+            maxY = Math.min(range.max, center + padding);
+        } else {
+            const dataRange = dataMax - dataMin;
+            const padding = Math.max(range.step * 0.5, dataRange * 0.1);
+            minY = Math.max(range.min, dataMin - padding);
+            maxY = Math.min(range.max, dataMax + padding);
+        }
+    }
+
+    const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
+    const yScale = v => y1 - (v - minY) / (maxY - minY) * (y1 - y0);
+
+    // Genera tick Y
+    const yTicks = [];
+    const tickStep = range.step;
+    const startTick = Math.floor(minY / tickStep) * tickStep;
+    const endTick = Math.ceil(maxY / tickStep) * tickStep;
+    
+    for (let tick = startTick; tick <= endTick; tick += tickStep) {
+        if (tick >= minY && tick <= maxY) {
+            yTicks.push(tick);
+        }
+    }
+    
+    if (yTicks.length < 3) {
+        const steps = Math.max(3, Math.ceil((maxY - minY) / tickStep));
+        for (let i = 0; i <= steps; i++) {
+            const tick = minY + (maxY - minY) * i / steps;
+            if (!yTicks.includes(tick)) {
+                yTicks.push(tick);
+            }
+        }
+    }
+    
+    yTicks.sort((a, b) => a - b);
+    drawTicksY(ctx, x0, y0, y1, yScale, yTicks);
+
+    // Genera tick X (date)
+    const labels = [];
+    let lastX = -Infinity;
+    const minGapPx = 54;
+    for (const d of data) {
+        const x = xScale(d.t);
+        if (x - lastX >= minGapPx) {
+            const dt = new Date(d.t);
+            const label = dt.toLocaleDateString('it-IT', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: '2-digit' 
+            });
+            labels.push({ v: d.t, label });
+            lastX = x;
+        }
+    }
+    drawTicksX(ctx, x0, y1, xScale, labels);
+
+    // Colori per i diversi parametri
+    const colors = selectedParam === 'temp' ? {
+        min: '#ff8e53', // Arancione per temp min
+        max: '#ff6b6b', // Rosso per temp max
+        delta: '#8b4513' // Marrone per delta temp
+    } : {
+        min: '#74b9ff', // Blu chiaro per umidità min
+        max: '#0984e3', // Blu scuro per umidità max
+        delta: '#6c5ce7' // Viola per delta umidità
+    };
+
+    // Disegna le tre linee
+    const ptsMin = data.map(d => ({ x: xScale(d.t), y: yScale(d.vMin) }));
+    const ptsMax = data.map(d => ({ x: xScale(d.t), y: yScale(d.vMax) }));
+    const ptsDelta = data.map(d => ({ x: xScale(d.t), y: yScale(d.vDelta) }));
+    
+    // Disegna le linee solo se ci sono almeno 2 punti
+    if (ptsMin.length > 1) {
+        line(ctx, ptsMin, colors.min, 2);
+    }
+    if (ptsMax.length > 1) {
+        line(ctx, ptsMax, colors.max, 2);
+    }
+    if (ptsDelta.length > 1) {
+        dashedLine(ctx, ptsDelta, colors.delta, 2);
+    }
+    
+    // Disegna i pallini per tutti i punti
+    ptsMin.forEach(p => { 
+        ctx.fillStyle = colors.min;
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
+        ctx.fill(); 
+    });
+    
+    ptsMax.forEach(p => { 
+        ctx.fillStyle = colors.max;
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
+        ctx.fill(); 
+    });
+    
+    ptsDelta.forEach(p => { 
+        ctx.fillStyle = colors.delta;
+        ctx.beginPath(); 
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2); 
+        ctx.fill(); 
+    });
+    
+    // Disegna linee orizzontali di riferimento per facilitare la lettura
+    const allPoints = [...ptsMin, ...ptsMax, ...ptsDelta];
+    drawHorizontalReferenceLines(ctx, x0, x1, allPoints);
+    
+    // Genera la legenda
+    const airLegend = document.getElementById('airLegend');
+    if (airLegend) {
+        const legendItems = selectedParam === 'temp' ? [
+            { color: colors.min, label: 'Temp. Min (°C)' },
+            { color: colors.max, label: 'Temp. Max (°C)' },
+            { color: colors.delta, label: 'ΔTemp (°C)', dashed: true }
+        ] : [
+            { color: colors.min, label: 'Umidità Min (%)' },
+            { color: colors.max, label: 'Umidità Max (%)' },
+            { color: colors.delta, label: 'ΔUmidità (%)', dashed: true }
+        ];
+        
+        airLegend.innerHTML = legendItems.map(item => {
+            const lineStyle = item.dashed ? 'border-top: 2px dashed' : 'border-top: 2px solid';
+            return `<span style="display: inline-flex; align-items: center; margin-right: 16px; font-size: 12px; color: #666;">
+                <span style="width: 20px; height: 0; ${lineStyle} ${item.color}; margin-right: 6px;"></span>
+                ${item.label}
+            </span>`;
+        }).join('');
+    }
 }
 
 /* ==================== CALCOLO ALBA E TRAMONTO ==================== */

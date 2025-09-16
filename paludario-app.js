@@ -453,6 +453,12 @@ class DataManager {
             if (typeof renderAirTable === 'function') {
                 renderAirTable();
             }
+            // Aggiorna la colorazione dei delta dopo aver caricato i dati
+            setTimeout(() => {
+                if (typeof updateAirThresholdStyling === 'function') {
+                    updateAirThresholdStyling();
+                }
+            }, 100);
         }
 
         // Aggiorna UI
@@ -460,6 +466,7 @@ class DataManager {
         if (typeof renderDayTables === 'function') renderDayTables();
         if (typeof drawWaterChart === 'function') drawWaterChart();
         if (typeof drawDayChart === 'function') drawDayChart();
+        if (typeof drawAirChart === 'function') drawAirChart();
     }
 
     // Metodi per aggiornare i dati
@@ -635,6 +642,7 @@ class DataManager {
                 if (typeof renderDayTables === 'function') renderDayTables();
                 if (typeof drawWaterChart === 'function') drawWaterChart();
                 if (typeof drawDayChart === 'function') drawDayChart();
+                if (typeof drawAirChart === 'function') drawAirChart();
                 
                 setTimeout(() => {
                     this.updateStatus('✅ Sincronizzazione completata', 'success');

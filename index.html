@@ -797,6 +797,28 @@
 		background: rgba(25, 35, 25, 1);
 		border-color: rgba(0, 105, 92, 0.5);
 	}
+	
+	/* Container del grafico aria in dark mode */
+	.air-chart-controls {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 16px;
+		border-radius: 12px;
+		border: 1px solid rgba(0, 150, 136, 0.2);
+		margin-bottom: 16px;
+		transition: all 0.3s ease;
+	}
+	
+	.dark-mode .air-chart-controls {
+		background: rgba(20, 30, 30, 0.8);
+		border-color: rgba(0, 150, 136, 0.3);
+		box-shadow: var(--shadow-dark);
+	}
+	
+	.dark-mode .air-chart-controls:hover {
+		background: rgba(25, 35, 35, 1);
+		border-color: rgba(0, 150, 136, 0.5);
+	}
+	
 	.dark-mode button {
 		background: #444 !important;
 		color: #ffffff !important;
@@ -1034,6 +1056,62 @@
 	}
 
 	body.dark-mode .remove-animal-btn:hover {
+		background: #555 !important;
+		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+		transform: translateY(-2px) !important;
+	}
+
+	/* Pulsante elimina aria */
+	.del-air {
+		background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-teal) 100%);
+		color: white;
+		border: none;
+		padding: 6px 12px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+		position: relative;
+		overflow: hidden;
+		min-height: 32px;
+	}
+
+	.del-air::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: -100%;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+		transition: left 0.5s;
+	}
+
+	.del-air:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
+	}
+
+	.del-air:hover::before {
+		left: 100%;
+	}
+
+	.del-air:active {
+		transform: translateY(0);
+		box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
+	}
+
+	/* Pulsante elimina aria per dark mode */
+	body.dark-mode .del-air {
+		background: #444 !important;
+		color: #ffffff !important;
+		box-shadow: var(--shadow-dark) !important;
+		border: 1px solid #666 !important;
+	}
+
+	body.dark-mode .del-air:hover {
 		background: #555 !important;
 		box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
 		transform: translateY(-2px) !important;
@@ -2043,6 +2121,27 @@
 		background: #444 !important;
 		border-color: #666 !important;
 	}
+	
+	/* Stili per il modal delle soglie aria */
+	.dark-mode #air-settings-modal > div {
+		background: #333 !important;
+		color: #ffffff !important;
+	}
+	.dark-mode #air-settings-modal h2 {
+		color: #ffffff !important;
+	}
+	.dark-mode #air-settings-modal p {
+		color: #cccccc !important;
+	}
+	.dark-mode #air-settings-modal input {
+		background: #444 !important;
+		color: #ffffff !important;
+		border-color: #666 !important;
+	}
+	.dark-mode #air-settings-modal .threshold-item {
+		background: #444 !important;
+		border-color: #666 !important;
+	}
 	.dark-mode #last-sync {
 		color: #cccccc !important;
 	}
@@ -2122,8 +2221,8 @@
 	}
 	
 	.locked-mode input,
-	.locked-mode select:not(#param-select),
-	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#refresh-water-chart):not(#toggle-backgrounds):not(#toggle-fill),
+	.locked-mode select:not(#param-select):not(#air-param-select),
+	.locked-mode button:not(#lock-toggle):not(#sync-data):not(#debug-sync):not(#mobile-toggle):not(#dark-mode-toggle):not(#refresh-day-chart):not(#refresh-water-chart):not(#refresh-air-chart):not(#toggle-backgrounds):not(#toggle-fill),
 	.locked-mode [contenteditable="true"] {
 		pointer-events: none !important;
 		cursor: not-allowed !important;
@@ -2199,9 +2298,11 @@
 	.locked-mode #dark-mode-toggle,
 	.locked-mode #refresh-day-chart,
 	.locked-mode #refresh-water-chart,
+	.locked-mode #refresh-air-chart,
 	.locked-mode #toggle-backgrounds,
 	.locked-mode #toggle-fill,
 	.locked-mode #param-select,
+	.locked-mode #air-param-select,
 	.locked-mode #dayLegend span {
 		pointer-events: auto !important;
 		opacity: 1 !important;
@@ -2605,6 +2706,29 @@ h2 .animated-icon {
 	animation: pulse 2s ease-in-out infinite;
 }
 
+@keyframes air {
+	0%, 100% { 
+		transform: scale(1) rotate(0deg);
+		opacity: 1;
+	}
+	25% { 
+		transform: scale(1.05) rotate(2deg);
+		opacity: 0.9;
+	}
+	50% { 
+		transform: scale(1.1) rotate(0deg);
+		opacity: 0.8;
+	}
+	75% { 
+		transform: scale(1.05) rotate(-2deg);
+		opacity: 0.9;
+	}
+}
+
+.animated-icon.air {
+	animation: air 3s ease-in-out infinite;
+}
+
 /* Stili per header decorativo in dark mode */
 .dark-mode .header-decorative {
 	background: linear-gradient(135deg, rgba(0,105,92,0.1) 0%, rgba(46,125,50,0.1) 100%) !important;
@@ -2619,7 +2743,7 @@ h2 .animated-icon {
 <h2 style="margin: 0 0 16px 0;"><span class="animated-icon bounce">🐾</span> Gestione Animali</h2>
 
 <fieldset>
-	<legend class="toggle-btn" data-target="animal-form">🐾 Nuovo Animale</legend>
+	<legend class="toggle-btn" data-target="animal-form">➕ Nuovo Animale</legend>
 	<div class="row toggle-section" id="animal-form">
 		<div class="field">
 			<label for="animal-species">🐟 Specie/Razza</label>
@@ -2754,6 +2878,30 @@ h2 .animated-icon {
 	</div>
 </div>
 
+<!-- Modal per impostazioni soglie aria -->
+<div id="air-settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto;">
+	<div style="background: white; margin: 20px auto; max-width: 600px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+		<div style="padding: 20px; border-bottom: 1px solid #eee;">
+			<div style="display: flex; justify-content: space-between; align-items: center;">
+				<h2 style="margin: 0; color: #333;">⚙️ Soglie Parametri Aria</h2>
+				<button id="close-air-settings-modal" style="background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px;">✕</button>
+			</div>
+			<p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">Imposta i valori minimi e massimi per ogni parametro. Le caselle si coloreranno di rosso se i valori sono fuori soglia.</p>
+		</div>
+		
+		<div style="padding: 20px;">
+			<div id="air-threshold-settings">
+				<!-- Le impostazioni verranno generate dinamicamente -->
+			</div>
+			
+			<div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid #eee;">
+				<button id="reset-air-thresholds" style="background: #757575; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">🔄 Reset</button>
+				<button id="save-air-thresholds" style="background: #4caf50; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">💾 Salva</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="table-container">
 <table id="water-table">
 	<thead>
@@ -2774,7 +2922,81 @@ h2 .animated-icon {
 </table>
 </div>
 
-<h2><span class="animated-icon clock">⏰</span> Profilo tipico giornaliero (0–24)</h2>
+<div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; margin-top: 32px; flex-wrap: nowrap;">
+	<h2 style="margin: 0; white-space: nowrap;"><span class="animated-icon air">🌡️</span> Valori Aria</h2>
+	<button id="air-settings-btn" style="background: #ff9800; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; min-height: 36px;">⚙️ Soglie</button>
+</div>
+
+<fieldset>
+	<legend class="toggle-btn" data-target="air-form">➕ Nuovo Valore</legend>
+	<div class="toggle-section" id="air-form">
+		<div class="row">
+			<div class="field">
+				<label for="air-datetime">📅 Data/Ora</label>
+				<input id="air-datetime" type="datetime-local" />
+				<button class="tiny ok-btn" data-for="air-datetime">OK</button>
+				<button class="tiny clear-btn" data-for="air-datetime">Pulisci</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="field">
+				<label for="air-temp-min">🌡️ Temp. Min</label>
+				<input id="air-temp-min" type="number" step="0.1" min="-50" max="60" />
+				<span class="unit">°C</span>
+			</div>
+			<div class="field">
+				<label for="air-temp-max">🌡️ Temp. Max</label>
+				<input id="air-temp-max" type="number" step="0.1" min="-50" max="60" />
+				<span class="unit">°C</span>
+			</div>
+			<div class="field">
+				<label for="air-humidity-min">💧 Umidità Min</label>
+				<input id="air-humidity-min" type="number" step="1" min="0" max="100" />
+				<span class="unit">%</span>
+			</div>
+			<div class="field">
+				<label for="air-humidity-max">💧 Umidità Max</label>
+				<input id="air-humidity-max" type="number" step="1" min="0" max="100" />
+				<span class="unit">%</span>
+			</div>
+			<button id="add-air">➕ Aggiungi</button>
+			<button id="clear-air">🧹 Pulisci</button>
+		</div>
+	</div>
+</fieldset>
+
+<div class="row air-chart-controls">
+	<div class="field">
+		<label for="air-param-select">📈 Parametro per grafico</label>
+		<select id="air-param-select">
+			<option value="temp">🌡️ Temperatura</option>
+			<option value="humidity">💧 Umidità</option>
+		</select>
+	</div>
+	<button id="refresh-air-chart">🔄 Aggiorna grafico</button>
+</div>
+<canvas id="airChart" style="height: 400px;"></canvas>
+<div class="legend" id="airLegend"></div>
+
+<div class="table-container">
+<table id="air-table">
+	<thead>
+		<tr>
+			<th>📅 Data/Ora</th>
+			<th>🌡️ Temp. Min °C</th>
+			<th>🌡️ Temp. Max °C</th>
+			<th>📊 ΔTemp °C</th>
+			<th>💧 Umidità Min %</th>
+			<th>💧 Umidità Max %</th>
+			<th>📊 ΔUmidità %</th>
+			<th>⚙️ Azioni</th>
+		</tr>
+	</thead>
+	<tbody></tbody>
+</table>
+</div>
+
+<h2><span class="animated-icon clock">⏰</span> Profilo giornaliero (0–24)</h2>
 
 <div class="grid grid-2">
 <fieldset>
@@ -2822,59 +3044,6 @@ h2 .animated-icon {
 	</fieldset>
 </div>
 
-<fieldset>
-	<legend class="toggle-btn" data-target="air-form">🌡️ Valori Aria</legend>
-	<div class="toggle-section" id="air-form">
-		<div class="row">
-			<div class="field">
-				<label for="air-datetime">📅 Data/Ora</label>
-				<input id="air-datetime" type="datetime-local" />
-				<button class="tiny ok-btn" data-for="air-datetime">OK</button>
-				<button class="tiny clear-btn" data-for="air-datetime">Pulisci</button>
-			</div>
-		</div>
-		<div class="row">
-			<div class="field">
-				<label for="air-temp-min">🌡️ Temp. Min</label>
-				<input id="air-temp-min" type="number" step="0.1" min="-50" max="60" />
-				<span class="unit">°C</span>
-			</div>
-			<div class="field">
-				<label for="air-temp-max">🌡️ Temp. Max</label>
-				<input id="air-temp-max" type="number" step="0.1" min="-50" max="60" />
-				<span class="unit">°C</span>
-			</div>
-			<div class="field">
-				<label for="air-humidity-min">💧 Umidità Min</label>
-				<input id="air-humidity-min" type="number" step="1" min="0" max="100" />
-				<span class="unit">%</span>
-			</div>
-			<div class="field">
-				<label for="air-humidity-max">💧 Umidità Max</label>
-				<input id="air-humidity-max" type="number" step="1" min="0" max="100" />
-				<span class="unit">%</span>
-			</div>
-			<button id="add-air">➕ Aggiungi</button>
-			<button id="clear-air">🧹 Pulisci</button>
-		</div>
-	</div>
-</fieldset>
-
-<div class="table-container">
-<table id="air-table">
-	<thead>
-		<tr>
-			<th>📅 Data/Ora</th>
-			<th>🌡️ Temp. Min °C</th>
-			<th>🌡️ Temp. Max °C</th>
-			<th>💧 Umidità Min %</th>
-			<th>💧 Umidità Max %</th>
-			<th>⚙️ Azioni</th>
-		</tr>
-	</thead>
-	<tbody></tbody>
-</table>
-</div>
 
 <fieldset>
 	<legend class="toggle-btn" data-target="lights-form"><span class="animated-icon lights">💡</span> Luci RGBW + Plafoniera (0–100%)</legend>
