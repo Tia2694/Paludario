@@ -1375,8 +1375,7 @@ function loadAllChannelData() {
 function renderDayTables() {
     renderSprayTable();
     renderFanTable();
-    // Non chiamare loadAllChannelData() qui per evitare conflitti
-    // I dati delle luci RGB vengono gestiti direttamente da saveChannelData()
+    loadAllChannelData();
 }
 
 function renderSprayTable() {

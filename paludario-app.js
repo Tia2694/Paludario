@@ -307,7 +307,7 @@ class DataManager {
 
     loadFromLocalStorage() {
         this.data.water = JSON.parse(localStorage.getItem('paludario.waterReadings') || '[]');
-        this.data.dayTemplate = JSON.parse(localStorage.getItem('paludario.dayPlanTemplate') || '{"spray":[],"fan":[],"lights":[]}');
+        this.data.dayTemplate = JSON.parse(localStorage.getItem('paludario.dayPlanTemplate') || '{"spray":[],"fan":[],"lights":[],"ch1":[],"ch2":[],"ch3":[],"ch4":[],"ch5":[]}');
         
         const savedThresholds = localStorage.getItem('paludario.waterThresholds');
         const defaultThresholds = {
