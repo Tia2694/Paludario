@@ -133,17 +133,37 @@ function dashedLine(ctx, pts, color, width) {
 }
 
 /* ==================== UTILITÀ GRAFICI ==================== */
-function drawHorizontalReferenceLines(ctx, x0, x1, points) {
+function drawHorizontalReferenceLines(ctx, x0, x1, points, yScale, minY, maxY, y0, y1) {
     if (points.length === 0) return;
     
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 2]); // Linea tratteggiata
+    // Estrai i valori Y effettivi dai punti dati
+    const yValues = points.map(p => p.y);
     
-    points.forEach(point => {
+    // Converti le coordinate Y in valori effettivi usando la scala inversa
+    const actualValues = yValues.map(y => {
+        // Inverti la formula yScale: y = y1 - (value - minY) / (maxY - minY) * (y1 - y0)
+        // Quindi: value = minY + (y1 - y) / (y1 - y0) * (maxY - minY)
+        return minY + (y1 - y) / (y1 - y0) * (maxY - minY);
+    });
+    
+    // Filtra solo valori che sono interi o 0.5
+    const filteredValues = actualValues.filter(value => {
+        const rounded = Math.round(value * 2) / 2; // Arrotonda al più vicino 0.5
+        return Math.abs(value - rounded) < 0.01; // Tolleranza per errori di floating point
+    });
+    
+    // Rimuovi duplicati e ordina
+    const uniqueValues = [...new Set(filteredValues)].sort((a, b) => a - b);
+    
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([3, 3]); // Linea tratteggiata più sottile
+    
+    uniqueValues.forEach(value => {
+        const y = yScale(value);
         ctx.beginPath();
-        ctx.moveTo(x0, point.y);
-        ctx.lineTo(x1, point.y);
+        ctx.moveTo(x0, y);
+        ctx.lineTo(x1, y);
         ctx.stroke();
     });
     
@@ -172,6 +192,22 @@ function drawWaterChart() {
         ctx.fillText('Nessun dato', x0 + 8, (y0 + y1) / 2);
         return;
     }
+
+    // Larghezza fissa per ogni punto dati (in pixel)
+    const fixedPointWidth = 120; // Larghezza fissa tra i punti (aumentata per leggibilità date)
+    const totalDataWidth = data.length * fixedPointWidth;
+    const visibleWidth = x1 - x0;
+    
+    // Calcola l'offset di scorrimento
+    const maxScrollOffset = Math.max(0, totalDataWidth - visibleWidth);
+    const scrollPercent = window.waterChartScrollOffset || 0;
+    
+    // Calcola l'offset basato sulla percentuale
+    // 0% = primi dati (offset = 0), 100% = ultimi dati (offset = maxScrollOffset)
+    const adjustedScrollOffset = (scrollPercent / 100) * maxScrollOffset;
+    
+    // Aggiorna l'offset globale per il prossimo render
+    window.waterChartScrollOffset = adjustedScrollOffset;
 
     const minX = data[0].t;
     let maxX = data[data.length - 1].t;
@@ -220,9 +256,13 @@ function drawWaterChart() {
         }
     }
 
-    const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
+    // Scala X con larghezza fissa per ogni punto
+    const xScale = (v, index) => {
+        const baseX = x0 + (index * fixedPointWidth) - adjustedScrollOffset;
+        return baseX;
+    };
     const yScale = v => y1 - (v - minY) / (maxY - minY) * (y1 - y0);
-
+    
     // Genera tick usando lo step specifico del parametro
     const yTicks = [];
     const tickStep = range.step;
@@ -251,11 +291,13 @@ function drawWaterChart() {
     yTicks.sort((a, b) => a - b);
     drawTicksY(ctx, x0, y0, y1, yScale, yTicks);
 
+    // Genera le etichette X PRIMA del clipping
     const labels = [];
     let lastX = -Infinity;
     const minGapPx = 54;
-    for (const d of data) {
-        const x = xScale(d.t);
+    for (let i = 0; i < data.length; i++) {
+        const d = data[i];
+        const x = xScale(d.t, i);
         if (x - lastX >= minGapPx) {
             const dt = new Date(d.t);
             // Mostra sempre la data invece dell'ora
@@ -264,13 +306,30 @@ function drawWaterChart() {
                 month: '2-digit', 
                 year: '2-digit' 
             });
-            labels.push({ v: d.t, label });
+            labels.push({ v: d.t, label, x: x });
             lastX = x;
         }
     }
-    drawTicksX(ctx, x0, y1, xScale, labels);
+    
+    // Disegna le etichette X PRIMA del clipping
+    ctx.fillStyle = COLORS.Axis;
+    ctx.font = '12px system-ui';
+    for (const { v, label, x } of labels) {
+        ctx.strokeStyle = '#eee';
+        ctx.beginPath();
+        ctx.moveTo(x, y1);
+        ctx.lineTo(x, y1 - 4);
+        ctx.stroke();
+        ctx.fillText(label, x - 12, y1 + 14);
+    }
+    
+    // Applica clipping per mostrare solo la parte visibile
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x0, y0, x1 - x0, y1 - y0);
+    ctx.clip();
 
-    const pts = data.map(d => ({ x: xScale(d.t), y: yScale(d.v) }));
+    const pts = data.map((d, i) => ({ x: xScale(d.t, i), y: yScale(d.v) }));
     
     // Disegna la linea solo se ci sono almeno 2 punti
     if (pts.length > 1) {
@@ -286,7 +345,10 @@ function drawWaterChart() {
     });
     
     // Disegna linee orizzontali di riferimento per facilitare la lettura
-    drawHorizontalReferenceLines(ctx, x0, x1, pts);
+    drawHorizontalReferenceLines(ctx, x0, x1, pts, yScale, minY, maxY, y0, y1);
+    
+    // Ripristina il clipping
+    ctx.restore();
 }
 
 /* ==================== GRAFICO VALORI ARIA ==================== */
@@ -338,6 +400,22 @@ function drawAirChart() {
         return;
     }
 
+    // Larghezza fissa per ogni punto dati (in pixel)
+    const fixedPointWidth = 120; // Larghezza fissa tra i punti (aumentata per leggibilità date)
+    const totalDataWidth = data.length * fixedPointWidth;
+    const visibleWidth = x1 - x0;
+    
+    // Calcola l'offset di scorrimento
+    const maxScrollOffset = Math.max(0, totalDataWidth - visibleWidth);
+    const scrollPercent = window.airChartScrollOffset || 0;
+    
+    // Calcola l'offset basato sulla percentuale
+    // 0% = primi dati (offset = 0), 100% = ultimi dati (offset = maxScrollOffset)
+    const adjustedScrollOffset = (scrollPercent / 100) * maxScrollOffset;
+    
+    // Aggiorna l'offset globale per il prossimo render
+    window.airChartScrollOffset = adjustedScrollOffset;
+
     const minX = data[0].t;
     let maxX = data[data.length - 1].t;
     
@@ -375,9 +453,13 @@ function drawAirChart() {
         }
     }
 
-    const xScale = v => x0 + (v - minX) / (maxX - minX) * (x1 - x0);
+    // Scala X con larghezza fissa per ogni punto
+    const xScale = (v, index) => {
+        const baseX = x0 + (index * fixedPointWidth) - adjustedScrollOffset;
+        return baseX;
+    };
     const yScale = v => y1 - (v - minY) / (maxY - minY) * (y1 - y0);
-
+    
     // Genera tick Y
     const yTicks = [];
     const tickStep = range.step;
@@ -403,12 +485,13 @@ function drawAirChart() {
     yTicks.sort((a, b) => a - b);
     drawTicksY(ctx, x0, y0, y1, yScale, yTicks);
 
-    // Genera tick X (date)
+    // Genera tick X (date) PRIMA del clipping
     const labels = [];
     let lastX = -Infinity;
     const minGapPx = 54;
-    for (const d of data) {
-        const x = xScale(d.t);
+    for (let i = 0; i < data.length; i++) {
+        const d = data[i];
+        const x = xScale(d.t, i);
         if (x - lastX >= minGapPx) {
             const dt = new Date(d.t);
             const label = dt.toLocaleDateString('it-IT', { 
@@ -416,11 +499,28 @@ function drawAirChart() {
                 month: '2-digit', 
                 year: '2-digit' 
             });
-            labels.push({ v: d.t, label });
+            labels.push({ v: d.t, label, x: x });
             lastX = x;
         }
     }
-    drawTicksX(ctx, x0, y1, xScale, labels);
+    
+    // Disegna le etichette X PRIMA del clipping
+    ctx.fillStyle = COLORS.Axis;
+    ctx.font = '12px system-ui';
+    for (const { v, label, x } of labels) {
+        ctx.strokeStyle = '#eee';
+        ctx.beginPath();
+        ctx.moveTo(x, y1);
+        ctx.lineTo(x, y1 - 4);
+        ctx.stroke();
+        ctx.fillText(label, x - 12, y1 + 14);
+    }
+    
+    // Applica clipping per mostrare solo la parte visibile
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x0, y0, x1 - x0, y1 - y0);
+    ctx.clip();
 
     // Colori per i diversi parametri
     const colors = selectedParam === 'temp' ? {
@@ -433,10 +533,10 @@ function drawAirChart() {
         delta: '#6c5ce7' // Viola per delta umidità
     };
 
-    // Disegna le tre linee
-    const ptsMin = data.map(d => ({ x: xScale(d.t), y: yScale(d.vMin) }));
-    const ptsMax = data.map(d => ({ x: xScale(d.t), y: yScale(d.vMax) }));
-    const ptsDelta = data.map(d => ({ x: xScale(d.t), y: yScale(d.vDelta) }));
+    // Disegna le tre linee con la nuova scala
+    const ptsMin = data.map((d, i) => ({ x: xScale(d.t, i), y: yScale(d.vMin) }));
+    const ptsMax = data.map((d, i) => ({ x: xScale(d.t, i), y: yScale(d.vMax) }));
+    const ptsDelta = data.map((d, i) => ({ x: xScale(d.t, i), y: yScale(d.vDelta) }));
     
     // Disegna le linee solo se ci sono almeno 2 punti
     if (ptsMin.length > 1) {
@@ -473,7 +573,10 @@ function drawAirChart() {
     
     // Disegna linee orizzontali di riferimento per facilitare la lettura
     const allPoints = [...ptsMin, ...ptsMax, ...ptsDelta];
-    drawHorizontalReferenceLines(ctx, x0, x1, allPoints);
+    drawHorizontalReferenceLines(ctx, x0, x1, allPoints, yScale, minY, maxY, y0, y1);
+    
+    // Ripristina il clipping
+    ctx.restore();
     
     // Genera la legenda
     const airLegend = document.getElementById('airLegend');

@@ -704,6 +704,45 @@
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 	
+	/* Stili per i contenitori dei grafici con scorrimento */
+	.chart-container {
+		position: relative;
+		width: 100%;
+		margin-bottom: 20px;
+	}
+	
+	.chart-scrollbar {
+		margin-top: 10px;
+		text-align: center;
+	}
+	
+	.chart-scroll-input {
+		width: 100%;
+		height: 20px;
+		background: #f0f0f0;
+		outline: none;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+	
+	.chart-scroll-input::-webkit-slider-thumb {
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		background: #1976d2;
+		border-radius: 50%;
+		cursor: pointer;
+	}
+	
+	.chart-scroll-input::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		background: #1976d2;
+		border-radius: 50%;
+		cursor: pointer;
+		border: none;
+	}
+	
 	.tiny { 
 		font-size: 12px; 
 		padding: 6px 10px; 
@@ -2914,7 +2953,12 @@ h2 .animated-icon {
 		</select>
 	</div>
 </div>
-<canvas id="waterChart"></canvas>
+<div class="chart-container">
+    <canvas id="waterChart"></canvas>
+    <div class="chart-scrollbar">
+        <input type="range" id="waterChartScroll" min="0" max="100" value="100" class="chart-scroll-input">
+    </div>
+</div>
 
 <!-- Modal per impostazioni soglie acqua -->
 <div id="water-settings-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; overflow-y: auto;">
@@ -3036,7 +3080,12 @@ h2 .animated-icon {
 		</select>
 	</div>
 </div>
-<canvas id="airChart" style="height: 400px;"></canvas>
+<div class="chart-container">
+    <canvas id="airChart" style="height: 400px;"></canvas>
+    <div class="chart-scrollbar">
+        <input type="range" id="airChartScroll" min="0" max="100" value="100" class="chart-scroll-input">
+    </div>
+</div>
 <div class="legend" id="airLegend"></div>
 
 <div class="table-container">
@@ -3494,6 +3543,45 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('paludario.lockedMode', isLocked.toString());
         });
     }
+    
+    // Funzionalità per le barre di scorrimento dei grafici
+    function setupChartScrollbars() {
+        const waterScroll = document.getElementById('waterChartScroll');
+        const airScroll = document.getElementById('airChartScroll');
+        
+        // Inizializza i valori delle barre di scorrimento (0% = primi dati)
+        if (waterScroll) {
+            waterScroll.value = 0;
+            window.waterChartScrollOffset = 0;
+        }
+        if (airScroll) {
+            airScroll.value = 0;
+            window.airChartScrollOffset = 0;
+        }
+        
+        if (waterScroll) {
+            waterScroll.addEventListener('input', function() {
+                const scrollPercent = parseInt(this.value);
+                window.waterChartScrollOffset = scrollPercent;
+                if (typeof drawWaterChart === 'function') {
+                    drawWaterChart();
+                }
+            });
+        }
+        
+        if (airScroll) {
+            airScroll.addEventListener('input', function() {
+                const scrollPercent = parseInt(this.value);
+                window.airChartScrollOffset = scrollPercent;
+                if (typeof drawAirChart === 'function') {
+                    drawAirChart();
+                }
+            });
+        }
+    }
+    
+    // Inizializza le barre di scorrimento
+    setupChartScrollbars();
 });
 </script>
 </body>
