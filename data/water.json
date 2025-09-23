@@ -17,7 +17,7 @@
     "ph": 6.5,
     "kh": 2,
     "gh": 9,
-    "no2": null,
+    "no2": 0.01,
     "no3": null,
     "nh4": null,
     "temp": 25.9,
