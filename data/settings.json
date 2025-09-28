@@ -50,6 +50,16 @@
       "females": 0,
       "purchaseDate": "2025-09-27",
       "status": "vivo"
+    },
+    {
+      "id": 1759049852930,
+      "species": "Planorbarius",
+      "type": "mollusco",
+      "count": 5,
+      "males": 0,
+      "females": 0,
+      "purchaseDate": "2025-09-27",
+      "status": "vivo"
     }
   ],
   "airReadings": [
