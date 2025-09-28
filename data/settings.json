@@ -40,7 +40,18 @@
       "max": 500.1
     }
   },
-  "animals": [],
+  "animals": [
+    {
+      "id": 1759049833341,
+      "species": "Neocaridina Davidii",
+      "type": "crostaceo",
+      "count": 10,
+      "males": 0,
+      "females": 0,
+      "purchaseDate": "2025-09-27",
+      "status": "vivo"
+    }
+  ],
   "airReadings": [
     {
       "id": 1758028515957,
