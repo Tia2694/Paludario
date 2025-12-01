@@ -45,7 +45,7 @@
       "id": 1759049833341,
       "species": "Neocaridina Davidi",
       "type": "crostaceo",
-      "count": 10,
+      "count": 3,
       "males": 0,
       "females": 0,
       "purchaseDate": "2025-09-27",
@@ -104,6 +104,14 @@
       "tempMax": 25,
       "humidityMin": 98,
       "humidityMax": 99
+    },
+    {
+      "id": 1764581297699,
+      "datetime": "2025-12-01T10:27",
+      "tempMin": 18.5,
+      "tempMax": 23.2,
+      "humidityMin": 87,
+      "humidityMax": 90
     }
   ]
 }
