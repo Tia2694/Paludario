@@ -22,5 +22,17 @@
     "nh4": 0.05,
     "temp": 25.9,
     "cond": 628
+  },
+  {
+    "id": "56wtmn9991b",
+    "ts": "2025-12-14T15:42",
+    "ph": null,
+    "kh": null,
+    "gh": null,
+    "no2": null,
+    "no3": null,
+    "nh4": null,
+    "temp": null,
+    "cond": 638
   }
 ]
