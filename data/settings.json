@@ -112,6 +112,14 @@
       "tempMax": 23.2,
       "humidityMin": 87,
       "humidityMax": 90
+    },
+    {
+      "id": 1765723412256,
+      "datetime": "2025-12-14T15:43",
+      "tempMin": 21.3,
+      "tempMax": 24.5,
+      "humidityMin": 85,
+      "humidityMax": 90
     }
   ]
 }
