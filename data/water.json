@@ -58,5 +58,17 @@
     "nh4": null,
     "temp": null,
     "cond": 562
+  },
+  {
+    "id": "1kf1zyw3jmc",
+    "ts": "2025-12-18T14:58",
+    "ph": null,
+    "kh": null,
+    "gh": null,
+    "no2": null,
+    "no3": null,
+    "nh4": null,
+    "temp": 25,
+    "cond": 552
   }
 ]
