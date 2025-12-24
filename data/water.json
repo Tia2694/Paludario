@@ -106,5 +106,17 @@
     "nh4": null,
     "temp": 25.1,
     "cond": 446
+  },
+  {
+    "id": "i2wfjrm6gd",
+    "ts": "2025-12-24T12:34",
+    "ph": null,
+    "kh": null,
+    "gh": null,
+    "no2": null,
+    "no3": null,
+    "nh4": null,
+    "temp": 25.2,
+    "cond": 446
   }
 ]
