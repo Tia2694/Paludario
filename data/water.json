@@ -178,5 +178,17 @@
     "nh4": null,
     "temp": 25,
     "cond": 350
+  },
+  {
+    "id": "ai71o0v6rv9",
+    "ts": "2026-01-07T16:01",
+    "ph": null,
+    "kh": 3,
+    "gh": 6,
+    "no2": null,
+    "no3": null,
+    "nh4": null,
+    "temp": 25.1,
+    "cond": 367
   }
 ]
